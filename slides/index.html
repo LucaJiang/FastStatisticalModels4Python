@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Breaking the Speed Limit — PyCon US 2026</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/reveal.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/theme/black.css" id="theme" />
+    <style>
+      .reveal .slides section .small {
+        font-size: 0.75em;
+      }
+      .reveal table {
+        font-size: 0.55em;
+        margin: 0.5em auto;
+      }
+      .reveal table th,
+      .reveal table td {
+        padding: 0.35em 0.5em;
+      }
+      .reveal .footnote {
+        font-size: 0.45em;
+        opacity: 0.85;
+        margin-top: 1em;
+      }
+      .reveal h2,
+      .reveal h3 {
+        text-transform: none;
+      }
+      .reveal pre.code-ref {
+        font-size: 0.45em;
+        width: 100%;
+        box-shadow: none;
+      }
+      .reveal img.deck-img {
+        max-height: 420px;
+        border: 1px solid #444;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <!-- Title -->
+        <section>
+          <h1>Breaking the Speed Limit</h1>
+          <h3>Fast Statistical Models with Python 3.14, Numba, and JAX</h3>
+          <p class="small">Wenxin Jiang &amp; Jian Yin</p>
+          <p class="small">PyCon US 2026 · 30 min · Room 104AB</p>
+          <aside class="notes">
+            <p>
+              Frame the talk as practical trade-offs for statisticians and data scientists who live in Python—not as a
+              benchmark crown for one toolkit.
+            </p>
+          </aside>
+        </section>
+
+        <!-- Intro block -->
+        <section>
+          <section>
+            <h2>The tension</h2>
+            <ul>
+              <li>We understand the models and we use Python.</li>
+              <li>We are often <strong>not</strong> full-time C++/Rust engineers.</li>
+              <li>We want: fast to write, fast to run, easy to debug and share.</li>
+            </ul>
+            <p class="footnote">Python 3.14 adds <strong>free-threaded</strong> and <strong>experimental JIT</strong>—plus mature <strong>Numba</strong> and <strong>JAX</strong>.</p>
+            <aside class="notes">
+              <p>Connect to biostatistics / genomics scale without diving into theory. 中文：点出「可写性 vs 速度 vs 可调试」。</p>
+            </aside>
+          </section>
+
+          <section>
+            <h2>What we compare</h2>
+            <table>
+              <thead>
+                <tr>
+                  <th>Axis</th>
+                  <th>Question</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Runtime</td>
+                  <td>How does it scale with data size?</td>
+                </tr>
+                <tr>
+                  <td>Memory</td>
+                  <td>Copies vs one shared array (especially parallel code)</td>
+                </tr>
+                <tr>
+                  <td>Debuggability</td>
+                  <td>When numerics go wrong, how painful is it?</td>
+                </tr>
+                <tr>
+                  <td>Developer effort</td>
+                  <td>How far from plain NumPy?</td>
+                </tr>
+              </tbody>
+            </table>
+            <aside class="notes">
+              <p>This matrix keeps the talk honest: no single winner.</p>
+            </aside>
+          </section>
+
+          <section>
+            <h2>Two workloads</h2>
+            <ul>
+              <li>
+                <strong>k-means</strong> — iterative Lloyd updates (assign → update). Stress-tests <em>tight loops</em> and
+                compilers.
+              </li>
+              <li>
+                <strong>Permutation test</strong> — repeat the same statistic on many resamples. Classic
+                <em>embarrassingly parallel</em> pattern.
+              </li>
+            </ul>
+            <p class="small">Toy sizes for demos; larger N for “server-scale” stories.</p>
+            <aside class="notes">
+              <p>Explicitly say: minimal statistics background required—focus on compute patterns.</p>
+            </aside>
+          </section>
+
+          <section>
+            <h2>Roadmap</h2>
+            <ol>
+              <li>k-means: NumPy → Numba → Python loops / JIT story → JAX</li>
+              <li>Permutation: multiprocessing → threads (nogil) → Numba → JAX</li>
+              <li>Developer experience + decision guide</li>
+            </ol>
+            <aside class="notes">
+              <p>Timing target: ~12 min k-means, ~10 min permutation, ~3 min intro, ~2 min devex, ~1 min wrap-up.</p>
+            </aside>
+          </section>
+
+          <section>
+            <h2>Benchmarks in this deck</h2>
+            <ul class="small">
+              <li>From <code>experiments/results/v2/*.csv</code> — warm median, each impl in a fresh subprocess.</li>
+              <li>Hardware: Apple Silicon 8-core (ARM64), Python 3.11.6 + NumPy 1.24 + Numba 0.57 + JAX 0.4 (CPU).</li>
+              <li>JAX timings use <code>jax.block_until_ready</code> — see <code>docs/06-benchmarking-methodology.md</code>.</li>
+              <li>Memory: tracemalloc for parent, psutil for multiprocessing children. GPU numbers: not included — run on a GPU box if you have one.</li>
+            </ul>
+            <aside class="notes">
+              <p>Invite the audience to rerun benchmarks on their laptops. Apple Silicon thermal throttles on long sweeps — report numbers in ranges, not to 3 decimals.</p>
+            </aside>
+          </section>
+        </section>
+
+        <!-- k-means vertical -->
+        <section>
+          <section>
+            <h2>k-means (Lloyd)</h2>
+            <ul>
+              <li>Initialize $K$ centroids.</li>
+              <li>Repeat: assign each point to nearest centroid → recompute centroids as cluster means.</li>
+            </ul>
+            <p class="small">Code in this repo: <code>experiments/kmeans/</code></p>
+            <aside class="notes">
+              <p>Do not derive k-means—just anchor the iterative dependency (each step needs the previous).</p>
+            </aside>
+          </section>
+
+          <section>
+            <h2>Baseline: vectorized NumPy</h2>
+            <p>Broadcasting / <code>einsum</code> for squared distances; argmin for labels; mean for updates.</p>
+            <pre class="code-ref"><code data-trim data-noescape>experiments/kmeans/kmeans_numpy.py</code></pre>
+            <p class="footnote">Hot path is already in C—so CPython JIT usually does <strong>not</strong> change this much.</p>
+            <aside class="notes">
+              <p>Key message for 3.14 JIT: contrast later with the explicit Python loop version.</p>
+            </aside>
+          </section>
+
+          <section>
+            <h2>Numba <code>@njit</code></h2>
+            <p>Compile inner assignment + centroid updates; stay in nopython mode.</p>
+            <pre class="code-ref"><code data-trim data-noescape>experiments/kmeans/kmeans_numba.py</code></pre>
+            <aside class="notes">
+              <p>Mention cold-start compile time; benchmarks here use warmup runs.</p>
+            </aside>
+          </section>
+
+          <section>
+            <h2>Python loops &amp; CPython JIT (3.14)</h2>
+            <p>Deliberately slow loop-heavy variant: <code>kmeans_loops.py</code></p>
+            <p>
+              <strong>Example (this machine, N=4000):</strong> median ≈ <strong>0.95 s</strong> per run
+              (<code>kmeans_loops_small.csv</code>).
+            </p>
+            <p class="footnote">On a JIT-enabled 3.14 build, compare the same code with JIT on/off—expect speedups on the Python loops, not on the NumPy-heavy baseline.</p>
+            <aside class="notes">
+              <p>中文：强调「对照实验」——循环版给 JIT 看，向量化版给 NumPy C 层看。</p>
+            </aside>
+          </section>
+
+          <section>
+            <h2>JAX: <code>scan</code> + <code>jit</code></h2>
+            <p>Functional style: carry centroids through <code>jax.lax.scan</code>; one-hot update step.</p>
+            <pre class="code-ref"><code data-trim data-noescape>experiments/kmeans/kmeans_jax.py</code></pre>
+            <p class="footnote">Fair timing on JAX requires <code>jax.block_until_ready</code> (async dispatch).</p>
+            <aside class="notes">
+              <p>At N=10k, inertia can disagree with NumPy if RNG/init paths differ—compare speed with aligned inits for a fair cluster quality check.</p>
+            </aside>
+          </section>
+
+          <section>
+            <h2>k-means results (warm median time)</h2>
+            <p class="small">
+              Setup: <code>d=10</code>, <code>k=5</code>, <code>max_iter=30</code>,
+              <em>same initial centroids across all impls</em> · Apple Silicon 8 core,
+              Python 3.11.6, NumPy 1.24, Numba 0.57, JAX 0.4 (CPU).
+            </p>
+            <table>
+              <thead>
+                <tr>
+                  <th>N</th>
+                  <th>NumPy naive</th>
+                  <th>NumPy matmul</th>
+                  <th>Numba</th>
+                  <th>JAX scan+jit</th>
+                  <th>Numba vs naive</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>10,000</td>
+                  <td>0.092 s</td>
+                  <td>0.543 s</td>
+                  <td>0.015 s</td>
+                  <td>0.015 s</td>
+                  <td>6.3×</td>
+                </tr>
+                <tr>
+                  <td>100,000</td>
+                  <td>0.088 s</td>
+                  <td>0.414 s</td>
+                  <td>0.010 s</td>
+                  <td>0.169 s</td>
+                  <td>8.8×</td>
+                </tr>
+                <tr>
+                  <td>500,000</td>
+                  <td>0.813 s</td>
+                  <td>1.92 s</td>
+                  <td>0.081 s</td>
+                  <td>0.715 s</td>
+                  <td>10.0×</td>
+                </tr>
+                <tr>
+                  <td>1,000,000</td>
+                  <td>12.6 s</td>
+                  <td>23.0 s</td>
+                  <td>1.21 s</td>
+                  <td>1.35 s</td>
+                  <td>10.4×</td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="footnote">Source: <code>experiments/results/v2/kmeans_sweep.csv</code>.
+              All impls agree on inertia to &lt; 1 ULP at identical init. JAX includes <code>block_until_ready</code>.</p>
+            <aside class="notes">
+              <p>Narrative: matmul distance loses to broadcast at tiny (K=5, d=10) because the BLAS call is too skinny to pay for the norm computations. At K≳50 / d≳100 (typical EM), matmul flips and wins. Numba is the most reliable speedup on CPU; JAX matches it at N=1M. Small-N JAX is held back by per-call dispatch, not compute.</p>
+            </aside>
+          </section>
+
+          <section data-background-color="#0a0a12">
+            <h3>k-means runtime scaling</h3>
+            <img
+              class="deck-img"
+              src="../experiments/results/v2/kmeans_scaling.png"
+              alt="Log-log plot of k-means runtime vs N across five implementations"
+            />
+            <p class="footnote">File: <code>experiments/results/v2/kmeans_scaling.png</code> · Python loops (purple dot at N=2k) is 0.84 s — plotted on the same axes to show the gulf versus the vectorised paths.</p>
+            <aside class="notes">
+              <p>Point at the Python-loops dot and say: "that is what CPython 3.14 experimental JIT is supposed to speed up — probably 2–3× on that number — but Numba is still two orders of magnitude ahead."</p>
+            </aside>
+          </section>
+
+          <section data-background-color="#0a0a12">
+            <h3>k-means cold vs warm (N = 10,000)</h3>
+            <img
+              class="deck-img"
+              src="../experiments/results/v2/kmeans_cold_vs_warm.png"
+              alt="Bar chart of cold vs warm k-means runtime"
+              style="max-height: 420px"
+            />
+            <p class="footnote">Numba 1st call 6.4 s (LLVM compile) vs 0.015 s warm · JAX 1st call 0.68 s vs 0.015 s warm.</p>
+            <aside class="notes">
+              <p>The JIT tax is real for interactive scripts. This is also the pitch for AOT caching — Numba's <code>cache=True</code> or pre-building JAX.</p>
+            </aside>
+          </section>
+
+          <section>
+            <h2>k-means takeaways</h2>
+            <ul>
+              <li><strong>Smart NumPy ≠ faster NumPy.</strong> Matmul-distance only pays off when K × d is big.</li>
+              <li><strong>Numba</strong>: 10× over naive NumPy at N=1M with a drop-in refactor. Our most reliable CPU lever.</li>
+              <li><strong>JAX</strong> catches Numba at N=10⁶ on CPU; its real story is "same code, GPU speedup for free".</li>
+              <li><strong>Pure Python loops</strong> are 2 orders of magnitude off — that's the headroom the 3.14 JIT aims at.</li>
+            </ul>
+            <aside class="notes">
+              <p>Bridge to second half: different bottleneck—parallel resampling and memory copies.</p>
+            </aside>
+          </section>
+        </section>
+
+        <!-- Permutation vertical -->
+        <section>
+          <section>
+            <h2>Permutation test (sketch)</h2>
+            <ul>
+              <li>Concatenate two groups into <code>x</code> (length <code>n</code>), split index <code>n1</code>.</li>
+              <li>Statistic: difference of means after permuting indices.</li>
+              <li>Repeat <code>R</code> times → empirical null distribution.</li>
+            </ul>
+            <p class="small">Implementations: <code>experiments/permutation_test/</code></p>
+            <aside class="notes">
+              <p>Emphasize independence across permutations—perfect for parallel patterns.</p>
+            </aside>
+          </section>
+
+          <section>
+            <h2>The algorithmic move before we parallelise</h2>
+            <p>Observe that <code>sum(x)</code> is constant:</p>
+            <pre class="code-ref"><code data-trim>
+stat = S1/n1 − (S − S1)/n2         # S = sum(x)   (fixed)
+     = S1 × (1/n1 + 1/n2) − S/n2
+            </code></pre>
+            <p>So the statistic depends only on <strong>the subset sum <code>S1</code></strong>. We can replace a full <code>rng.permutation(n)</code> with <code>rng.choice(n, n1, replace=False)</code> — "pick which n1 indices go to group A".</p>
+            <p class="footnote">Caveat we measured: in plain NumPy, <code>rng.choice(..., replace=False)</code> is implemented <em>via</em> permutation, so the naive trick buys nothing — but the <strong>batched</strong> form (<code>argpartition</code>) turns the idea into a real <strong>2.6× speedup</strong>.</p>
+            <aside class="notes">
+              <p>This is the talk's most useful transferable idea: attack the statistic before the compute. Works for bootstrap, bagging, and anywhere the aggregator is linear.</p>
+            </aside>
+          </section>
+
+          <section>
+            <h2><code>multiprocessing</code></h2>
+            <p>Processes get separate address spaces → pickle / copy costs for large arrays.</p>
+            <p class="footnote">Our driver chunks work across a <code>ProcessPoolExecutor</code> with an initializer (<code>permtest_multiprocessing.py</code>).</p>
+            <aside class="notes">
+              <p>On small R, process overhead can dominate—show the medium table next.</p>
+            </aside>
+          </section>
+
+          <section>
+            <h2>Threads + free-threaded Python</h2>
+            <p><code>ThreadPoolExecutor</code> shares in-process arrays—no full duplication by default.</p>
+            <p class="footnote">Most compelling on a <strong>nogil / free-threaded</strong> 3.14 build for CPU-bound threads. Watch refcount / contention—sometimes threads lose to processes.</p>
+            <pre class="code-ref"><code data-trim data-noescape>experiments/permutation_test/permtest_freethreaded.py</code></pre>
+            <aside class="notes">
+              <p>Mention PEP 703 / docs in repo <code>docs/01-python314-features.md</code>.</p>
+            </aside>
+          </section>
+
+          <section>
+            <h2>Numba <code>parallel=True</code> + <code>prange</code></h2>
+            <p>One process, shared read-only data, independent permutation work per iteration.</p>
+            <pre class="code-ref"><code data-trim data-noescape>experiments/permutation_test/permtest_numba.py</code></pre>
+            <aside class="notes">
+              <p>Numba uses its own thread pool—useful even on standard GIL builds for numeric kernels.</p>
+            </aside>
+          </section>
+
+          <section>
+            <h2>JAX <code>vmap</code> + <code>jit</code></h2>
+            <p>Vectorize over permutation seeds; explicit PRNG keys.</p>
+            <pre class="code-ref"><code data-trim data-noescape>experiments/permutation_test/permtest_jax.py</code></pre>
+            <p class="footnote">Large <code>n</code> + large <code>R</code> on CPU can be slow—often better on GPU or with batching.</p>
+            <aside class="notes">
+              <p>Remind: <code>block_until_ready</code> for timing; RNG paths differ from NumPy—checksums won’t match row-for-row.</p>
+            </aside>
+          </section>
+
+          <section>
+            <h2>Permutation results (warm median)</h2>
+            <p class="small">Setup: <code>n=10,000</code> (<code>n1=n2=5000</code>), <code>R=10,000</code>, same RNG seed ·
+              Apple Silicon 8 cores, Python 3.11.6 GIL build · each impl runs in a fresh subprocess</p>
+            <table>
+              <thead>
+                <tr>
+                  <th>Implementation</th>
+                  <th>Warm (s)</th>
+                  <th>vs naive</th>
+                  <th>Peak memory</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>NumPy naive loop</td>
+                  <td>2.04</td>
+                  <td>1.0×</td>
+                  <td>0.2 MiB (parent)</td>
+                </tr>
+                <tr>
+                  <td>NumPy trick (subset-sum)</td>
+                  <td>2.13</td>
+                  <td>0.96×</td>
+                  <td>0.2 MiB</td>
+                </tr>
+                <tr>
+                  <td>NumPy trick + batched</td>
+                  <td>4.67</td>
+                  <td>0.44×</td>
+                  <td>1 907 MiB ⚠︎</td>
+                </tr>
+                <tr>
+                  <td>ThreadPool (GIL build)</td>
+                  <td>1.46</td>
+                  <td><strong>1.4×</strong></td>
+                  <td>1.4 MiB</td>
+                </tr>
+                <tr>
+                  <td><code>multiprocessing</code> (8)</td>
+                  <td>3.34</td>
+                  <td>0.6×</td>
+                  <td>0.9 MiB parent + <strong>757 MiB children</strong></td>
+                </tr>
+                <tr>
+                  <td>Numba <code>prange</code></td>
+                  <td><strong>0.158</strong></td>
+                  <td><strong>13.0×</strong></td>
+                  <td>20.8 MiB</td>
+                </tr>
+                <tr>
+                  <td>JAX <code>vmap</code> (CPU)</td>
+                  <td>75.5</td>
+                  <td>0.03×</td>
+                  <td>1.0 MiB (XLA hidden)</td>
+                </tr>
+              </tbody>
+            </table>
+            <p class="footnote">Source: <code>experiments/results/v2/perm_sweep.csv</code> · children RSS is a psutil probe during the run.</p>
+            <aside class="notes">
+              <p>Three surprises for the audience: (a) the algorithmic "trick" doesn't pay by itself because <code>np.random.choice(replace=False)</code> is permutation-based — but it saves 2× in the batched form; (b) on a GIL build threads still give 1.4× because NumPy releases the GIL inside <code>.sum()</code> / <code>.permutation()</code> — a good motivator for free-threaded 3.14; (c) JAX <code>vmap</code> on CPU is a genuine anti-pattern for this workload.</p>
+            </aside>
+          </section>
+
+          <section data-background-color="#0a0a12">
+            <h3>Permutation: runtime scaling &amp; memory footprint</h3>
+            <div style="display: flex; flex-wrap: wrap; gap: 1rem; justify-content: center; align-items: flex-end">
+              <figure>
+                <img
+                  class="deck-img"
+                  src="../experiments/results/v2/perm_scaling.png"
+                  alt="Permutation runtime vs R, log-log"
+                  style="max-height: 380px"
+                />
+                <figcaption class="small">Runtime vs R (log–log)</figcaption>
+              </figure>
+              <figure>
+                <img
+                  class="deck-img"
+                  src="../experiments/results/v2/perm_memory.png"
+                  alt="Permutation peak memory by implementation"
+                  style="max-height: 380px"
+                />
+                <figcaption class="small">Peak memory (parent + children)</figcaption>
+              </figure>
+            </div>
+            <p class="footnote">Left: multiprocessing's flat ~3 s floor is pure process-startup cost. Right: the two orange bars (batched NumPy, ~2 GiB) and the 757 MiB children RSS are the memory story of "copies vs shared".</p>
+            <aside class="notes">
+              <p>Tie this slide back to the evaluation matrix from the intro.</p>
+            </aside>
+          </section>
+
+          <section>
+            <h2>Permutation takeaways</h2>
+            <ul>
+              <li><strong>Numba <code>prange</code></strong>: one process, one copy, <strong>13× over naive NumPy</strong> — the single best ROI on CPU.</li>
+              <li><strong>Threads on GIL build</strong> already give 1.4× (NumPy releases the GIL). Free-threaded 3.14 should widen this further.</li>
+              <li><strong><code>multiprocessing</code></strong> pays a ~3 s startup and holds ~100 MiB per worker — mind copies on big arrays.</li>
+              <li><strong>Batched NumPy</strong> trades 2 GiB of RAM for a memory-bandwidth loss. Not a free win.</li>
+              <li><strong>JAX <code>vmap</code> on CPU</strong>: honest anti-pattern for this kernel; reserve for accelerators.</li>
+            </ul>
+            <aside class="notes">
+              <p>Briefly mention reproducibility: parallel RNG ordering — use SplitMix-style per-iter seed mixing (we burned an hour on a 0.05σ drift from a correlated LCG).</p>
+            </aside>
+          </section>
+        </section>
+
+        <!-- DevEx + conclusion -->
+        <section>
+          <section data-background-color="#0a0a12">
+            <h3>Putting it on one chart</h3>
+            <img
+              class="deck-img"
+              src="../experiments/results/v2/tradeoff_radar.png"
+              alt="Radar chart of runtime / memory / debuggability / effort per approach"
+              style="max-height: 460px"
+            />
+            <p class="footnote">Runtime &amp; memory axes are log-scored from the sweep CSVs; debuggability &amp; effort are our speaker-assigned judgement after porting real statistical code.</p>
+            <aside class="notes">
+              <p>Use this to argue "no king" honestly. NumPy is the most debuggable, Numba and JAX trade off in different axes.</p>
+            </aside>
+          </section>
+
+          <section>
+            <h2>Developer experience</h2>
+            <ul>
+              <li><strong>Start simple</strong>: correct NumPy first.</li>
+              <li><strong>Profile</strong>: prove the hotspot before rewriting.</li>
+              <li><strong>AI as copilot</strong>: great for translating math→NumPy→Numba/JAX—still verify numerics.</li>
+            </ul>
+            <aside class="notes">
+              <p>~2 minutes. Connect to collaboration and reproducibility priorities in statistics.</p>
+            </aside>
+          </section>
+
+          <section>
+            <h2>Decision guide</h2>
+            <table>
+              <tbody>
+                <tr>
+                  <td><strong>Small Numba refactor fixes hot loops</strong></td>
+                  <td>Often the best ROI on CPU numerical code.</td>
+                </tr>
+                <tr>
+                  <td><strong>CPython 3.14 JIT</strong></td>
+                  <td>Low-effort speedups for Python-heavy glue; not a substitute for vectorized NumPy.</td>
+                </tr>
+                <tr>
+                  <td><strong>Free-threaded 3.14</strong></td>
+                  <td>Consider when threads + shared big arrays beat multiprocessing copies.</td>
+                </tr>
+                <tr>
+                  <td><strong>JAX</strong></td>
+                  <td>When functional style + XLA/GPU/TPU batching matches your workload.</td>
+                </tr>
+              </tbody>
+            </table>
+            <aside class="notes">
+              <p>Close the loop: extra complexity must buy measurable wins for your team.</p>
+            </aside>
+          </section>
+
+          <section>
+            <h2>Resources in this repo</h2>
+            <ul class="small">
+              <li><code>docs/</code> — PEPs, Numba/JAX notes, benchmarking methodology</li>
+              <li><code>experiments/</code> — reproducible scripts + <code>experiments/results/</code></li>
+              <li><code>docs/07-related-talks-and-references.md</code> — PyCon talks &amp; links</li>
+            </ul>
+            <aside class="notes">
+              <p>Point to GitHub / Pages URL when published.</p>
+            </aside>
+          </section>
+
+          <section>
+            <h1>Thank you</h1>
+            <h3>Questions?</h3>
+            <p class="small">Slides: <code>slides/index.html</code> · Reveal.js: press <kbd>S</kbd> for speaker view</p>
+            <aside class="notes">
+              <p>Offer to share benchmark commands from <code>experiments/*/README.md</code>.</p>
+            </aside>
+          </section>
+        </section>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/reveal.js"></script>
+    <script>
+      Reveal.initialize({
+        hash: true,
+        slideNumber: "c/t",
+        transition: "slide",
+        backgroundTransition: "fade",
+        width: 1280,
+        height: 720,
+        margin: 0.08,
+      });
+    </script>
+  </body>
+</html>

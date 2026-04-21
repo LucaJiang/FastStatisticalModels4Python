@@ -1,0 +1,4 @@
+# JAX stack (install on top of requirements-base.txt in the same venv)
+# Pin versions to your platform; see https://jax.readthedocs.io/en/latest/installation.html
+jax>=0.4.30
+jaxlib>=0.4.30
