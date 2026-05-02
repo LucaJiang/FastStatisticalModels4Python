@@ -19,6 +19,16 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 
+from plot_style import (
+    GRAY,
+    JAX_BERRY,
+    LOOP_PURPLE,
+    NUMBA_GREEN,
+    PROCESS_ORANGE,
+    PY_BLUE,
+    apply_style,
+)
+
 # Speaker-assigned subjective scores (0 = painful, 1 = painless).
 # These reflect our experience porting real statistical code, not micro-benchmarks.
 SUBJECTIVE = {
@@ -87,6 +97,7 @@ def main() -> None:
     p.add_argument("--n-kmeans", type=int, default=500_000)
     p.add_argument("--r-perm", type=int, default=10_000)
     args = p.parse_args()
+    apply_style()
 
     km = _load(args.kmeans)
     pm = _load(args.permtest)
@@ -106,10 +117,11 @@ def main() -> None:
     angles = np.linspace(0, 2 * math.pi, len(categories), endpoint=False).tolist()
     angles += angles[:1]
 
-    fig, ax = plt.subplots(figsize=(7.5, 7.5), subplot_kw=dict(polar=True))
+    fig, ax = plt.subplots(figsize=(8.2, 8.2), subplot_kw=dict(polar=True))
+    ax.set_facecolor("#FFFFFF")
     palette = [
-        "#1976D2", "#2E7D32", "#AD1457",
-        "#EF6C00", "#6A1B9A", "#455A64",
+        PY_BLUE, NUMBA_GREEN, JAX_BERRY,
+        PROCESS_ORANGE, LOOP_PURPLE, GRAY,
     ]
     for i, (label, vals) in enumerate(scores.items()):
         row = list(vals) + [vals[0]]
@@ -120,13 +132,14 @@ def main() -> None:
     ax.set_xticklabels(categories)
     ax.set_yticks([0.25, 0.5, 0.75, 1.0])
     ax.set_ylim(0, 1)
-    ax.set_title("Trade-off radar (0 = worst, 1 = best)\n"
-                 f"runtime/memory from sweeps: kmeans N={args.n_kmeans:,}  perm R={args.r_perm:,}",
-                 fontsize=11, pad=18)
-    ax.legend(loc="upper right", bbox_to_anchor=(1.35, 1.10), fontsize=9)
+    ax.set_title("Trade-off map: speed is only one axis\n"
+                 f"runtime/memory from sweeps: k-means N={args.n_kmeans:,}, permutation R={args.r_perm:,}",
+                 fontsize=14, pad=22)
+    ax.legend(loc="upper right", bbox_to_anchor=(1.34, 1.10), fontsize=10,
+              framealpha=0.92, facecolor="white", edgecolor="#D8D1C4")
     fig.tight_layout()
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(args.output, dpi=150, bbox_inches="tight")
+    fig.savefig(args.output, dpi=180, bbox_inches="tight")
     print(f"Wrote {args.output}")
 
 

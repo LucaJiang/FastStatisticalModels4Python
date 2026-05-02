@@ -23,13 +23,22 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 
+from plot_style import (
+    JAX_BERRY,
+    LOOP_PURPLE,
+    NUMBA_GREEN,
+    PY_BLUE,
+    PY_GOLD,
+    apply_style,
+    strip_spines,
+)
 
 IMPL_COLORS = {
-    "numpy_naive": "#E65100",
-    "numpy_smart": "#1976D2",
-    "loops": "#6A1B9A",
-    "numba": "#2E7D32",
-    "jax": "#AD1457",
+    "numpy_naive": PY_GOLD,
+    "numpy_smart": PY_BLUE,
+    "loops": LOOP_PURPLE,
+    "numba": NUMBA_GREEN,
+    "jax": JAX_BERRY,
 }
 IMPL_ORDER = ["numpy_naive", "numpy_smart", "loops", "numba", "jax"]
 IMPL_LABEL = {
@@ -57,7 +66,11 @@ def _by_impl(rows, key="n_samples"):
 
 def plot_scaling(rows, output: Path) -> None:
     series = _by_impl(rows)
-    fig, ax = plt.subplots(figsize=(8.5, 5))
+    first = rows[0]
+    k = int(first["k"])
+    d = int(first["n_features"])
+    max_iter = int(first["max_iter"])
+    fig, ax = plt.subplots(figsize=(10.5, 5.8))
     for impl in IMPL_ORDER:
         if impl not in series:
             continue
@@ -68,13 +81,14 @@ def plot_scaling(rows, output: Path) -> None:
     ax.set_xscale("log")
     ax.set_yscale("log")
     ax.set_xlabel("N (data points)")
-    ax.set_ylabel("warm median time (s, log)")
-    ax.set_title("k-means runtime vs N (Lloyd, k=5, d=10, max_iter=30)")
+    ax.set_ylabel("warm median time (seconds, log)")
+    ax.set_title(f"k-means runtime scaling (Lloyd, k={k}, d={d}, max_iter={max_iter})")
     ax.grid(True, which="both", alpha=0.3)
-    ax.legend(loc="best", framealpha=0.95)
+    strip_spines(ax)
+    ax.legend(loc="best", framealpha=0.92, facecolor="white", edgecolor="#D8D1C4")
     fig.tight_layout()
     output.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(output, dpi=150)
+    fig.savefig(output, dpi=180)
     print(f"Wrote {output}")
 
 
@@ -90,7 +104,7 @@ def plot_speedup(rows, output: Path) -> None:
     width = 0.8 / max(1, len(impls))
     x = np.arange(len(ns))
 
-    fig, ax = plt.subplots(figsize=(8.5, 5))
+    fig, ax = plt.subplots(figsize=(10.5, 5.8))
     for i, impl in enumerate(impls):
         vals = []
         for n in ns:
@@ -102,12 +116,13 @@ def plot_speedup(rows, output: Path) -> None:
     ax.axhline(1.0, color="black", lw=0.6, ls=":", alpha=0.6)
     ax.set_xticks(x + (len(impls) - 1) * width / 2)
     ax.set_xticklabels([f"N={n:,}" for n in ns])
-    ax.set_ylabel("speedup vs NumPy-naive  (higher = faster)")
+    ax.set_ylabel("speedup vs NumPy naive (higher is faster)")
     ax.set_title("k-means speedup over the textbook NumPy baseline")
     ax.grid(True, axis="y", alpha=0.3)
-    ax.legend(loc="best")
+    strip_spines(ax)
+    ax.legend(loc="best", framealpha=0.92, facecolor="white", edgecolor="#D8D1C4")
     fig.tight_layout()
-    fig.savefig(output, dpi=150)
+    fig.savefig(output, dpi=180)
     print(f"Wrote {output}")
 
 
@@ -134,27 +149,28 @@ def plot_cold_vs_warm(rows, output: Path) -> None:
     cold = [by_n[target_n][i]["cold"] for i in impls]
     warm = [by_n[target_n][i]["warm"] for i in impls]
 
-    fig, ax = plt.subplots(figsize=(8.5, 5))
+    fig, ax = plt.subplots(figsize=(10.5, 5.8))
     ax.bar(x - width / 2, cold, width, color="#D32F2F", label="cold (1st call)")
     ax.bar(x + width / 2, warm, width, color="#388E3C", label="warm median")
     ax.set_xticks(x)
     ax.set_xticklabels([IMPL_LABEL[i] for i in impls], rotation=15, ha="right")
     ax.set_ylabel("seconds (log)")
     ax.set_yscale("log")
-    ax.set_title(f"k-means cold vs warm (N={target_n:,}) — JIT tax is visible at small N")
+    ax.set_title(f"k-means cold vs warm (N={target_n:,})")
     ax.grid(True, axis="y", which="both", alpha=0.3)
-    ax.legend()
+    strip_spines(ax)
+    ax.legend(framealpha=0.92, facecolor="white", edgecolor="#D8D1C4")
     for xi, (c, w_) in enumerate(zip(cold, warm)):
         ax.text(xi - width / 2, c * 1.08, f"{c:.3f}s", ha="center", fontsize=8)
         ax.text(xi + width / 2, w_ * 1.08, f"{w_:.3f}s", ha="center", fontsize=8)
     fig.tight_layout()
-    fig.savefig(output, dpi=150)
+    fig.savefig(output, dpi=180)
     print(f"Wrote {output}")
 
 
 def plot_memory(rows, output: Path) -> None:
     series = _by_impl(rows)
-    fig, ax = plt.subplots(figsize=(8.5, 5))
+    fig, ax = plt.subplots(figsize=(10.5, 5.8))
     for impl in IMPL_ORDER:
         if impl not in series:
             continue
@@ -168,9 +184,10 @@ def plot_memory(rows, output: Path) -> None:
     ax.set_ylabel("tracemalloc peak (MiB, log)")
     ax.set_title("k-means Python-level peak memory vs N")
     ax.grid(True, which="both", alpha=0.3)
-    ax.legend(loc="best")
+    strip_spines(ax)
+    ax.legend(loc="best", framealpha=0.92, facecolor="white", edgecolor="#D8D1C4")
     fig.tight_layout()
-    fig.savefig(output, dpi=150)
+    fig.savefig(output, dpi=180)
     print(f"Wrote {output}")
 
 
@@ -179,6 +196,7 @@ def main() -> None:
     p.add_argument("--input", type=Path, required=True)
     p.add_argument("--output-dir", type=Path, required=True)
     args = p.parse_args()
+    apply_style()
     rows = _load(args.input)
     plot_scaling(rows, args.output_dir / "kmeans_scaling.png")
     plot_speedup(rows, args.output_dir / "kmeans_speedup.png")

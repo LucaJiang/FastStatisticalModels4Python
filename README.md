@@ -85,6 +85,18 @@ The goal is not to crown a single winner, but to give an honest picture of **wha
 
 -------
 
+# Current local findings
+
+Latest local refresh:
+
+- `py312`: Python 3.12.2, NumPy 1.26.4, Numba 0.59.1, JAX 0.4.25 (CPU).
+- `py314t`: Python 3.14.0 free-threaded build, confirmed `sys._is_gil_enabled() == False`.
+- k-means at `N=1M`, `k=5`, `d=10`: Numba `0.482 s`, JAX `0.499 s`, NumPy naive `5.22 s`.
+- permutation test at `n=10k`, `R=10k`: Numba `0.064 s`, ThreadPool on `py314t` `0.173 s`, NumPy loop `0.856 s`, JAX CPU `37.4 s`.
+- See [`experiments/results/README.md`](experiments/results/README.md) for the refreshed figures and commands.
+
+-------
+
 # Notes
 
 ## What motivates us to submit this proposal

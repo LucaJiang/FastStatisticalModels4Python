@@ -1,0 +1,217 @@
+% Promotional poster for PyCon US 2026
+% Breaking the Speed Limit: Fast Statistical Models with Python 3.14, Numba, and JAX
+
+\documentclass[final]{beamer}
+
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[size=custom,width=120,height=72,scale=1.0]{beamerposter}
+\usetheme{gemini}
+\usecolortheme{imsa}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{positioning}
+\usepackage{xcolor}
+
+\definecolor{paper}{HTML}{FBF7EF}
+\definecolor{ink}{HTML}{17202A}
+\definecolor{muted}{HTML}{5F6B74}
+\definecolor{pyblue}{HTML}{2B6CB0}
+\definecolor{pygold}{HTML}{D99A1E}
+\definecolor{numba}{HTML}{2F7D32}
+\definecolor{jaxberry}{HTML}{B51E59}
+\definecolor{processorange}{HTML}{E66A2C}
+\definecolor{threadteal}{HTML}{1F7A8C}
+
+\setbeamercolor{background canvas}{bg=paper}
+\setbeamercolor{normal text}{fg=ink}
+\setbeamercolor{block title}{fg=pyblue,bg=white}
+\setbeamercolor{block body}{fg=ink,bg=white}
+\setbeamercolor{block alerted title}{fg=ink,bg=pygold!18}
+\setbeamercolor{block alerted body}{fg=ink,bg=pygold!10}
+\setbeamercolor{heading}{fg=ink}
+
+\newlength{\sepwidth}
+\newlength{\colwidth}
+\setlength{\sepwidth}{0.022\paperwidth}
+\setlength{\colwidth}{0.305\paperwidth}
+\newcommand{\separatorcolumn}{\begin{column}{\sepwidth}\end{column}}
+
+\newcommand{\bigstat}[3]{%
+  \begin{minipage}[t]{0.30\linewidth}
+    {\Huge\bfseries\color{#1} #2}\\[-0.1em]
+    {\small\color{muted} #3}
+  \end{minipage}
+}
+
+\title{Breaking the Speed Limit}
+\subtitle{Fast statistical models with Python 3.14, Numba, and JAX}
+\author{Wenxin Jiang \and Jian Yin}
+\institute[shortinst]{Department of Biostatistics, City University of Hong Kong \samelineand PyCon US 2026}
+
+\begin{document}
+\begin{frame}[t]
+\begin{columns}[t]
+\separatorcolumn
+
+\begin{column}{\colwidth}
+  \begin{alertblock}{A workflow talk disguised as a performance talk}
+    Statistical code does not usually start with the fastest kernel. It starts
+    with a question: \textbf{can I trust this result?}
+
+    \vspace{0.5em}
+    We use simulation to build trust, then optimize only the computational
+    pattern that simulation proves is expensive.
+  \end{alertblock}
+
+  \begin{block}{The simulation loop}
+    \centering
+    \begin{tikzpicture}[
+      node distance=0.5cm,
+      every node/.style={font=\small},
+      box/.style={
+        rounded corners=3pt,
+        draw=pyblue!35,
+        fill=white,
+        line width=0.8pt,
+        minimum width=0.91\linewidth,
+        minimum height=1.18cm,
+        align=center
+      },
+      arrow/.style={->, line width=1.2pt, draw=pygold}
+    ]
+      \node[box] (a) {Controlled data\\{\footnotesize known signal, fixed seed}};
+      \node[box, below=of a] (b) {Clear reference implementation\\{\footnotesize close to the statistical definition}};
+      \node[box, below=of b] (c) {Failure-mode simulation\\{\footnotesize noise, imbalance, high dimension}};
+      \node[box, below=of c] (d) {Scale-up benchmark\\{\footnotesize runtime, memory, reproducibility}};
+      \node[box, below=of d] (e) {Optimized kernel\\{\footnotesize Numba, JAX, threads, Python 3.14}};
+      \draw[arrow] (a) -- (b);
+      \draw[arrow] (b) -- (c);
+      \draw[arrow] (c) -- (d);
+      \draw[arrow] (d) -- (e);
+    \end{tikzpicture}
+  \end{block}
+
+  \begin{block}{Why this matters}
+    \begin{itemize}
+      \item A faster implementation that changes the statistic is a different method.
+      \item Big data can hide mistakes that small controlled simulations reveal.
+      \item The right tool is the one that preserves statistical meaning while removing the real bottleneck.
+    \end{itemize}
+  \end{block}
+\end{column}
+
+\separatorcolumn
+
+\begin{column}{\colwidth}
+  \begin{block}{Two workloads}
+    \heading{k-means: iterative pressure}
+    Lloyd's algorithm repeats assignment and centroid updates. It exposes
+    Python loop overhead, temporary arrays, cold-start compilation, and
+    high-dimensional scaling.
+
+    \vspace{0.7em}
+    \heading{Permutation test: resampling pressure}
+    The statistic is simple, but $R$ independent resamples expose random
+    generation cost, process copies, shared memory, and thread-level parallelism.
+  \end{block}
+
+  \begin{block}{Local evidence}
+    \bigstat{numba}{10.8$\times$}{Numba over naive NumPy for k-means at $N=10^6$}
+    \hfill
+    \bigstat{threadteal}{0.17 s}{Free-threaded ThreadPool at $R=10\,000$}
+    \hfill
+    \bigstat{processorange}{833 MiB}{Child-process RSS in multiprocessing}
+
+    \vspace{1.0em}
+    \small
+    Current local env: Python 3.12.2, NumPy 1.26.4, Numba 0.59.1, JAX 0.4.25
+    on CPU. Python 3.14t is confirmed free-threaded.
+  \end{block}
+
+  \begin{block}{What changed when K and d grew}
+    \begin{figure}
+      \centering
+      \includegraphics[width=0.97\linewidth]{../experiments/results/v2/kmeans_shape_k50_d100.png}
+    \end{figure}
+    \small
+    At $K=50$, $d=100$, textbook broadcasting hits an $O(NKd)$ temporary.
+    The matrix-multiply form becomes useful, and JAX/Numba lead the CPU story.
+  \end{block}
+\end{column}
+
+\separatorcolumn
+
+\begin{column}{\colwidth}
+  \begin{block}{Three memorable findings}
+    \heading{1. Validate before optimizing}
+    The k-means implementations share fixed initial centroids; a sklearn
+    fixed-init check matches inertia to relative error $\sim 1.5{\times}10^{-16}$.
+
+    \vspace{0.8em}
+    \heading{2. Shared memory is a feature}
+    For permutation tests, threads and Numba keep one in-process input array.
+    Multiprocessing pays startup cost and carries worker copies.
+
+    \vspace{0.8em}
+    \heading{3. JAX is not magic CPU parallelism}
+    JAX is excellent when the workload maps to XLA or accelerators. CPU
+    \texttt{vmap} over random permutations is an honest anti-pattern here.
+  \end{block}
+
+  \begin{block}{Free-threaded Python: same thread code, different ceiling}
+    \begin{figure}
+      \centering
+      \includegraphics[width=0.97\linewidth]{../experiments/results/v2/perm_threads_py312_py314t.png}
+    \end{figure}
+    \small
+    The local Python 3.14t no-GIL build improves the same ThreadPool
+    permutation code from 0.32 s to 0.17 s at 8 workers.
+  \end{block}
+
+  \begin{alertblock}{Take the workflow with you}
+    \begin{center}
+      {\Large\bfseries Clear enough to trust. Fast enough to scale.}
+
+      \vspace{0.8em}
+      {\large \texttt{github.com/lucajiang/FastStatisticalModels4Python}}
+    \end{center}
+  \end{alertblock}
+\end{column}
+
+\separatorcolumn
+\end{columns}
+
+\vspace{1.2cm}
+\begin{center}
+\begin{minipage}{0.956\paperwidth}
+  \begin{alertblock}{Decision guide}
+    \begin{minipage}[t]{0.23\linewidth}
+      \heading{Start with trust}
+      Controlled data, fixed seeds, and a reference implementation define the
+      statistic before any optimization changes the code.
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.23\linewidth}
+      \heading{Fuse hot loops}
+      When Python owns the inner loop, Numba is the most direct path to compiled
+      scalar logic without changing the method.
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.23\linewidth}
+      \heading{Watch memory shape}
+      Broadcasting can create the right answer through the wrong temporary.
+      Matrix identities and fused kernels reduce the real bottleneck.
+    \end{minipage}
+    \hfill
+    \begin{minipage}[t]{0.23\linewidth}
+      \heading{Choose shared data}
+      For resampling, threads and free-threaded Python keep one input array;
+      processes need an explicit memory budget.
+    \end{minipage}
+  \end{alertblock}
+\end{minipage}
+\end{center}
+\end{frame}
+\end{document}

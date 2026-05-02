@@ -1,6 +1,6 @@
 # 置换检验（Permutation Test）实现要点与并行策略实测
 
-本文档支撑演讲 **「大规模数据并行模式」**：同一统计量在 **多次随机置换** 下重复计算，天然 **embarrassingly parallel**。所有数字来自 [`perm_sweep.csv`](../experiments/results/v2/perm_sweep.csv)，运行在 Apple Silicon 8 核心、Python 3.11.6。
+本文档支撑演讲 **「大规模数据并行模式」**：同一统计量在 **多次随机置换** 下重复计算，天然 **embarrassingly parallel**。所有数字来自 [`perm_sweep.csv`](../experiments/results/v2/perm_sweep.csv)，运行在 Apple Silicon 8 核心、Python 3.12.2、NumPy 1.26.4、Numba 0.59.1、JAX 0.4.25；free-threaded 对照来自 Python 3.14.4 `py314t`。
 
 ## 1. 统计思想（极简）
 
@@ -31,14 +31,14 @@
 
 | 实现 | warm 时间（R=10k, n=10k） | 加速比 vs `numpy_naive` |
 |------|--------------------------:|--------------------------:|
-| `numpy_naive`（完整 shuffle） | 2.04 s | 1.0× |
-| `numpy_trick`（子集和） | 2.13 s | 0.96× |
-| `numpy_batched`（`argsort((R,n))`） | 12.13 s | 0.17× |
-| `numpy_trick_batched`（`argpartition`） | 4.67 s | 0.44× |
+| `numpy_naive`（完整 shuffle） | 0.856 s | 1.0× |
+| `numpy_trick`（子集和） | 0.831 s | 1.03× |
+| `numpy_batched`（`argsort((R,n))`） | 6.54 s | 0.13× |
+| `numpy_trick_batched`（`argpartition`） | 1.82 s | 0.47× |
 
 **关键发现**：在纯 NumPy 层面，`np.random.choice(..., replace=False)` 内部也是 `permutation` 实现，算法技巧本身在单循环里 **没有速度收益**。但——
 
-- **批处理版 `numpy_trick_batched` 比 `numpy_batched` 快 2.6×，内存 1907 MB vs 2289 MB**：一旦你下沉到 `argpartition`（O(n) 而非 O(n log n)），算法技巧立刻体现。
+- **批处理版 `numpy_trick_batched` 比 `numpy_batched` 快 3.6×，内存 1907 MiB vs 2289 MiB**：一旦你下沉到 `argpartition`（O(n) 而非 O(n log n)），算法技巧立刻体现。
 - 更重要的是，**算法技巧改变了心智模型**：它让我们从「我要置换一整个向量」变成「我要采样一批索引」，从而把问题映射到 `vmap` 或 GPU 上时心智负担更低。
 
 **演讲用一句话**：*「每次改进都从重新审视统计量本身开始——再快的并行库也换不回一个恰当的恒等式。」*
@@ -47,17 +47,18 @@
 
 | 方案 | 本仓库实测 warm (R=10k) | 数据拷贝 | 说明 |
 |------|-----------------------:|---------|------|
-| 串行 NumPy | 2.04 s | 单份 `x` | 基线 |
-| `ProcessPoolExecutor` | **3.34 s** | **每进程独立数据 + pickle** → 实测子进程 RSS 总和 **757 MB** | 小 R 下启动成本主导 |
-| `ThreadPoolExecutor`（GIL build） | **1.46 s** | **共享** 进程内数组 | 避免整表复制；**1.4×**，GIL 上的天花板 |
-| Numba `prange` | **0.158 s** | 共享只读数组，一个进程 | **13×，全场最快** |
-| JAX `vmap` + `jit`（CPU） | **75.5 s** | 设备内存 | CPU 上是反例，见 [`03-jax-guide.md`](03-jax-guide.md) |
+| 串行 NumPy | 0.856 s | 单份 `x` | 基线 |
+| `ProcessPoolExecutor` | **1.71 s** | **每进程独立数据 + pickle** → 实测子进程 RSS 总和 **833 MiB** | 小 R 下启动成本主导 |
+| `ThreadPoolExecutor`（GIL build） | **0.392 s** | **共享** 进程内数组 | 避免整表复制；**2.2×** |
+| `ThreadPoolExecutor`（free-threaded 3.14t） | **0.173 s** | **共享** 进程内数组 | 同一份线程代码，8 workers 下继续提速 |
+| Numba `prange` | **0.064 s** | 共享只读数组，一个进程 | **13.4×，全场最快** |
+| JAX `vmap` + `jit`（CPU） | **37.4 s** | 设备内存 | CPU 上是反例，见 [`03-jax-guide.md`](03-jax-guide.md) |
 
 图例：
 
-- [`perm_scaling.png`](../experiments/results/v2/perm_scaling.png)：runtime vs R，所有实现在同一张对数图上对比。`multiprocessing` 的 ~3s 启动阶梯、Numba 的平坦、JAX 的陡峭上升一目了然。
-- [`perm_memory.png`](../experiments/results/v2/perm_memory.png)：tracemalloc 峰值 + 子进程 RSS 加总。Multiprocessing 的 **757 MB 子进程 RSS** 与其他实现的 ~1 MB 形成鲜明对比。
-- [`perm_speedup.png`](../experiments/results/v2/perm_speedup.png)：Numba 13× 的柱子，和 JAX 0.03× 的「负加速」放在同一坐标下。
+- [`perm_scaling.png`](../experiments/results/v2/perm_scaling.png)：runtime vs R，所有实现在同一张对数图上对比。`multiprocessing` 的启动阶梯、Numba 的平坦、JAX 的陡峭上升一目了然。
+- [`perm_memory.png`](../experiments/results/v2/perm_memory.png)：tracemalloc 峰值 + 子进程 RSS 加总。Multiprocessing 的 **833 MiB 子进程 RSS** 与其他实现的 ~1 MiB 形成鲜明对比。
+- [`perm_speedup.png`](../experiments/results/v2/perm_speedup.png)：Numba 13.4× 的柱子，和 JAX 的「负加速」放在同一坐标下。
 
 ## 5. 随机性与可复现
 
@@ -75,5 +76,5 @@
 1. **开场定义**：把置换检验画成「同一个统计量做 R 次」的图示；统计学背景不要超过 20 秒。
 2. **算法层**：讲恒等式 → 把 R 份完整 shuffle 变成 R 份 subset-sum（不是永远值钱，但心智模型值钱）。
 3. **工程层**：[`perm_scaling.png`](../experiments/results/v2/perm_scaling.png) 里挑两条做对比——Numba 和 multiprocessing——讲一次性启动成本 vs 并行收益的拐点。
-4. **内存层**：[`perm_memory.png`](../experiments/results/v2/perm_memory.png) 讲 multiprocessing 的 757 MB 是「看不见的内存」，而 Numba / threads / free-threaded 都是「一份数据」。
+4. **内存层**：[`perm_memory.png`](../experiments/results/v2/perm_memory.png) 讲 multiprocessing 的 833 MiB 是「看不见的内存」，而 Numba / threads / free-threaded 都是「一份数据」。
 5. **诚实的 JAX**：CPU 上的 `vmap` 是反例；GPU 上是王道。演讲如果有条件放一个 GPU 数字更好。

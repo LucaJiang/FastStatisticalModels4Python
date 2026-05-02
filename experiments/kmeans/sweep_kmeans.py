@@ -58,11 +58,29 @@ def main() -> None:
     p.add_argument("--output-csv", type=Path, required=True)
     p.add_argument("--output-json", type=Path, default=None)
     p.add_argument("--skip-jax", action="store_true")
+    p.add_argument(
+        "--impls",
+        nargs="+",
+        choices=["numpy_naive", "numpy_smart", "numba", "jax"],
+        default=None,
+        help="Main implementations to run. Defaults to NumPy naive/smart, Numba, and JAX unless --skip-jax is set.",
+    )
+    p.add_argument(
+        "--skip-loops",
+        action="store_true",
+        help="Do not append the small-N pure-Python loops point.",
+    )
+    p.add_argument(
+        "--max-numpy-naive-n",
+        type=int,
+        default=None,
+        help="Skip numpy_naive above this N. Useful for high-dimensional sweeps where the broadcast temp would be too large.",
+    )
     args = p.parse_args()
 
-    impls_main = ["numpy_naive", "numpy_smart", "numba"]
-    if not args.skip_jax:
-        impls_main.append("jax")
+    impls_main = args.impls or ["numpy_naive", "numpy_smart", "numba", "jax"]
+    if args.skip_jax:
+        impls_main = [i for i in impls_main if i != "jax"]
 
     subprocess_dir = args.output_csv.parent / "_subprocess_km"
     subprocess_dir.mkdir(parents=True, exist_ok=True)
@@ -72,6 +90,16 @@ def main() -> None:
     for n in args.n_list:
         print(f"\n=== N = {n:,} ===", file=sys.stderr)
         for impl in impls_main:
+            if (
+                impl == "numpy_naive"
+                and args.max_numpy_naive_n is not None
+                and n > args.max_numpy_naive_n
+            ):
+                print(
+                    f"  -> {impl} skipped above N={args.max_numpy_naive_n:,}",
+                    file=sys.stderr,
+                )
+                continue
             print(f"  → {impl}", file=sys.stderr)
             try:
                 path = run_single(
@@ -87,14 +115,15 @@ def main() -> None:
                 env_seen = payload.get("env")
             all_rows.extend(payload["rows"])
 
-    # Loops at small N, one subprocess
-    print(f"\n=== loops @ N={args.loops_n} ===", file=sys.stderr)
-    path = run_single(
-        args.python, "loops", args.loops_n, args.n_features, args.k, args.k,
-        args.max_iter, args.seed, 1, 2, args.loops_n, subprocess_dir,
-    )
-    payload = json.loads(path.read_text())
-    all_rows.extend(payload["rows"])
+    if not args.skip_loops:
+        # Loops at small N, one subprocess
+        print(f"\n=== loops @ N={args.loops_n} ===", file=sys.stderr)
+        path = run_single(
+            args.python, "loops", args.loops_n, args.n_features, args.k, args.k,
+            args.max_iter, args.seed, 1, 2, args.loops_n, subprocess_dir,
+        )
+        payload = json.loads(path.read_text())
+        all_rows.extend(payload["rows"])
 
     args.output_csv.parent.mkdir(parents=True, exist_ok=True)
     if all_rows:

@@ -6,7 +6,7 @@
 
 - **Numba**：通过 LLVM 将装饰的函数编译为机器码，适合 **NumPy 数组 + 数值循环**。
 - **`@njit`**（即 `@jit(nopython=True)`）：**nopython 模式**，避免回退到对象模式，性能最可预期。
-- **冷启动**：首次编译某函数通常有 **数百毫秒到数秒** 级延迟。例如本仓库 k-means Numba 核（d=10, K=5）首次编译 ≈ 0.9 s（[`kmeans_sweep.csv`](../experiments/results/v2/kmeans_sweep.csv) 中 `cold_s` 列）。必须靠 `warmup` 或 `cache=True` 抵消。
+- **冷启动**：首次编译某函数通常有 **数百毫秒到数秒** 级延迟。例如本仓库 k-means Numba 核（d=10, K=5）在当前本机 `py312` 下首次调用约 0.36 s（[`kmeans_sweep.csv`](../experiments/results/v2/kmeans_sweep.csv) 中 `cold_s` 列）。必须靠 `warmup` 或 `cache=True` 抵消。
 
 ## 2. `@njit`：单线程加速
 
@@ -41,13 +41,13 @@ def parallel_kernel(...):
 - **只读大数组**：通常所有线程共享只读视图，避免在并行区写同一元素造成数据竞争。
 - Numba 有自己的线程池，即便 CPython 是 **GIL 构建**，它也能让外层 `prange` 并行执行——这是置换检验里它全场最快的原因。
 
-## 4. 本仓库实测（Apple Silicon 8 核, Python 3.11.6）
+## 4. 本仓库实测（Apple Silicon 8 核, Python 3.12.2）
 
 | 实验 | Numba 版 warm 中位数 | 对照项 | 加速比 |
 |------|---------------------|--------|--------|
-| k-means N=1M, max_iter=30 | **1.21 s** | NumPy 朴素广播 12.6 s | **10×** |
-| Permutation R=10000, n=10k | **0.158 s** | NumPy 朴素循环 2.04 s | **13×** |
-| Permutation R=10000, n=10k | **0.158 s** | `multiprocessing` (8 workers) 3.34 s | **21×** |
+| k-means N=1M, max_iter=30 | **0.482 s** | NumPy 朴素广播 5.22 s | **10.8×** |
+| Permutation R=10000, n=10k | **0.064 s** | NumPy 朴素循环 0.856 s | **13.4×** |
+| Permutation R=10000, n=10k | **0.064 s** | `multiprocessing` (8 workers) 1.71 s | **26.8×** |
 
 [图表链接](../experiments/results/v2/perm_speedup.png) · [数据链接](../experiments/results/v2/perm_sweep.csv)
 

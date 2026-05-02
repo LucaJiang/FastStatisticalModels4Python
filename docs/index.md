@@ -20,11 +20,14 @@
 
 ### 方法论与参考
 
+- [统计学家如何通过 simulation 做实验](00-statistician-simulation-process.md)
 - [基准测试与可复现性方法论（本仓库真实做法）](06-benchmarking-methodology.md)
 - [相关演讲与参考文献](07-related-talks-and-references.md)
+- [运行时性能上限：C/C++、Numba、JAX、NumPy、JIT](08-upper-bound.md)
 
 ## 建议阅读顺序
 
+0. 先看 [00 统计学家怎么做模拟实验？](00-statistician-simulation-process.md)，了解我们为什么要做这些实验，以及统计学家在 Python 里通常是怎么写数值代码的。
 1. 先看 [06 基准测试与可复现性](06-benchmarking-methodology.md)，了解实验口径。
 2. 再看 [02 Numba](02-numba-guide.md) 和 [03 JAX](03-jax-guide.md)，建立工具层认知。
 3. 然后看 [04 k-means](04-kmeans-algorithms.md) 与 [05 置换检验](05-permutation-test.md)，对应两个主实验。

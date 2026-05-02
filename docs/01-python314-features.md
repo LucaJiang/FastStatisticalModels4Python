@@ -19,7 +19,12 @@
 
 ### 1.3 实验中的表现（在 GIL 构建上的天花板）
 
-本仓库的置换检验实验在标准 GIL 构建（Python 3.11.6, macOS 15.1, Apple Silicon 8 核心）上运行。即便在 GIL 下，`ThreadPoolExecutor` 仍然取得了 **~1.4× 加速**（n=10k, R=10000，详见 [`perm_scaling.png`](../experiments/results/v2/perm_scaling.png)）。原因：NumPy 的 `.sum()`、`.permutation()` 在 C 层释放 GIL，使线程可以重叠。**这就是 GIL 构建上线程加速的上限。** 在 free-threaded 构建上，同一段 Python 代码应该继续向 8 核心靠拢——这是演讲最具说服力的「升级即收益」论点。
+本仓库的置换检验线程实验在同一台 Apple Silicon 8 核机器上比较了 `py312` GIL build 与 `py314t` free-threaded build（n=10k, R=10000，详见 [`perm_threads_py312_py314t.png`](../experiments/results/v2/perm_threads_py312_py314t.png)）。同一份 `ThreadPoolExecutor` 代码在 8 workers 下：
+
+- `py312` GIL build：warm median **0.32 s**；
+- `py314t` free-threaded build：warm median **0.17 s**。
+
+标准 GIL 下线程仍然有加速，是因为 NumPy 的 `.sum()`、`.permutation()` 在 C 层释放 GIL，使线程可以重叠。Free-threaded build 继续降低 Python 层同步成本，把同一段代码的上限往 8 核心推进。
 
 ---
 
@@ -38,7 +43,7 @@ Python 3.14 搭载的实验性 JIT 并非传统的追踪式 JIT（如 PyPy 的 T
 
 - JIT 对于 **纯 Python 密集循环**、条件分支（控制流）有着显著加速。
 - **NumPy/C 扩展盲区**：如果在 CPython JIT 下运行高度 NumPy 向量化的代码，JIT **毫无作用**。因为运行时大部分时间在 `numpy` 的 C 库中。
-- 在我们的 k-means 实验中，`kmeans_loops.py`（N=2000, d=10, k=5）在标准 CPython 3.11 下单次完整跑需 **0.84 s**；对照 Numba 版本的 **0.010 s**（N=100k，80 倍大）。这一巨大差距正是 Python 循环解释开销的量化，也是 CPython JIT 值得去优化的地方——但即便 3.14 JIT 把纯循环加速 3×，距 Numba 也还有一个数量级。**这是向观众传达的真实界限**：JIT 加速的是 Python 解释器层面的开销，而不是改变算法的渐进复杂度或 C 核心的执行速度。
+- 在我们的 k-means 实验中，`kmeans_loops.py`（N=2000, d=10, k=5）在标准 CPython 3.12 下 warm median **0.414 s**；对照 Numba 版本在 **N=100k** 时 warm median **0.0064 s**。这一巨大差距正是 Python 循环解释开销的量化，也是 CPython JIT 值得去优化的地方——但本地 `py314` 只暴露 `sys._jit`，`is_available()` 为 `False`，所以本轮只把 JIT 作为诚实限制呈现。**这是向观众传达的真实界限**：JIT 加速的是 Python 解释器层面的开销，而不是改变算法的渐进复杂度或 C 核心的执行速度。
 
 ---
 
@@ -66,8 +71,8 @@ Python 3.14 搭载的实验性 JIT 并非传统的追踪式 JIT（如 PyPy 的 T
 
 在准备这篇演讲时，应该让观众明确：Python 3.14 的到来并不意味着我们可以盲目写纯 Python 循环。它降低了"偶尔写出慢代码"的惩罚，并为构建高性能的多线程 Python 库（如在单进程内共享巨大矩阵的统计工具）提供了基础设施。
 
-**实测数据要点（Apple Silicon 8 核, Python 3.11, NumPy 1.24, Numba 0.57, JAX 0.4）**：
+**实测数据要点（Apple Silicon 8 核, Python 3.12.2, NumPy 1.26.4, Numba 0.59.1, JAX 0.4.25；另测 Python 3.14t free-threaded）**：
 
-- 即使在 GIL 上，`ThreadPoolExecutor` 在 NumPy-heavy 置换检验里仍能取得 1.4× 加速（见 [`perm_scaling.png`](../experiments/results/v2/perm_scaling.png)）。无 GIL 构建应进一步扩大此差距。
-- `multiprocessing` 在 R=10000 时的子进程 RSS 加总 **757 MB**（8 worker × 10k-length float64 array + 解释器基础内存），对照同规模线程池的 **~1.4 MB**。[`perm_memory.png`](../experiments/results/v2/perm_memory.png) 把这一差距做成了一张直观的对数刻度条形图。
-- 在 CPU 上运行基于 `jax.vmap` 的置换检验（R=10000）耗时 **~75 s**——比纯 NumPy 慢 37×。JAX 在加速器上才能发挥，它在 CPU 上并非默认选项。
+- 同一份 ThreadPool 置换检验代码在 8 workers 下，`py312` GIL build 为 **0.32 s**，`py314t` free-threaded build 为 **0.17 s**。
+- `multiprocessing` 在 R=10000 时的子进程 RSS 加总 **833 MiB**，对照同规模线程池的 Python-level 峰值约 **1-2 MiB**。[`perm_memory.png`](../experiments/results/v2/perm_memory.png) 把这一差距做成了一张直观的对数刻度条形图。
+- 在 CPU 上运行基于 `jax.vmap` 的置换检验（R=10000）耗时 **~37 s**——比纯 NumPy 慢约 44×。JAX 在加速器上才能发挥，它在 CPU 上并非默认选项。
