@@ -1,6 +1,18 @@
 .DS_Store
 *.csv
 *.json
+
+# Curated benchmark artifacts that are intentionally small enough for GitHub.
+!experiments/results/linux_server_cpu/long_safe_*/
+!experiments/results/linux_server_cpu/long_safe_*/*.csv
+!experiments/results/linux_server_cpu/long_safe_*/env.json
+!experiments/results/linux_server_a100/long_safe_*/
+!experiments/results/linux_server_a100/long_safe_*/*.csv
+!experiments/results/linux_server_a100/long_safe_*/env.json
+
+# Keep transient server-run logs local.
+experiments/results/*.log
+experiments/results/*.pid
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]

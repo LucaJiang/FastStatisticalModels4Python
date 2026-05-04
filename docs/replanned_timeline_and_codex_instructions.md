@@ -405,35 +405,21 @@ experiments/
     scenario_schema.py
     correctness.py
 
-  kmeans/
-    README.md
+  kmeans_v3/
     data_generation.py
     kmeans_reference.py
     kmeans_numpy_broadcast.py
     kmeans_numpy_matmul.py
     kmeans_numba.py
     kmeans_jax.py
-    validate_kmeans.py
-    run_mac_validation.py
-    run_server_cpu.py
-    run_server_a100.py
-    plot_kmeans.py
+    validate_kmeans_v3.py
 
   permutation/
-    README.md
-    data_generation.py
-    permutation_reference.py
-    permutation_numpy.py
-    permutation_threads.py
-    permutation_processes.py
-    permutation_numba.py
-    permutation_jax_scalar.py
-    permutation_jax_matrix.py
-    validate_permutation.py
-    run_mac_validation.py
-    run_server_cpu.py
-    run_server_a100.py
-    plot_permutation.py
+    matrix_methods.py
+
+  server/
+    long_safe_orchestrator.py
+    long_safe_plots.py
 
   results/
     macbook_air_validation/
@@ -657,12 +643,11 @@ numba_threads: 1, 2, 4, 8, 16, 32, 64, 128
 Required outputs:
 
 ```text
-experiments/results/linux_server_cpu/kmeans_cpu_scaling.csv
-experiments/results/linux_server_cpu/kmeans_numba_thread_sweep.csv
-experiments/results/linux_server_cpu/kmeans_memory_scaling.csv
-experiments/results/linux_server_cpu/figures/kmeans_cpu_runtime.png
-experiments/results/linux_server_cpu/figures/kmeans_numba_threads.png
-experiments/results/linux_server_cpu/figures/kmeans_memory_scaling.png
+experiments/results/linux_server_cpu/long_safe_<timestamp>/kmeans_cpu_scaling.csv
+experiments/results/linux_server_cpu/long_safe_<timestamp>/kmeans_numba_thread_sweep.csv
+experiments/results/linux_server_cpu/long_safe_<timestamp>/figures/kmeans_cpu_runtime.png
+experiments/results/linux_server_cpu/long_safe_<timestamp>/figures/kmeans_numba_threads.png
+experiments/results/linux_server_cpu/long_safe_<timestamp>/figures/kmeans_memory_scaling.png
 ```
 
 Guardrails:
@@ -690,10 +675,9 @@ dtype: float32; optional float64 sensitivity check
 Required outputs:
 
 ```text
-experiments/results/linux_server_a100/kmeans_jax_gpu.csv
-experiments/results/linux_server_a100/kmeans_gpu_batch_or_problem_sweep.csv
-experiments/results/linux_server_a100/figures/kmeans_cpu_gpu_break_even.png
-experiments/results/linux_server_a100/figures/kmeans_jax_cold_vs_warm.png
+experiments/results/linux_server_a100/long_safe_<timestamp>/kmeans_jax_gpu.csv
+experiments/results/linux_server_a100/long_safe_<timestamp>/figures/kmeans_cpu_gpu_break_even.png
+experiments/results/linux_server_a100/long_safe_<timestamp>/figures/kmeans_jax_cold_vs_warm.png
 ```
 
 Interpretation goal:
@@ -864,13 +848,12 @@ implementations:
 Required outputs:
 
 ```text
-experiments/results/linux_server_cpu/permutation_cpu_scaling.csv
-experiments/results/linux_server_cpu/permutation_worker_sweep.csv
-experiments/results/linux_server_cpu/permutation_memory_scaling.csv
-experiments/results/linux_server_cpu/permutation_calibration_server_subset.csv
-experiments/results/linux_server_cpu/figures/permutation_cpu_runtime.png
-experiments/results/linux_server_cpu/figures/permutation_worker_sweep.png
-experiments/results/linux_server_cpu/figures/process_vs_thread_memory.png
+experiments/results/linux_server_cpu/long_safe_<timestamp>/permutation_cpu_scaling.csv
+experiments/results/linux_server_cpu/long_safe_<timestamp>/permutation_worker_sweep.csv
+experiments/results/linux_server_cpu/long_safe_<timestamp>/permutation_calibration_server_subset.csv
+experiments/results/linux_server_cpu/long_safe_<timestamp>/figures/permutation_cpu_runtime.png
+experiments/results/linux_server_cpu/long_safe_<timestamp>/figures/permutation_worker_sweep.png
+experiments/results/linux_server_cpu/long_safe_<timestamp>/figures/process_vs_thread_memory.png
 ```
 
 Purpose:
@@ -897,14 +880,11 @@ dtype: float32; optional float64 comparison
 Required outputs:
 
 ```text
-experiments/results/linux_server_a100/permutation_matrix_gpu.csv
-experiments/results/linux_server_a100/permutation_gpu_batch_sweep.csv
-experiments/results/linux_server_a100/permutation_cpu_gpu_break_even.csv
-experiments/results/linux_server_a100/permutation_gpu_memory.csv
-experiments/results/linux_server_a100/figures/permutation_gpu_runtime.png
-experiments/results/linux_server_a100/figures/permutation_gpu_batch_sweep.png
-experiments/results/linux_server_a100/figures/permutation_cpu_gpu_break_even.png
-experiments/results/linux_server_a100/figures/permutation_matrix_reformulation.png
+experiments/results/linux_server_a100/long_safe_<timestamp>/permutation_matrix_gpu.csv
+experiments/results/linux_server_a100/long_safe_<timestamp>/figures/permutation_gpu_runtime.png
+experiments/results/linux_server_a100/long_safe_<timestamp>/figures/permutation_gpu_batch_sweep.png
+experiments/results/linux_server_a100/long_safe_<timestamp>/figures/permutation_cpu_gpu_break_even.png
+experiments/results/linux_server_a100/long_safe_<timestamp>/figures/permutation_matrix_reformulation.png
 ```
 
 Critical guardrails:
@@ -950,8 +930,8 @@ If branches are inconvenient, use output directories and avoid editing the same 
   - `experiments/kmeans/*server*`
   - `experiments/permutation/*server*`
   - `docs/gpu_reformulation_notes.md`
-  - `experiments/results/linux_server_cpu/`
-  - `experiments/results/linux_server_a100/`
+  - `experiments/results/linux_server_cpu/long_safe_<timestamp>/`
+  - `experiments/results/linux_server_a100/long_safe_<timestamp>/`
 
 - Merge Codex edits after both finish:
   - `experiments/results/merged/`
@@ -1113,8 +1093,8 @@ Tasks:
 2. Environment report:
    - Create or update experiments/common/env_report.py if needed.
    - Write:
-     experiments/results/linux_server_cpu/env.json
-     experiments/results/linux_server_a100/env.json
+     experiments/results/linux_server_cpu/long_safe_<timestamp>/env.json
+     experiments/results/linux_server_a100/long_safe_<timestamp>/env.json
    - Include OS, CPU model, logical and physical core count if available, RAM, Python executable/version, package versions, BLAS/threading info if available, CUDA driver/runtime, nvidia-smi output, GPU name and memory.
    - For JAX, record jax.devices(), jax.default_backend(), jaxlib version, and whether a CUDA GPU is visible.
    - If A100 is not visible to JAX, mark A100 experiments unavailable and do not invent GPU numbers.
@@ -1129,7 +1109,7 @@ Tasks:
    - Do not start with 512 workers. Use worker/thread sweeps: [1, 2, 4, 8, 16, 32, 64, 128]. Expand only if safe.
 
 4. Server CPU k-means:
-   - Implement or update experiments/kmeans/run_server_cpu.py.
+   - Current implementation: experiments/server/long_safe_orchestrator.py with plotting in experiments/server/long_safe_plots.py.
    - Compare numpy_matmul, numba, and jax_cpu if available.
    - Scenario grid:
      N = [100000, 1000000, 5000000]
@@ -1141,16 +1121,11 @@ Tasks:
      seeds = [0, 1, 2]
    - For Numba, run thread sweeps.
    - Validate final inertia and ARI against a trusted smaller or same-scenario reference where feasible.
-   - Write:
-     experiments/results/linux_server_cpu/kmeans_cpu_scaling.csv
-     experiments/results/linux_server_cpu/kmeans_numba_thread_sweep.csv
-     experiments/results/linux_server_cpu/kmeans_memory_scaling.csv
-     experiments/results/linux_server_cpu/figures/kmeans_cpu_runtime.png
-     experiments/results/linux_server_cpu/figures/kmeans_numba_threads.png
-     experiments/results/linux_server_cpu/figures/kmeans_memory_scaling.png
+   - Write curated long-safe outputs under:
+     experiments/results/linux_server_cpu/long_safe_<timestamp>/
 
 5. Server A100 k-means:
-   - Implement or update experiments/kmeans/run_server_a100.py.
+   - Current implementation: experiments/server/long_safe_orchestrator.py, k-means kernels in experiments/kmeans_v3/, and plotting in experiments/server/long_safe_plots.py.
    - Run only if JAX sees CUDA GPU/A100.
    - Use jax.jit and a fixed iteration structure if necessary.
    - Scenario grid:
@@ -1162,14 +1137,11 @@ Tasks:
      dtype = float32 by default
    - Record cold compile time, warm execution time, and memory.
    - Always call block_until_ready() before stopping timers.
-   - Write:
-     experiments/results/linux_server_a100/kmeans_jax_gpu.csv
-     experiments/results/linux_server_a100/kmeans_gpu_problem_sweep.csv
-     experiments/results/linux_server_a100/figures/kmeans_cpu_gpu_break_even.png
-     experiments/results/linux_server_a100/figures/kmeans_jax_cold_vs_warm.png
+   - Write curated long-safe outputs under:
+     experiments/results/linux_server_a100/long_safe_<timestamp>/
 
 6. Server CPU high-dimensional permutation:
-   - Implement or update experiments/permutation/run_server_cpu.py.
+   - Current implementation: experiments/server/long_safe_orchestrator.py, kernels in experiments/permutation/matrix_methods.py, and plotting in experiments/server/long_safe_plots.py.
    - Include direct loop only for small reference cases.
    - Include batched matrix contrast formulation for larger cases.
    - Include multiprocessing, threadpool, numba prange, and jax_cpu if available.
@@ -1179,18 +1151,12 @@ Tasks:
      R = [1000, 10000, 100000]
      workers = [1, 2, 4, 8, 16, 32, 64, 128]
    - Skip combinations that exceed memory budget; record skipped rows with reason.
-   - Write:
-     experiments/results/linux_server_cpu/permutation_cpu_scaling.csv
-     experiments/results/linux_server_cpu/permutation_worker_sweep.csv
-     experiments/results/linux_server_cpu/permutation_memory_scaling.csv
-     experiments/results/linux_server_cpu/permutation_calibration_server_subset.csv
-     experiments/results/linux_server_cpu/figures/permutation_cpu_runtime.png
-     experiments/results/linux_server_cpu/figures/permutation_worker_sweep.png
-     experiments/results/linux_server_cpu/figures/process_vs_thread_memory.png
+   - Write curated long-safe outputs under:
+     experiments/results/linux_server_cpu/long_safe_<timestamp>/
 
 7. Server A100 high-dimensional permutation:
    - This is the flagship GPU experiment.
-   - Implement or update experiments/permutation/run_server_a100.py.
+   - Current implementation: experiments/server/long_safe_orchestrator.py, kernels in experiments/permutation/matrix_methods.py, and plotting in experiments/server/long_safe_plots.py.
    - Use the matrix contrast formulation:
      W_batch: batch_R x n_samples
      X: n_samples x p_features
@@ -1208,15 +1174,8 @@ Tasks:
    - Always call block_until_ready() before stopping timers.
    - Record compile time separately from warm time.
    - Record GPU memory and batch size.
-   - Write:
-     experiments/results/linux_server_a100/permutation_matrix_gpu.csv
-     experiments/results/linux_server_a100/permutation_gpu_batch_sweep.csv
-     experiments/results/linux_server_a100/permutation_cpu_gpu_break_even.csv
-     experiments/results/linux_server_a100/permutation_gpu_memory.csv
-     experiments/results/linux_server_a100/figures/permutation_gpu_runtime.png
-     experiments/results/linux_server_a100/figures/permutation_gpu_batch_sweep.png
-     experiments/results/linux_server_a100/figures/permutation_cpu_gpu_break_even.png
-     experiments/results/linux_server_a100/figures/permutation_matrix_reformulation.png
+   - Write curated long-safe outputs under:
+     experiments/results/linux_server_a100/long_safe_<timestamp>/
 
 8. GPU anti-pattern check:
    - If there is an old JAX vmap(random.permutation) implementation, keep it as an anti-pattern only if it is useful and clearly labeled.
@@ -1224,8 +1183,8 @@ Tasks:
    - The recommended GPU approach is the matrix contrast formulation.
 
 9. Server summary:
-   - Write experiments/results/linux_server_cpu/SERVER_CPU_SUMMARY.md.
-   - Write experiments/results/linux_server_a100/A100_SUMMARY.md.
+   - Write experiments/results/linux_server_cpu/long_safe_<timestamp>/SERVER_CPU_SUMMARY.md.
+   - Write experiments/results/linux_server_a100/long_safe_<timestamp>/A100_SUMMARY.md.
    - Include what ran, what failed, what was skipped due to memory/time, and what figures are ready for slides.
 
 10. Do not fabricate results.
@@ -1248,8 +1207,8 @@ Merge MacBook validation results, Linux server CPU results, and A100 GPU results
 
 Inputs:
 - experiments/results/macbook_air_validation/
-- experiments/results/linux_server_cpu/
-- experiments/results/linux_server_a100/
+- experiments/results/linux_server_cpu/long_safe_<timestamp>/
+- experiments/results/linux_server_a100/long_safe_<timestamp>/
 - docs/simulation_driven_statistical_computing.md
 - docs/gpu_reformulation_notes.md
 - existing index.html deck
@@ -1644,11 +1603,8 @@ python -m experiments.permutation.plot_permutation --tier macbook_air_validation
 
 ```text
 # Linux server CPU tier
-python -m experiments.common.env_report --out experiments/results/linux_server_cpu/env.json
-python -m experiments.kmeans.run_server_cpu
-python -m experiments.permutation.run_server_cpu
-python -m experiments.kmeans.plot_kmeans --tier linux_server_cpu
-python -m experiments.permutation.plot_permutation --tier linux_server_cpu
+PYTHONPATH=experiments:experiments/kmeans_v3 python experiments/server/long_safe_orchestrator.py run --hours 36 --stamp <timestamp>
+PYTHONPATH=experiments:experiments/kmeans_v3 python -c 'from pathlib import Path; from server.long_safe_orchestrator import plot_and_summarize; plot_and_summarize(Path("experiments/results/linux_server_cpu/long_safe_<timestamp>/long_safe_<timestamp>"), Path("experiments/results/linux_server_a100/long_safe_<timestamp>/long_safe_<timestamp>"))'
 ```
 
 ### 18.3 Server A100 README checklist
@@ -1661,11 +1617,9 @@ import jax
 print(jax.devices())
 print(jax.default_backend())
 PY
-python -m experiments.common.env_report --out experiments/results/linux_server_a100/env.json
-python -m experiments.kmeans.run_server_a100
-python -m experiments.permutation.run_server_a100
-python -m experiments.kmeans.plot_kmeans --tier linux_server_a100
-python -m experiments.permutation.plot_permutation --tier linux_server_a100
+python -m experiments.common.env_report --out experiments/results/linux_server_a100/long_safe_<timestamp>/env.json
+PYTHONPATH=experiments:experiments/kmeans_v3 python experiments/server/long_safe_orchestrator.py run --hours 36 --stamp <timestamp>
+PYTHONPATH=experiments:experiments/kmeans_v3 python -c 'from pathlib import Path; from server.long_safe_orchestrator import plot_and_summarize; plot_and_summarize(Path("experiments/results/linux_server_cpu/long_safe_<timestamp>/long_safe_<timestamp>"), Path("experiments/results/linux_server_a100/long_safe_<timestamp>/long_safe_<timestamp>"))'
 ```
 
 ---
