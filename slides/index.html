@@ -3,10 +3,9 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Breaking the Speed Limit - Revised Deck</title>
+  <title>Breaking the Speed Limit - PyCon US 2026</title>
   <link rel="icon" href="data:," />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/reveal.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/print/pdf.css" media="print" />
   <style>
     :root {
       --paper: #fbf6ec;
@@ -147,6 +146,7 @@
 
     .figure-layout { display: grid; grid-template-columns: 345px 1fr; gap: 26px; margin-top: 22px; align-items: stretch; }
     .figure-layout.wide-left { grid-template-columns: 390px 1fr; }
+    .figure-layout.pending-a100 { grid-template-columns: 325px 1fr; gap: 24px; margin-top: 16px; }
     .figure-notes { display: grid; gap: 14px; align-content: start; }
     .note-card { background: #fffdf8; border: 1px solid var(--line); border-left: 8px solid var(--blue); border-radius: 12px; padding: 16px 17px; box-shadow: none; }
     .note-card:nth-child(2) { border-left-color: var(--gold); }
@@ -155,6 +155,7 @@
     .note-card span { display: block; color: var(--muted); font-size: 17px; line-height: 1.28; }
     .figure-box { height: 500px; padding: 8px; display: flex; align-items: center; justify-content: center; }
     .figure-box.compact { height: 472px; }
+    .figure-box.short { height: 418px; }
     .figure-box img { display: block; width: 100%; height: 100%; object-fit: contain; border-radius: 10px; }
     .figure-only { margin-top: 22px; height: 510px; }
     .method-layout { display: grid; grid-template-columns: minmax(0, 0.76fr) minmax(230px, 0.24fr); gap: 24px; margin-top: 20px; align-items: stretch; }
@@ -167,7 +168,7 @@
     .method-caption ol { margin: 10px 0 0 22px; padding: 0; }
     .method-caption li { font-size: 18px; line-height: 1.26; margin-top: 12px; }
     .method-caption .takeaway { margin-top: 28px; color: var(--blue); font-size: 18px; line-height: 1.25; font-weight: 850; }
-    .method-caption .tool-note { margin-top: 18px; color: var(--muted); font-size: 13px; line-height: 1.25; }
+    .method-caption .tool-note { margin-top: 18px; color: var(--muted); font-size: 15px; line-height: 1.25; }
     .print-pdf video.method-video { display: none; }
     .print-pdf img.video-poster-fallback { display: block; }
 
@@ -237,6 +238,21 @@
     .calibration-axis span:last-child { text-align: right; }
     .calibration-legend { display: flex; justify-content: space-between; gap: 18px; color: var(--muted); font-size: 15px; line-height: 1.15; margin-top: 2px; }
     .calibration-legend strong { color: var(--ink); }
+
+    .pending-label { display: inline-block; margin-top: 12px; padding: 7px 12px; border-radius: 999px; background: #fff3e6; color: var(--orange); border: 1px solid rgba(230, 106, 44, 0.45); font-size: 16px; line-height: 1; font-weight: 900; }
+    .parallel-panels { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; margin-top: 24px; }
+    .parallel-panel { background: #fffdf8; border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); padding: 22px; min-height: 410px; }
+    .parallel-panel h3 { color: var(--ink); font-size: 24px; margin-bottom: 8px; }
+    .parallel-panel p { color: var(--muted); font-size: 17px; line-height: 1.25; }
+    .bar-rows { display: grid; gap: 12px; margin-top: 18px; }
+    .bar-row { display: grid; grid-template-columns: 120px minmax(0, 1fr) 84px; gap: 12px; align-items: center; }
+    .bar-row-label { color: var(--ink); font-size: 16px; line-height: 1.15; font-weight: 800; }
+    .bar-track { height: 18px; border-radius: 999px; background: #eadfcf; overflow: hidden; }
+    .bar-fill { display: block; height: 100%; border-radius: 999px; background: var(--blue); }
+    .bar-fill.memory { background: var(--gold); }
+    .bar-fill.best { background: var(--green); }
+    .bar-row-value { color: var(--ink); font-size: 15px; line-height: 1.15; font-weight: 850; text-align: right; }
+    .parallel-callout { margin-top: 18px; padding: 13px 15px; border-left: 7px solid var(--orange); background: #fff3e6; color: var(--ink); font-size: 19px; line-height: 1.25; font-weight: 850; }
 
     .code-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 28px; }
     .code-box { background: #15202b; color: #f8f4ec; padding: 22px; min-height: 250px; border-color: #15202b; }
@@ -699,17 +715,34 @@ stat = W @ X</pre>
 <section class="deck-slide">
   <div class="kicker">Parallelism</div>
   <h2>More workers is not a moral victory</h2>
-  <div class="figure-layout">
-    <div class="figure-notes">
-      <div class="note-card"><strong>Best speed is not max threads</strong><span>k-means Numba peaks around 32/64 threads in this run, then worsens.</span></div>
-      <div class="note-card"><strong>Memory can keep growing</strong><span>Permutation workers add memory and overhead after speed saturates.</span></div>
-      <div class="note-card"><strong>Python 3.14 link</strong><span>Free-threaded Python can raise the ceiling for thread-friendly code, but the actual stack must be measured.</span></div>
+  <p class="subtitle">Best speed is not max workers; memory can keep growing after runtime saturates.</p>
+  <div class="parallel-panels">
+    <div class="parallel-panel">
+      <h3>Runtime improves, then turns</h3>
+      <p>Measured server CPU sweeps; lower is better.</p>
+      <div class="bar-rows">
+        <div class="bar-row"><div class="bar-row-label">k-means<br />1 thread</div><div class="bar-track"><span class="bar-fill" style="width:100%;"></span></div><div class="bar-row-value">38.6 s</div></div>
+        <div class="bar-row"><div class="bar-row-label">k-means<br />32 threads</div><div class="bar-track"><span class="bar-fill best" style="width:23%;"></span></div><div class="bar-row-value">8.7 s</div></div>
+        <div class="bar-row"><div class="bar-row-label">k-means<br />128 threads</div><div class="bar-track"><span class="bar-fill" style="width:41%;"></span></div><div class="bar-row-value">15.8 s</div></div>
+        <div class="bar-row"><div class="bar-row-label">perm<br />1 worker</div><div class="bar-track"><span class="bar-fill" style="width:100%;"></span></div><div class="bar-row-value">14.0 s</div></div>
+        <div class="bar-row"><div class="bar-row-label">perm<br />8 workers</div><div class="bar-track"><span class="bar-fill best" style="width:7%;"></span></div><div class="bar-row-value">0.94 s</div></div>
+        <div class="bar-row"><div class="bar-row-label">perm<br />128 workers</div><div class="bar-track"><span class="bar-fill" style="width:18%;"></span></div><div class="bar-row-value">2.58 s</div></div>
+      </div>
     </div>
-    <div>
-      <div class="figure-box"><img src="../experiments/results/presentation_figures/server_parallelism_tradeoff.png" alt="parallelism and memory tradeoff" /></div>
-      <p class="caption">Track OMP_NUM_THREADS, MKL_NUM_THREADS, OPENBLAS_NUM_THREADS, NUMBA_NUM_THREADS, CPU affinity, and actual GIL state.</p>
+    <div class="parallel-panel">
+      <h3>Memory keeps a budget attached</h3>
+      <p>Peak host memory from the same sweeps.</p>
+      <div class="bar-rows">
+        <div class="bar-row"><div class="bar-row-label">k-means<br />1 thread</div><div class="bar-track"><span class="bar-fill memory" style="width:77%;"></span></div><div class="bar-row-value">1.69 GB</div></div>
+        <div class="bar-row"><div class="bar-row-label">k-means<br />32 threads</div><div class="bar-track"><span class="bar-fill memory" style="width:100%;"></span></div><div class="bar-row-value">2.18 GB</div></div>
+        <div class="bar-row"><div class="bar-row-label">k-means<br />128 threads</div><div class="bar-track"><span class="bar-fill memory" style="width:100%;"></span></div><div class="bar-row-value">2.18 GB</div></div>
+        <div class="bar-row"><div class="bar-row-label">perm<br />1 worker</div><div class="bar-track"><span class="bar-fill memory" style="width:31%;"></span></div><div class="bar-row-value">612 MB</div></div>
+        <div class="bar-row"><div class="bar-row-label">perm<br />8 workers</div><div class="bar-track"><span class="bar-fill memory" style="width:58%;"></span></div><div class="bar-row-value">1.12 GB</div></div>
+        <div class="bar-row"><div class="bar-row-label">perm<br />32 workers</div><div class="bar-track"><span class="bar-fill memory" style="width:100%;"></span></div><div class="bar-row-value">1.96 GB</div></div>
+      </div>
     </div>
   </div>
+  <div class="parallel-callout">Measure the stack you actually run: thread counts, worker counts, CPU affinity, and memory pressure.</div>
 </section>
 
 <section class="deck-slide">
