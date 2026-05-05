@@ -4,6 +4,8 @@ Generated/updated: 2026-05-05T20:24:42+0800
 
 This suite preserves the feature-wise two-group mean-difference statistic and uses host-built W batches from one NumPy seed stream for the A100 path and trusted CPU checks.
 
+This is an earlier follow-up suite. It is useful for pipeline decomposition and for documenting why streamed reduction changed the story, but it is not the canonical slide-level break-even boundary. The canonical slide boundary is in `experiments/results/linux_server_a100/permutation_break_even/README.md`.
+
 ## CSV status
 - `a100_permutation_decomposition.csv`: 2 rows
   - check: 2
@@ -18,8 +20,8 @@ This suite preserves the feature-wise two-group mean-difference statistic and us
 
 ## Correctness
 - Accepted small matched CPU/JAX subset rows: 74.
-- Exact `pass` rows: 0; historical `check` rows: 74. These are accepted bounded checks under the then-current status vocabulary, not exact pass rows.
-- New accepted A100 float32 rows should be emitted as `pass_gpu_tolerance`; tiny statistic differences can flip about one permutation count in p-values.
+- Historical raw rows in this suite use `check`; these are accepted bounded checks under the older status vocabulary, not exact pass rows.
+- New runs emit `pass_exact`, `pass_gpu_tolerance`, `manual_check`, or `fail`. Accepted A100 float32 rows should normally be `pass_gpu_tolerance`; tiny statistic differences can flip about one permutation count in p-values.
 - `max_abs_p_diff` and `max_abs_stat_diff` are from a bounded small matched subset for each benchmark row; large rows are timed without changing the statistic or permutation stream.
 
 ## End-to-end vs kernel-only
@@ -28,7 +30,8 @@ This suite preserves the feature-wise two-group mean-difference statistic and us
 
 ## Bottleneck summary
 - Largest recorded named A100 end-to-end stage in this run: `permutation_generation_time_s`.
-- A100 becomes faster at n=5000, p=50000, R=10000, batch_R=4096.
+- Earlier follow-up boundary observed here: A100 becomes faster at n=5000, p=50000, R=10000, batch_R=4096.
+- Final slide-level canonical boundary is superseded by the break-even suite: n=5000, p=10000, R=5000, batch_R=8192.
 
 ## Unavailable / OOM / timeout rows
 - None recorded in this run; Stage 3 stress rows completed within the memory guard.

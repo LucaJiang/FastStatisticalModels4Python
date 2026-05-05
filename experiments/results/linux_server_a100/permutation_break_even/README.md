@@ -28,11 +28,13 @@ Generated/updated: 2026-05-05T21:23:58+0800
 - Best safe batch_R from Stage 1: 8192.
 
 ## Correctness
-- Correctness check rows: 97.
-  - check: 97
-- Historical `check` rows mean accepted bounded CPU/JAX comparisons under the then-current status vocabulary; they are not exact `pass` rows.
-- New accepted GPU rows should be emitted as `pass_gpu_tolerance`.
-- The result CSVs with `max_abs_p_diff` and `max_abs_stat_diff` are generated on the experiment server but are not committed in this repository snapshot.
+- Correctness check rows represented in the committed lightweight summary: 97.
+  - pass_gpu_tolerance: 97
+  - manual_check: 0
+  - fail: 0
+- Accepted rows use the explicit status vocabulary `pass_exact`, `pass_gpu_tolerance`, `manual_check`, and `fail`.
+- Older generated raw rows may show `check`; treat that as a historical accepted bounded-check status, not an exact pass.
+- Lightweight summary CSVs with slide-level rows are committed in this directory.
 
 ## OOM / memory-risk / timeout
 - `batch_R_sweep.csv`: 0 timeout/skipped/memory-risk/fail rows.

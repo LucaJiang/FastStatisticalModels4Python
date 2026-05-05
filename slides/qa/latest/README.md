@@ -12,6 +12,16 @@ Generated: 2026-05-05
 - PDF page count: 32.
 - PDF page size: 1017.12 x 571.92 pts.
 
+## Required Consistency Checks
+
+- Root README title is aligned: Python 3.14, Numba, and JAX are the title technologies; Codex remains a workflow topic.
+- `slides/speaker_notes.md`, `slides/speaker_notes_v3.md`, and `slides/timeline_v3.md` use the same timing overview.
+- Canonical A100 slide-level break-even source: `experiments/results/linux_server_a100/permutation_break_even/README.md`.
+- `permutation_followup/README.md` is explicitly labeled as an earlier/non-canonical follow-up boundary.
+- Correctness statuses use the updated vocabulary: `pass_exact`, `pass_gpu_tolerance`, `manual_check`, and `fail`; legacy `check` is documented only for older rows.
+- Lightweight break-even summary CSVs are committed: `break_even_shape_sweep_summary.csv`, `decomposition_representative_shapes_summary.csv`, `cpu_matched_baselines_summary.csv`, and `correctness_checks_summary.csv`.
+- Decision-map colorbar wording is scoped correctly: `speedup = matched CPU matrix baseline / A100 streamed full end-to-end`.
+
 ## Broken URLs / Console
 
 - Broken image/video/poster URLs: 0 of 14 checked assets.
@@ -34,22 +44,20 @@ Result: browser mode plays the videos, and print/PDF mode hides videos and shows
 
 ## Layout / Readability
 
-- Automated overflow scan: 6 slides with minor font-metric overflows: 1, 8, 15, 19, 20, 27.
-- Visual review of the flagged slides found no clipped text after fixing Correctness Gate 1.
-- No broken poster frames or blank PDF video boxes found.
-- Correctness Gate 1 no longer plots zero p-values on a log axis; JAX correctness tier is visible as CPU/x64, not A100.
+- Automated overflow scan: 0 slides with text overflow.
+- Correctness Gate 1 and Correctness Gate 2 have no automated overflow hits after the font metric fixes.
+- No clipped text, label overlap, broken poster frames, or blank PDF video boxes found in the final screenshots.
+- Correctness Gate 1 does not plot zero p-values on a log axis; JAX correctness tier is visible as CPU/x64, not A100.
 - Correctness Gate 2 uses the calibration card/ruler, not a sorted-replicate S-curve.
-- The PDF export initially produced a blank extra page; print CSS now overrides Reveal's `.pdf-page` layout and exports 32 pages.
+- Slide 23 now includes the transition sentence: GPU is not the only scaling knob; CPU parallelism also needs tuning.
 
 ## A100 Narrative Check
 
-- No slide is marked as pending.
-- Slide 21 scopes speedup as matched CPU matrix baseline divided by A100 streamed full end-to-end; compile excluded, transfer included, kernel-only excluded.
 - Slide 21 reconciles the old negative matched slice with the new streamed-reduction shape sweep.
+- Slide 21 scopes speedup as matched CPU matrix baseline divided by A100 streamed full end-to-end; compile excluded, transfer included, kernel-only excluded.
 - Slide 22 labels full-scenario A100 decomposition semantics and includes residual `other overhead` in the figure.
-- Repository READMEs now label historical `check` rows as accepted bounded checks, not exact `pass` rows; future accepted GPU rows should use `pass_gpu_tolerance`.
+- No slide presents the old matched A100 permutation result as the final conclusion.
 
 ## Remaining Notes
 
-- The committed break-even result CSVs are not present in this repository snapshot; the scripts now add the requested CPU-baseline scope fields when rerun.
-- The decision-map PNG still contains a small internal colorbar phrase from the original figure, but the slide caption and script source now use the scoped matched CPU matrix baseline wording.
+- The lightweight summary CSVs preserve slide-level evidence and avoid committing huge raw artifacts. Some raw CPU/A100 timing cells are marked unavailable because the raw experiment CSVs were not in this repository snapshot; where a time is derived from a committed figure and speedup, the CSV says so in `timing_note`.

@@ -34,14 +34,14 @@ PRESENTATION_DIR = ROOT / "experiments/results/presentation_figures"
 GIB = 1024**3
 CPU_TIMEOUT_S = 20 * 60
 DEFAULT_DTYPE = "float32"
-STATUS_PASS = "pass"
-STATUS_CHECK = "check"
+STATUS_PASS_EXACT = "pass_exact"
 STATUS_PASS_GPU_TOLERANCE = "pass_gpu_tolerance"
 STATUS_MANUAL_CHECK = "manual_check"
+STATUS_LEGACY_CHECK = "check"
 STATUS_SKIPPED = "skipped"
 STATUS_TIMEOUT = "timeout"
 STATUS_FAIL = "fail"
-ACCEPTED_CORRECTNESS_STATUSES = {STATUS_PASS, STATUS_CHECK, STATUS_PASS_GPU_TOLERANCE}
+ACCEPTED_CORRECTNESS_STATUSES = {STATUS_PASS_EXACT, STATUS_PASS_GPU_TOLERANCE, STATUS_LEGACY_CHECK}
 
 COMMON_FIELDS = [
     "run_id",
@@ -271,7 +271,6 @@ def correctness_check(
     batch_r: int,
     seed: int,
     dtype: str,
-    accepted_status: str = STATUS_PASS_GPU_TOLERANCE,
 ) -> tuple[str, float, float, str]:
     import numpy as np
 
@@ -312,7 +311,12 @@ def correctness_check(
         gpu_p = np.asarray((exceed + 1.0) / (small_r + 1.0))
         max_p = float(np.max(np.abs(gpu_p - cpu_p)))
         max_stat = float(np.max(np.abs(np.asarray(first_stats, dtype=np.float64) - np.asarray(cpu_stats, dtype=np.float64))))
-        status = accepted_status if max_p <= 1e-6 and max_stat <= 1e-4 else STATUS_MANUAL_CHECK
+        if max_p == 0.0 and max_stat <= 1e-12:
+            status = STATUS_PASS_EXACT
+        elif max_p <= 1e-6 and max_stat <= 1e-4:
+            status = STATUS_PASS_GPU_TOLERANCE
+        else:
+            status = STATUS_MANUAL_CHECK
         return status, max_p, max_stat, f"small_check n={small_n} p={small_p} R={small_r} batch_R={small_b}"
     except Exception as exc:
         return STATUS_FAIL, math.nan, math.nan, f"correctness_check_failed={exc!r}"
@@ -569,7 +573,6 @@ def run_cpu_baseline(shape: Shape, run_id: str, timeout_s: int) -> dict[str, Any
         shape.batch_R,
         shape.seed,
         shape.dtype,
-        accepted_status=STATUS_CHECK,
     )
     row.update(
         {
@@ -1202,17 +1205,17 @@ def write_readme(out_dir: Path) -> None:
             df = pd.read_csv(path)
             if "correctness_status" in df:
                 pass_rows.append(int(df["correctness_status"].isin(ACCEPTED_CORRECTNESS_STATUSES).sum()))
-                exact_pass_rows += int((df["correctness_status"] == STATUS_PASS).sum())
+                exact_pass_rows += int((df["correctness_status"] == STATUS_PASS_EXACT).sum())
                 gpu_tolerance_rows += int((df["correctness_status"] == STATUS_PASS_GPU_TOLERANCE).sum())
-                check_rows += int((df["correctness_status"] == STATUS_CHECK).sum())
+                check_rows += int((df["correctness_status"] == STATUS_LEGACY_CHECK).sum())
                 manual_check_rows += int((df["correctness_status"] == STATUS_MANUAL_CHECK).sum())
             if "max_abs_p_diff" in df:
                 max_p_diffs.extend(pd.to_numeric(df["max_abs_p_diff"], errors="coerce").dropna().tolist())
             if "max_abs_stat_diff" in df:
                 max_stat_diffs.extend(pd.to_numeric(df["max_abs_stat_diff"], errors="coerce").dropna().tolist())
     lines.append(f"- Accepted small matched CPU/JAX subset rows: {sum(pass_rows)}.")
-    lines.append(f"- Exact `pass` rows: {exact_pass_rows}; `pass_gpu_tolerance` rows: {gpu_tolerance_rows}; historical `check` rows: {check_rows}; `manual_check` rows: {manual_check_rows}.")
-    lines.append("- `check` is retained only for historical/backward-compatible rows. New A100 rows that meet the bounded float32 tolerance are emitted as `pass_gpu_tolerance`.")
+    lines.append(f"- `pass_exact` rows: {exact_pass_rows}; `pass_gpu_tolerance` rows: {gpu_tolerance_rows}; historical `check` rows: {check_rows}; `manual_check` rows: {manual_check_rows}.")
+    lines.append("- `check` is retained only for historical/backward-compatible rows. New accepted rows are emitted as `pass_exact` or `pass_gpu_tolerance`; ambiguous rows are emitted as `manual_check`.")
     if max_p_diffs:
         lines.append(f"- Max recorded `max_abs_p_diff`: {max(max_p_diffs):.6g}.")
     if max_stat_diffs:

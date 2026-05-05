@@ -1,6 +1,6 @@
 # Fast Statistical Models for Python
 
-This repository contains the PyCon US 2026 deck and reproducibility artifacts for **Breaking the Speed Limit: Python 3.14, Numba, and Codex in Statistical Computing**.
+This repository contains the PyCon US 2026 deck and reproducibility artifacts for **Breaking the Speed Limit: Python 3.14, Numba, and JAX in Statistical Computing**.
 
 Core thesis:
 
@@ -47,7 +47,7 @@ The canonical deck is [`slides/index.html`](slides/index.html). Current structur
 - Linux server CPU and k-means A100 results are scale evidence used in the main talk.
 - The old A100 permutation matched slice is historical negative evidence: `n=5,000`, `p=50,000`, `batch_R=512`, before streamed reduction and the broader shape sweep.
 - The current A100 permutation break-even narrative uses `a100_streamed_reduction`, larger `batch_R`, and a measured shape sweep. Speedup is scoped to the matched CPU matrix baseline divided by A100 streamed full end-to-end. Compile is excluded, transfer is included, and kernel-only rows are not used for CPU/A100 decisions.
-- A100 permutation correctness wording is intentionally scoped: historical rows marked `check` are not exact `pass` rows; new accepted GPU rows should be emitted as `pass_gpu_tolerance`.
+- A100 permutation correctness wording is intentionally scoped: new accepted rows use `pass_exact` or `pass_gpu_tolerance`, while ambiguous rows use `manual_check`; historical rows marked `check` appear only in older follow-up notes.
 
 ## Regenerate figures
 

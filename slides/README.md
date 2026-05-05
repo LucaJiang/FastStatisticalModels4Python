@@ -69,5 +69,5 @@ The break-even map uses `a100_streamed_reduction`; speedup is scoped to the matc
 - Keep `index.html`, `speaker_notes.md`, `speaker_notes_v3.md`, `timeline_v3.md`, and this README in sync.
 - Do not change statistical claims or benchmark numbers unless regenerated CSVs support the change.
 - Keep the old A100 matched-slice negative result labeled as pre-break-even evidence: `n=5,000`, `p=50,000`, `batch_R=512`, before streamed reduction and broader shape sweep.
-- Keep A100 correctness wording precise: historical `check` rows are not exact `pass` rows; new accepted GPU rows should use `pass_gpu_tolerance`.
+- Keep A100 correctness wording precise: accepted rows use `pass_exact` or `pass_gpu_tolerance`; ambiguous rows use `manual_check`; historical `check` appears only as a legacy status in older result notes.
 - Put detailed metadata in notes or READMEs, not dense slide captions.

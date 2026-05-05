@@ -5,11 +5,10 @@ Target: 30 minutes. Main path is slides 1-27. Slides 28-32 are backup. This keep
 ## Timing overview
 
 - 0:00-1:00 - Title and thesis
-- 1:00-8:00 - Why a statistician starts with simulation, and why Python fits this workflow
-- 8:00-9:00 - Evidence ladder and measurement contract
-- 9:00-16:00 - k-means: iterative simulation pressure
-- 16:00-24:00 - permutation testing: resampling pressure and matrix reformulation
-- 24:00-27:30 - parallelism, Python 3.14, Numba, JAX, and Codex
+- 1:00-8:00 - Simulation-driven statistical computing
+- 8:00-16:00 - k-means: iterative simulation pressure
+- 16:00-24:00 - permutation testing: resampling pressure, GPU map/decomposition, and parallelism
+- 24:00-27:30 - tool roles and AI/Codex
 - 27:30-30:00 - decision guide and close
 
 ---
@@ -223,6 +222,8 @@ Say the timing semantics precisely: this is full scenario timing, compile exclud
 ## Slide 23 - Parallelism
 
 Main message: more workers is not automatically better.
+
+GPU is not the only scaling knob; CPU parallelism also needs tuning.
 
 For k-means, Numba improves up to the middle of the thread sweep, but maximum thread count is not best. For permutation, workers add overhead and memory after speed saturates.
 

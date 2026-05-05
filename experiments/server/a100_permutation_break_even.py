@@ -509,7 +509,7 @@ def make_figures(out_dir: Path, presentation_dir: Path) -> None:
                 txt = f"{val:.1f}x"
             ax.text(j, i, txt, ha="center", va="center", fontsize=10, weight="bold", color="#17202A")
     cb = fig.colorbar(im, ax=ax, fraction=0.035, pad=0.02)
-    cb.set_label("speedup = matched CPU matrix full e2e / A100 streamed full e2e")
+    cb.set_label("speedup = matched CPU matrix baseline / A100 streamed full end-to-end")
     winners = shape[pd.to_numeric(shape["speedup_cpu_over_a100"], errors="coerce") > 1.0]
     if winners.empty:
         takeaway = "No end-to-end A100 break-even found in measured range."
@@ -709,7 +709,8 @@ def write_readme(out_dir: Path) -> None:
         lines.append(f"- Max recorded `max_abs_p_diff`: {float(p_diff.max()):.6g}.")
     if not stat_diff.empty:
         lines.append(f"- Max recorded `max_abs_stat_diff`: {float(stat_diff.max()):.6g}.")
-    lines.append("- Historical `check` rows mean accepted bounded CPU/JAX comparisons under the then-current status vocabulary; new accepted GPU rows are emitted as `pass_gpu_tolerance`.")
+    lines.append("- Accepted rows use the explicit status vocabulary `pass_exact`, `pass_gpu_tolerance`, `manual_check`, and `fail`.")
+    lines.append("- Historical `check` rows remain readable for backward compatibility, but newly generated accepted GPU rows are emitted as `pass_gpu_tolerance` unless they meet the stricter `pass_exact` rule.")
     lines.append("")
     lines.append("## OOM / memory-risk / timeout")
     for name in ["batch_R_sweep.csv", "break_even_shape_sweep.csv", "n_sensitivity_sweep.csv", "cpu_matched_baselines.csv"]:

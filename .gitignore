@@ -9,6 +9,8 @@
 !experiments/results/linux_server_a100/long_safe_*/
 !experiments/results/linux_server_a100/long_safe_*/*.csv
 !experiments/results/linux_server_a100/long_safe_*/env.json
+!experiments/results/linux_server_a100/permutation_break_even/
+!experiments/results/linux_server_a100/permutation_break_even/*_summary.csv
 
 # Keep transient server-run logs local.
 experiments/results/*.log
