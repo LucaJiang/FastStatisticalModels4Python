@@ -51,6 +51,9 @@ def kmeans_numpy_naive(
         if shift < tol:
             break
 
+    diff = X[:, None, :] - centroids[None, :, :]
+    dists_sq = np.einsum("ijk,ijk->ij", diff, diff, optimize=True)
+    labels = np.argmin(dists_sq, axis=1)
     assigned = centroids[labels]
     inertia = float(np.sum((X - assigned) ** 2))
     return centroids, labels, inertia, it + 1

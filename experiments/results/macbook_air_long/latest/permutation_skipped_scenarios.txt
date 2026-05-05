@@ -1,0 +1,4 @@
+mode=full
+Large full-matrix rows are marked skipped_memory_risk when R*n + R*p exceeds the local threshold.
+JAX status: backend=cpu, devices=[CpuDevice(id=0)]
+Python: 3.12.2

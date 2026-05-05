@@ -5,9 +5,10 @@ BUILD := \
 DEPS := \
 	beamerthemegemini.sty \
 	beamercolorthemeimsa.sty \
+	cityu_logo.pdf \
 
 
-LATEX  := env LC_ALL=C LANG=C lualatex
+LATEX  := env LC_ALL=C LANG=C TEXMFVAR=/private/tmp/fsm4py-texmf-var TEXMFCONFIG=/private/tmp/fsm4py-texmf-config lualatex
 BIBTEX := bibtex
 
 TARGETS := $(patsubst %, %.pdf, $(BUILD))

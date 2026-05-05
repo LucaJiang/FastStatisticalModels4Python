@@ -1,8 +1,7 @@
 """k-means Lloyd compiled with `@njit`.
 
-The structure mirrors ``kmeans_loops.py`` so attendees can visually
-map `for` loops that are slow in pure Python to the same loops that
-Numba turns into tight machine code.
+The implementation keeps the assignment and update loops explicit so attendees
+can map the statistical definition to the machine-code path Numba generates.
 """
 
 from __future__ import annotations

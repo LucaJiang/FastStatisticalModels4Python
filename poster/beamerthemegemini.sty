@@ -87,17 +87,24 @@
 \setbeamertemplate{headline}
 {
   \begin{beamercolorbox}{headline}
-    \begin{columns}
-      \begin{column}{\paperwidth}
+    \begin{columns}[c,totalwidth=\paperwidth]
+      \begin{column}{0.15\paperwidth}
+      \end{column}
+      \begin{column}{0.70\paperwidth}
         \usebeamerfont{headline}
-        \vskip3ex
+        \vskip2.2ex
         \centering
         {\usebeamerfont{headline title}\usebeamercolor[fg]{headline title}\inserttitle\\[0.5ex]}
         {\usebeamerfont{headline author}\usebeamercolor[fg]{headline author}\insertauthor\\[1ex]}
-        {\usebeamerfont{headline institute}\usebeamercolor[fg]{headline institute}\insertinstitute\\[1ex]}
+        {\usebeamerfont{headline institute}\usebeamercolor[fg]{headline institute}\insertinstitute\\[0.8ex]}
+      \end{column}
+      \begin{column}{0.15\paperwidth}
+        \vskip2.2ex
+        \raggedleft
+        \includegraphics[width=0.95\linewidth]{cityu_logo.pdf}
       \end{column}
     \end{columns}
-    \vspace{5ex}
+    \vspace{3.6ex}
     \ifbeamercolorempty[bg]{headline rule}{}{
       \begin{beamercolorbox}[wd=\paperwidth,colsep=0.5ex]{headline rule}\end{beamercolorbox}
     }

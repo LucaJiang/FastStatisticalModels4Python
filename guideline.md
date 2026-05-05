@@ -13,26 +13,23 @@ conda activate py314t  # CPython 3.14 free-threaded build
 ## What each env is for
 
 - `py312`: main development environment. Use this for NumPy, Numba, JAX, plotting, and most benchmark runs.
-- `py314`: standard CPython 3.14 environment for `kmeans_loops` and other pure-Python 3.14 checks.
-- `py314t`: free-threaded CPython 3.14 environment for the thread-based permutation benchmark.
+- `py314`: standard CPython 3.14 environment for interpreter-feature checks.
+- `py314t`: free-threaded CPython 3.14 environment for optional thread-scaling checks.
 
 ## Important notes
 
 - The current `conda-forge` `py314` build exposes `sys._jit`, but `sys._jit.is_available()` is still `False` on this machine. Treat it as a standard 3.14 environment, not a confirmed JIT-enabled build.
 - `py314t` is confirmed free-threaded: `sys._is_gil_enabled()` returns `False`.
-- The benchmark drivers now lazy-import optional backends, so `py314` does not need `numba`, and `py314t` does not need `numba` or `jax` just to run `loops` or `threads`.
+- Current curated experiments use `py312` locally. Historical benchmark drivers were removed after the MacBook correctness and server long-safe result tiers became the active evidence.
 
 ## Verified commands
 
 ```bash
-conda run -n py312 python experiments/kmeans/bench_kmeans.py \
-  --impl numpy_smart numba jax --n-samples 200 --n-features 4 --k 3 --centers 3 \
-  --max-iter 5 --warmup 1 --repeat 1
+conda run -n py312 python -m experiments.run_macbook_evidence_extra \
+  --output-dir experiments/results/macbook_air_long/latest --checkpoint-every 20 --max-iter 15
 
-conda run -n py314 python experiments/kmeans/bench_kmeans.py \
-  --impl loops --n-samples 200 --n-features 4 --k 3 --centers 3 \
-  --max-iter 5 --loops-max-n 200 --warmup 1 --repeat 1
+conda run -n py312 python -m experiments.visualization.plot_macbook_air_evidence \
+  --results-dir experiments/results/macbook_air_long/latest
 
-conda run -n py314t python experiments/permutation_test/bench_permtest.py \
-  --impl numpy_trick threads --n1 40 --n2 40 --r 64 --warmup 1 --repeat 1 --max-workers 2
+conda run -n py312 python -m experiments.visualization.plot_server_talk_evidence
 ```

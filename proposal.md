@@ -123,5 +123,5 @@ We have given talks at PyCon HK 2025, focusing on functional programming in Pyth
 ## Repository layout
 
 - **`docs/`** — Reference notes (Python 3.14, Numba, JAX, k-means, permutation tests, benchmarking, related talks).
-- **`experiments/`** — Runnable benchmarks: `setup/` (deps), `kmeans/`, `permutation_test/`, `devex/`, `visualization/`, `results/`. See each subdirectory `README.md`.
+- **`experiments/`** — Current experiment surface: MacBook correctness/evidence (`kmeans/`, `permutation/`), server/A100 long-safe runs (`kmeans_v3/`, `server/`), visualization, setup, and curated results. See each subdirectory `README.md`.
 - **`slides/`** — Reveal.js HTML deck for the talk ([`slides/index.html`](slides/index.html)); see [`slides/README.md`](slides/README.md).

@@ -14,36 +14,48 @@
 \usetikzlibrary{positioning}
 \usepackage{xcolor}
 
-\definecolor{paper}{HTML}{FBF7EF}
+\definecolor{paper}{HTML}{FFF8F2}
 \definecolor{ink}{HTML}{17202A}
 \definecolor{muted}{HTML}{5F6B74}
-\definecolor{pyblue}{HTML}{2B6CB0}
-\definecolor{pygold}{HTML}{D99A1E}
+\definecolor{cityured}{HTML}{B01117}
+\definecolor{cityumaroon}{HTML}{981B49}
+\definecolor{cityuorange}{HTML}{E07541}
+\definecolor{cityugold}{HTML}{D99A1E}
 \definecolor{numba}{HTML}{2F7D32}
 \definecolor{jaxberry}{HTML}{B51E59}
-\definecolor{processorange}{HTML}{E66A2C}
 \definecolor{threadteal}{HTML}{1F7A8C}
 
 \setbeamercolor{background canvas}{bg=paper}
 \setbeamercolor{normal text}{fg=ink}
-\setbeamercolor{block title}{fg=pyblue,bg=white}
+\setbeamercolor{block title}{fg=cityured,bg=white}
 \setbeamercolor{block body}{fg=ink,bg=white}
-\setbeamercolor{block alerted title}{fg=ink,bg=pygold!18}
-\setbeamercolor{block alerted body}{fg=ink,bg=pygold!10}
-\setbeamercolor{heading}{fg=ink}
+\setbeamercolor{block alerted title}{fg=cityured,bg=cityuorange!15}
+\setbeamercolor{block alerted body}{fg=ink,bg=cityuorange!7}
+\setbeamercolor{heading}{fg=cityumaroon}
 
 \newlength{\sepwidth}
 \newlength{\colwidth}
-\setlength{\sepwidth}{0.022\paperwidth}
-\setlength{\colwidth}{0.305\paperwidth}
+\setlength{\sepwidth}{0.014\paperwidth}
+\setlength{\colwidth}{0.232\paperwidth}
 \newcommand{\separatorcolumn}{\begin{column}{\sepwidth}\end{column}}
 
 \newcommand{\bigstat}[3]{%
-  \begin{minipage}[t]{0.30\linewidth}
-    {\Huge\bfseries\color{#1} #2}\\[-0.1em]
+  \begin{minipage}[t]{0.31\linewidth}
+    {\Huge\bfseries\color{#1} #2}\\[-0.15em]
     {\small\color{muted} #3}
   \end{minipage}
 }
+
+\newcommand{\captiontext}[1]{%
+  \vspace{-0.5em}
+  {\footnotesize\color{muted} #1}
+}
+
+% Poster text wrapping: hyphens none; overflow-wrap normal; word-break normal.
+\hyphenpenalty=10000
+\exhyphenpenalty=10000
+\sloppy
+\emergencystretch=2em
 
 \title{Breaking the Speed Limit}
 \subtitle{Fast statistical models with Python 3.14, Numba, and JAX}
@@ -56,126 +68,171 @@
 \separatorcolumn
 
 \begin{column}{\colwidth}
-  \begin{alertblock}{A workflow talk disguised as a performance talk}
-    Statistical code does not usually start with the fastest kernel. It starts
-    with a question: \textbf{can I trust this result?}
+  \begin{alertblock}{Thesis}
+    Simulation is how statisticians write tests when real data has no answer
+    key.
 
-    \vspace{0.5em}
-    We use simulation to build trust, then optimize only the computational
-    pattern that simulation proves is expensive.
+    \vspace{0.35em}
+    \textbf{Laptop} defines trust. \textbf{Server CPU} tests scale.
+    \textbf{A100} matters only after the workload becomes GPU-shaped.
   \end{alertblock}
 
-  \begin{block}{The simulation loop}
+  \begin{block}{Simulation contract}
+    \begin{itemize}
+      \item Define the statistic and null behavior.
+      \item Keep a readable reference as the oracle.
+      \item Test null, alternative, and pathological scenarios.
+      \item Scale only after equivalence, calibration, and recovery pass.
+    \end{itemize}
+  \end{block}
+
+  \begin{block}{Six-step workflow}
     \centering
     \begin{tikzpicture}[
-      node distance=0.5cm,
+      node distance=0.40cm,
       every node/.style={font=\small},
       box/.style={
         rounded corners=3pt,
-        draw=pyblue!35,
+        draw=cityured!35,
         fill=white,
         line width=0.8pt,
         minimum width=0.91\linewidth,
-        minimum height=1.18cm,
+        minimum height=0.92cm,
         align=center
       },
-      arrow/.style={->, line width=1.2pt, draw=pygold}
+      arrow/.style={->, line width=1.1pt, draw=cityuorange}
     ]
-      \node[box] (a) {Controlled data\\{\footnotesize known signal, fixed seed}};
-      \node[box, below=of a] (b) {Clear reference implementation\\{\footnotesize close to the statistical definition}};
-      \node[box, below=of b] (c) {Failure-mode simulation\\{\footnotesize noise, imbalance, high dimension}};
-      \node[box, below=of c] (d) {Scale-up benchmark\\{\footnotesize runtime, memory, reproducibility}};
-      \node[box, below=of d] (e) {Optimized kernel\\{\footnotesize Numba, JAX, threads, Python 3.14}};
+      \node[box] (a) {Target statistic};
+      \node[box, below=of a] (b) {Reference oracle};
+      \node[box, below=of b] (c) {Scenario grid};
+      \node[box, below=of c] (d) {Validation};
+      \node[box, below=of d] (e) {Scale};
+      \node[box, below=of e] (f) {Optimize};
       \draw[arrow] (a) -- (b);
       \draw[arrow] (b) -- (c);
       \draw[arrow] (c) -- (d);
       \draw[arrow] (d) -- (e);
+      \draw[arrow] (e) -- (f);
     \end{tikzpicture}
   \end{block}
 
-  \begin{block}{Why this matters}
+  \begin{block}{Three failure modes}
+    \begin{tabular}{@{}p{0.27\linewidth}p{0.65\linewidth}@{}}
+      \toprule
+      \textbf{Risk} & \textbf{Signal} \\
+      \midrule
+      Implementation & Optimized path changes the statistic. \\
+      Statistical & Null p-values drift from calibration. \\
+      Systems & Runtime improves while memory keeps growing. \\
+      \bottomrule
+    \end{tabular}
+  \end{block}
+\end{column}
+
+\separatorcolumn
+
+\begin{column}{\colwidth}
+  \begin{block}{MacBook Air: trust tier}
+    \bigstat{cityured}{3,840}{k-means pass rows}
+    \hfill
+    \bigstat{threadteal}{450}{perm pass rows}
+    \hfill
+    \bigstat{cityuorange}{0}{local fail rows}
+
+    \vspace{0.8em}
+    \small
+    This tier is for correctness, debugging, and scenario coverage, not final
+    hardware speed claims.
+  \end{block}
+
+  \begin{block}{k-means failure surface}
+    \begin{figure}
+      \centering
+      \includegraphics[width=0.98\linewidth]{../experiments/results/macbook_air_long/latest/figures/kmeans_recovery_scenario_facets.png}
+    \end{figure}
+    \captiontext{ARI = adjusted rand index. Runtime matters only after recovery is visible.}
+  \end{block}
+
+  \begin{alertblock}{Reference preservation}
     \begin{itemize}
-      \item A faster implementation that changes the statistic is a different method.
-      \item Big data can hide mistakes that small controlled simulations reveal.
-      \item The right tool is the one that preserves statistical meaning while removing the real bottleneck.
+      \item k-means optimized paths preserve inertia against the reference.
+      \item permutation matrix paths preserve p-values against the loop.
+      \item memory-risk skips are explicit rows, not hidden omissions.
     \end{itemize}
+  \end{alertblock}
+\end{column}
+
+\separatorcolumn
+
+\begin{column}{\colwidth}
+  \begin{block}{Server CPU and A100: scale tier}
+    \bigstat{numba}{540}{CPU k-means rows}
+    \hfill
+    \bigstat{jaxberry}{135}{A100 rows}
+    \hfill
+    \bigstat{cityumaroon}{5.8x}{A100 edge}
+
+    \vspace{0.8em}
+    \small
+    Server results are interpreted as the next rung in the evidence ladder.
+  \end{block}
+
+  \begin{block}{k-means: shape-dependent acceleration}
+    \begin{figure}
+      \centering
+      \includegraphics[width=0.98\linewidth]{../experiments/results/presentation_figures/server_kmeans_cpu_a100_summary.png}
+    \end{figure}
+    \captiontext{A100 helps only after enough regular array work exists.}
+  \end{block}
+
+  \begin{block}{Permutation: useful negative result}
+    \begin{figure}
+      \centering
+      \includegraphics[width=0.98\linewidth]{../experiments/results/presentation_figures/server_permutation_cpu_a100_summary.png}
+    \end{figure}
+    \captiontext{Validated negative evidence: the matched A100 permutation path loses to CPU here.}
   \end{block}
 \end{column}
 
 \separatorcolumn
 
 \begin{column}{\colwidth}
-  \begin{block}{Two workloads}
-    \heading{k-means: iterative pressure}
-    Lloyd's algorithm repeats assignment and centroid updates. It exposes
-    Python loop overhead, temporary arrays, cold-start compilation, and
-    high-dimensional scaling.
-
-    \vspace{0.7em}
-    \heading{Permutation test: resampling pressure}
-    The statistic is simple, but $R$ independent resamples expose random
-    generation cost, process copies, shared memory, and thread-level parallelism.
-  \end{block}
-
-  \begin{block}{Local evidence}
-    \bigstat{numba}{10.8$\times$}{Numba over naive NumPy for k-means at $N=10^6$}
-    \hfill
-    \bigstat{threadteal}{0.17 s}{Free-threaded ThreadPool at $R=10\,000$}
-    \hfill
-    \bigstat{processorange}{833 MiB}{Child-process RSS in multiprocessing}
-
-    \vspace{1.0em}
-    \small
-    Current local env: Python 3.12.2, NumPy 1.26.4, Numba 0.59.1, JAX 0.4.25
-    on CPU. Python 3.14t is confirmed free-threaded.
-  \end{block}
-
-  \begin{block}{What changed when K and d grew}
+  \begin{block}{Parallelism must be tuned}
     \begin{figure}
       \centering
-      \includegraphics[width=0.97\linewidth]{../experiments/results/v2/kmeans_shape_k50_d100.png}
+      \includegraphics[width=0.98\linewidth]{../experiments/results/presentation_figures/server_parallelism_tradeoff.png}
     \end{figure}
-    \small
-    At $K=50$, $d=100$, textbook broadcasting hits an $O(NKd)$ temporary.
-    The matrix-multiply form becomes useful, and JAX/Numba lead the CPU story.
-  \end{block}
-\end{column}
-
-\separatorcolumn
-
-\begin{column}{\colwidth}
-  \begin{block}{Three memorable findings}
-    \heading{1. Validate before optimizing}
-    The k-means implementations share fixed initial centroids; a sklearn
-    fixed-init check matches inertia to relative error $\sim 1.5{\times}10^{-16}$.
-
-    \vspace{0.8em}
-    \heading{2. Shared memory is a feature}
-    For permutation tests, threads and Numba keep one in-process input array.
-    Multiprocessing pays startup cost and carries worker copies.
-
-    \vspace{0.8em}
-    \heading{3. JAX is not magic CPU parallelism}
-    JAX is excellent when the workload maps to XLA or accelerators. CPU
-    \texttt{vmap} over random permutations is an honest anti-pattern here.
+    \captiontext{Best speed was not at maximum parallelism; memory can keep growing after runtime stops improving.}
   \end{block}
 
-  \begin{block}{Free-threaded Python: same thread code, different ceiling}
-    \begin{figure}
-      \centering
-      \includegraphics[width=0.97\linewidth]{../experiments/results/v2/perm_threads_py312_py314t.png}
-    \end{figure}
-    \small
-    The local Python 3.14t no-GIL build improves the same ThreadPool
-    permutation code from 0.32 s to 0.17 s at 8 workers.
+  \begin{block}{Memorable findings}
+    \heading{Validate before optimizing}
+    Faster code that changes the statistic is a different method.
+
+    \vspace{0.65em}
+    \heading{Shape beats logo}
+    Numba, NumPy matmul, threads, and A100 each win on specific shapes.
+
+    \vspace{0.65em}
+    \heading{Negative GPU evidence is useful}
+    It separates a valid formulation from a winning accelerator path.
   \end{block}
 
-  \begin{alertblock}{Take the workflow with you}
+  \begin{alertblock}{Decision guide}
+    \begin{itemize}
+      \item Start with the clearest reference.
+      \item Use Numba for hot scalar CPU loops.
+      \item Use algebra before creating giant temporaries.
+      \item Treat GPU as a formulation change.
+    \end{itemize}
+
     \begin{center}
       {\Large\bfseries Clear enough to trust. Fast enough to scale.}
 
-      \vspace{0.8em}
-      {\large \texttt{github.com/lucajiang/FastStatisticalModels4Python}}
+      \vspace{0.55em}
+      {\Large\bfseries Evidence and slides}\\[-0.1em]
+      {\large \texttt{github.com/lucajiang/}}\\[-0.05em]
+      {\large \texttt{FastStatisticalModels4Python}}
     \end{center}
   \end{alertblock}
 \end{column}
@@ -183,35 +240,39 @@
 \separatorcolumn
 \end{columns}
 
-\vspace{1.2cm}
+\vspace{0.35cm}
 \begin{center}
 \begin{minipage}{0.956\paperwidth}
-  \begin{alertblock}{Decision guide}
+  \begin{alertblock}{Talk spine}
     \begin{minipage}[t]{0.23\linewidth}
-      \heading{Start with trust}
-      Controlled data, fixed seeds, and a reference implementation define the
-      statistic before any optimization changes the code.
+      \heading{1. Simulate truth}
+      Build scenarios with known behavior.
     \end{minipage}
     \hfill
     \begin{minipage}[t]{0.23\linewidth}
-      \heading{Fuse hot loops}
-      When Python owns the inner loop, Numba is the most direct path to compiled
-      scalar logic without changing the method.
+      \heading{2. Preserve statistics}
+      Check equivalence, calibration, and recovery.
     \end{minipage}
     \hfill
     \begin{minipage}[t]{0.23\linewidth}
-      \heading{Watch memory shape}
-      Broadcasting can create the right answer through the wrong temporary.
-      Matrix identities and fused kernels reduce the real bottleneck.
+      \heading{3. Scale evidence}
+      Move laptop to server CPU to A100.
     \end{minipage}
     \hfill
     \begin{minipage}[t]{0.23\linewidth}
-      \heading{Choose shared data}
-      For resampling, threads and free-threaded Python keep one input array;
-      processes need an explicit memory budget.
+      \heading{4. Pick the smallest tool}
+      Pick the tool that removes the proven bottleneck.
     \end{minipage}
   \end{alertblock}
 \end{minipage}
+\end{center}
+
+\vspace{0.08cm}
+\begin{center}
+{\footnotesize\color{muted}
+Evidence pack: \texttt{macbook\_air\_long/latest} \quad
+\texttt{linux\_server\_cpu/long\_safe\_20260503\_190133} \quad
+\texttt{linux\_server\_a100/long\_safe\_20260503\_190133}}
 \end{center}
 \end{frame}
 \end{document}

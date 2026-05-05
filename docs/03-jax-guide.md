@@ -1,77 +1,53 @@
-# JAX 统计与高性能数值速查（含 CPU 实测）
+# JAX 统计与高性能数值速查
 
-本文档面向演讲中的 **JAX 版 k-means** 与 **JAX 版置换检验**，强调 API 模式、实测数字与常见陷阱。**我们在 CPU 上实测出的一些反直觉结论，值得在演讲中诚实说清楚**。
+JAX 在本仓库里不是“默认更快”的答案，而是一个很好的教学对象：当统计量能
+表达成 batched array/matrix computation，JAX 和 GPU 才有机会赢；当算法
+包含很多串行随机置换或小 kernel 调度，CPU 可能更合适。
 
-## 1. 设计哲学
+## API 口径
 
-- **函数式**：JIT 追踪的函数应尽量 **纯**（无副作用、不依赖全局可变状态）。
-- **显式随机数**：使用 `jax.random` 与 **PRNG key**（`key, subkey = jax.random.split(key)`），避免隐式全局 RNG。
-- **XLA**：`jax.jit` 将 Python 可追踪运算 lowering 到 XLA，在 CPU/GPU/TPU 上执行。
+- `jax.jit`：把可追踪函数 lowering 到 XLA。计时必须等待结果完成，不能只
+  测 dispatch。
+- `jax.vmap`：把单个统计量批处理化，适合多 replicate、多 permutation、
+  多 seed。
+- `jax.lax.scan` / `while_loop`：表达固定步数或数据依赖的迭代，适合 k-means
+  这类有 state 的算法。
+- `jax.random`：显式传递 key，避免隐式全局 RNG。
 
-## 2. 核心 API
+## 当前仓库里的 JAX 角色
 
-### `jax.jit`
+### k-means
 
-- 将 Python 可追踪函数编译为 XLA 程序。
-- 首次调用会 **追踪 + 编译**，耗时明显；基准需 **warmup** 并多次运行取中位数。
-- 本仓库 k-means JAX 核 (N=10k, d=10, K=5) 在当前本机 `py312` 下冷启动约 0.21 s，稳态约 0.008 s（约 26× 差距）。在 N=1M 稳态下，编译成本相对于一次运行已微不足道。
+Server A100 的 `kmeans_jax_gpu.csv` 有 135 个 pass rows。当前 talk-ready
+图 `server_kmeans_cpu_a100_summary.png` 匹配 CPU 与 A100 的共同形状，并展示
+`CPU warm time / A100 warm time`。结论是：
 
-### `jax.lax.scan`
+- A100 不是所有形状都赢。
+- 它在足够大的 `N` 与较低/中等 `d` 上更有优势。
+- 最大优势约出现在 `N=5,000,000, d=10, K=20`，但 `d=256` 时优势明显缩小。
 
-- 形式类似 **带状态的 fold/scan**：`carry` 在步间传递，适合 **固定步数** 或结构化的迭代（例如 k-means 外层迭代若固定 `max_iter`）。
-- 与「Python 层 for + 每次 `jit` 子块」相比，常能减少重复编译开销；但 **单步依赖下一步** 的算法在 **GPU** 上可能不占优（串行链）。
+### permutation
 
-### `jax.lax.while_loop`
+A100 的 `permutation_matrix_gpu.csv` 有 15 个 pass rows。当前实现把置换检验
+改写成 batched contrast matrix multiplication，再流式累计 exceedance。
+这是正确的 GPU 方向，但当前 matched slice 的结果仍然是负结论：
 
-- 适合 **由数据决定的停止条件**（迭代次数运行时才知道）。
-- 注意：在 `while_loop` 内部不能调用 Python 副作用函数，调试远比普通 `for` 困难。
+- 在 `n=5,000, p=50,000, batch_R=512` 的共同点上，CPU 快于 A100。
+- 这个结果应当保留，因为它说明“把代码搬到 GPU”不是优化，算法形状才是优化。
 
-### `jax.vmap`
+## 演讲建议
 
-- 将「单次样本上的函数」批处理化为「沿 batch 维向量化」，常用于：
-  - 多次置换 / 多随机种子并行；
-  - 与 `jit` 组合：`jax.jit(jax.vmap(...))`。
+讲 JAX 时不要把 CPU 负结果藏起来。更有说服力的主线是：
 
-## 3. 与两种演讲 workload 的映射
+1. JAX 需要纯函数、静态 shape 与显式 RNG，这会改变开发体验。
+2. GPU 要求 batched/matrix 形状；没有足够 work，启动和数据布局开销会吃掉收益。
+3. k-means 给出正例，permutation matrix path 给出当前负例。二者一起构成
+   “validate before accelerate”的证据。
 
-| Workload | JAX 模式 |
-|----------|----------|
-| k-means | `scan` 或 `while_loop` 表达 Lloyd 迭代；`jit` 包一层；质心作为 **carry** |
-| 置换检验 | `vmap` 对「单次置换统计量」并行；或批量生成置换索引后向量化 |
+## 当前可引用材料
 
-## 4. **CPU 上的 JAX 陷阱：本仓库关键实测**
-
-`jax.random.permutation(n)` 在 CPU-XLA 上被编译成一个无法很好向量化的顺序 Fisher–Yates shuffle。在 `jax.vmap` 下展开 R 份后，每份 shuffle 自己跑自己的串行 log-n 次 shuffle，总时间随 R 线性上升而 **每次置换都远慢于 Numba 的 Fisher–Yates**：
-
-| R | JAX vmap (perm) | Numba prange | NumPy naive | JAX 对 NumPy 倍率 |
-|---|-----------------|--------------|-------------|-------------------|
-| 500 | 1.71 s | 0.0029 s | 0.044 s | 39× **slower** |
-| 2 000 | 7.44 s | 0.0155 s | 0.175 s | 42× slower |
-| 10 000 | 37.8 s | 0.064 s | 0.856 s | 44× slower |
-
-（来源：[`perm_sweep.csv`](../experiments/results/v2/perm_sweep.csv)）
-
-我们还测试了「算法小聪明」版本——用 `jax.random.choice(replace=False)` 代替 `permutation`，期望少做一半的 shuffle 工作，结果 **几乎没差别**。因为 `choice(replace=False)` 在 JAX 内部也是基于 permutation 实现的。
-
-**演讲要点**：*「如果你的代码只跑在 CPU 上，JAX 不是默认选项；`jax.vmap` 是为加速器批处理写的，不是为 CPU 外层并行写的。」*
-
-反过来，k-means 这种 **BLAS-heavy 内核**（矩阵乘法在 XLA 上能良好下降到 BLAS），CPU JAX 已经可以在 N=1M 上跑到约 0.50 s，与 Numba 的 0.48 s 非常接近。
-
-## 5. GPU 注意事项
-
-- **强串行** 的 `scan`（每步依赖上一步）在 GPU 上可能 **慢于 CPU**（同步与并行度不足），演讲中可以诚实展示「JAX + GPU 并非对所有统计迭代都更快」。
-- **embarrassingly parallel** 的置换（`vmap` 批处理）更适合 GPU，这也是 JAX 的真正卖点。
-- 如果演讲现场能准备一个 GPU 盒子跑同一份代码，把 CPU 75s 砍到 GPU 5s 就是极具冲击力的对照；否则，老老实实说「GPU 结果本次未包含」更加诚实。
-
-## 6. 调试陷阱
-
-- **Tracing 错误**：当你在 JIT 区间使用 Python 条件判断或打印，通常会得到「ConcretizationTypeError」。对统计学家来说这是新概念；教学中可以把它类比为：JAX 在追踪时看到的是「符号变量」而不是具体数值。
-- **Shape 异常**：`vmap` 对哪一维做向量化需要用 `in_axes` 明说；漏写的默认值是 0，有时会悄悄改变结果。
-- **`block_until_ready` 必不可少**：`jax.jit` 是异步 dispatch，如果你在计时时忘记阻塞，报上来的可能只是 **dispatch 时间**（毫秒级），而不是真正的计算时间。本仓库的 [`bench_kmeans.py`](../experiments/kmeans/bench_kmeans.py) / [`bench_permtest.py`](../experiments/permutation_test/bench_permtest.py) 都按此处理。
-
-## 7. 延伸阅读
-
-- [JAX documentation](https://jax.readthedocs.io/)
-- [jax.lax.scan](https://jax.readthedocs.io/en/latest/_autosummary/jax.lax.scan.html)
-- [jax.vmap](https://jax.readthedocs.io/en/latest/_autosummary/jax.vmap.html)
-- QuantEcon：[NumPy vs Numba vs JAX](https://python-programming.quantecon.org/numpy_vs_numba_vs_jax.html)
+- `experiments/results/linux_server_a100/long_safe_20260503_190133/README.md`
+- `experiments/results/linux_server_a100/long_safe_20260503_190133/figures/kmeans_cpu_gpu_break_even.png`
+- `experiments/results/linux_server_a100/long_safe_20260503_190133/figures/permutation_cpu_gpu_break_even.png`
+- `experiments/results/presentation_figures/server_kmeans_cpu_a100_summary.png`
+- `experiments/results/presentation_figures/server_permutation_cpu_a100_summary.png`

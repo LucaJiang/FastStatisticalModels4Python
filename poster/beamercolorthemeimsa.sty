@@ -7,11 +7,13 @@
 % Definitions
 % ====================
 
-\definecolor{imsablue}{cmyk}{1, 0.86, 0.29, 0.22}
-\definecolor{imsalightblue}{cmyk}{0.86,0,0.09,0}
+\definecolor{imsablue}{HTML}{B01117}
+\definecolor{imsalightblue}{HTML}{E07541}
+\definecolor{cityumaroon}{HTML}{981B49}
+\definecolor{cityupaper}{HTML}{FFF8F2}
 
 % Extra colors
-\definecolor{lightgray}{cmyk}{0.38, 0.29, 0.24,0.05}
+\definecolor{lightgray}{HTML}{F6E8E1}
 
 % ====================
 % Theme
@@ -25,16 +27,20 @@
 \setbeamercolor{structure}{fg=imsablue}
 
 % Headline
-\setbeamercolor{headline}{fg=white,bg=imsablue}
+\setbeamercolor{headline}{fg=imsablue,bg=cityupaper}
+\setbeamercolor{headline title}{fg=imsablue}
+\setbeamercolor{headline author}{fg=cityumaroon}
+\setbeamercolor{headline institute}{fg=imsablue}
+\setbeamercolor{headline rule}{bg=imsalightblue}
 
 % Block
 \setbeamercolor{block title}{fg=imsablue,bg=white}
-\setbeamercolor{block separator}{bg=black}
+\setbeamercolor{block separator}{bg=imsalightblue}
 \setbeamercolor{block body}{fg=black,bg=white}
 
 % Alert Block
 \setbeamercolor{block alerted title}{fg=imsablue,bg=lightgray}
-\setbeamercolor{block alerted separator}{bg=black}
+\setbeamercolor{block alerted separator}{bg=cityumaroon}
 \setbeamercolor{block alerted body}{fg=black,bg=lightgray}
 
 % Heading

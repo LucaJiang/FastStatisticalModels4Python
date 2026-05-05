@@ -55,8 +55,8 @@ def _time(fn, repeat: int) -> tuple[float, float, float, float]:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--output-csv", type=Path, default=Path("experiments/results/v3/kmeans_smoke.csv"))
-    parser.add_argument("--output-json", type=Path, default=Path("experiments/results/v3/kmeans_smoke.json"))
+    parser.add_argument("--output-csv", type=Path, default=Path("experiments/results/v3/kmeans_quick.csv"))
+    parser.add_argument("--output-json", type=Path, default=Path("experiments/results/v3/kmeans_quick.json"))
     parser.add_argument("--n", type=int, default=2000)
     parser.add_argument("--d", type=int, default=10)
     parser.add_argument("--k", type=int, default=5)

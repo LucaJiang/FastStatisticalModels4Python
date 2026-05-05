@@ -1,17 +1,17 @@
 # Experiments
 
-| 目录 | 内容 |
-|------|------|
-| [`setup/`](setup/) | 依赖与虚拟环境说明 |
-| [`kmeans/`](kmeans/) | k-means：NumPy / loops / Numba / JAX + `bench_kmeans.py` |
-| [`permutation_test/`](permutation_test/) | 置换检验：串行 / 多进程 / 线程 / Numba / JAX + `bench_permtest.py` |
-| [`devex/`](devex/) | 粗略 LOC 统计 |
-| [`visualization/`](visualization/) | 从 CSV 绘制 runtime / memory 等 |
-| [`results/`](results/) | 本机跑出的 CSV/JSON/图与 [`README.md`](results/README.md) |
+Current experiment surface is split by role:
 
-环境安装：
+| Directory | Role |
+| --- | --- |
+| [`kmeans/`](kmeans/) | MacBook correctness/evidence implementation for k-means. |
+| [`permutation/`](permutation/) | MacBook permutation validation plus shared matrix methods used by server runs. |
+| [`kmeans_v3/`](kmeans_v3/) | Server/A100 k-means kernels used by the long-safe orchestrator. |
+| [`server/`](server/) | Linux CPU/A100 long-safe orchestration and plotting. |
+| [`visualization/`](visualization/) | 16:9 figures for current slides/poster. |
+| [`results/`](results/) | Curated MacBook, server, A100, and presentation figures. |
+| [`setup/`](setup/) | Local environment notes. |
 
-```bash
-bash experiments/setup/setup_envs.sh
-# 可选：INSTALL_JAX=1 bash experiments/setup/setup_envs.sh
-```
+Historical local benchmark scripts and result images were removed. Use
+`experiments/results/README.md` to decide which result tier belongs in slides or
+poster material.

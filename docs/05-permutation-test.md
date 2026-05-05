@@ -1,80 +1,73 @@
-# 置换检验（Permutation Test）实现要点与并行策略实测
+# 置换检验实现与并行策略
 
-本文档支撑演讲 **「大规模数据并行模式」**：同一统计量在 **多次随机置换** 下重复计算，天然 **embarrassingly parallel**。所有数字来自 [`perm_sweep.csv`](../experiments/results/v2/perm_sweep.csv)，运行在 Apple Silicon 8 核心、Python 3.12.2、NumPy 1.26.4、Numba 0.59.1、JAX 0.4.25；free-threaded 对照来自 Python 3.14.4 `py314t`。
+本文档对应演讲的“resampling pressure”部分。旧版本地 benchmark 脚本与图片
+已清理；当前实现位于 `experiments/permutation/`，当前结果以 MacBook Air
+`latest` 与 server `long_safe_20260503_190133` 为准。
 
-## 1. 统计思想（极简）
+## 统计任务
 
-- 在 **零假设** 下，观测标签或符号与数据「可交换」；通过 **重排** 观测或残差生成 **零分布**。
-- **p 值**：观测统计量在零分布中的分位（或双侧/单侧规则依检验而定）。
+置换检验在零假设下重排标签或符号，重复计算同一个统计量，形成零分布。
+本仓库的简化任务关注计算结构：
 
-演讲重点在 **计算与内存**，非证明理论。
+- 固定 seed 与数据生成方式。
+- reference 实现定义统计量。
+- NumPy/JAX matrix paths 必须和 reference 在 p-value、observed statistic、
+  null calibration 上对齐。
 
-## 2. 本仓库实验采用的简化设定
+演讲里不要把它讲成“只测 runtime 的玩具”。它的价值是：统计正确性、随机性
+与并行/内存模型会同时出问题。
 
-为便于跨实现对比：
+## 当前实现
 
-- 合并两组样本为长向量 `x = np.concatenate([a, b])`，长度 `n = n1 + n2`。
-- 每次置换：`perm = rng.permutation(n)`，`x_perm = x[perm]`。
-- **统计量（示例）**：两样本均值差  
-  `stat = x_perm[:n1].mean() - x_perm[n1:].mean()`。
-- 重复 `R` 次，得到 `R` 个统计量，再与观测值比较（或仅测 **总耗时**）。
+- `experiments/permutation/permutation_reference.py`：reference 与等价性检查。
+- `experiments/permutation/permutation_numpy.py`：CPU NumPy matrix/batched path。
+- `experiments/permutation/permutation_jax_matrix.py`：JAX matrix reformulation。
+- `experiments/permutation/run_mac_validation.py`：MacBook correctness/calibration。
+- `experiments/server/long_safe_orchestrator.py`：server CPU/A100 long-safe runs。
 
-## 3. 算法层面的小聪明（演讲高光时刻）
+## 当前证据
 
-注意一个恒等式：由于 `sum(x)` 是常量，
+MacBook Air `latest`：
 
-\[
-\bar{x}_A - \bar{x}_B = \frac{S_1}{n_1} - \frac{S - S_1}{n_2}
-\]
+- `permutation_equivalence.csv`：450 pass rows，45 个预期
+  `skipped_memory_risk` rows。
+- `permutation_calibration_extended.csv`：100 个额外 null calibration pass rows。
+- `permutation_power_extended.csv`：168 个 power rows，覆盖更密的 delta 与
+  signal-fraction。
+- `permutation_runtime_scaling_extended.csv`：108 pass rows，27 个显式
+  memory-risk skips。
 
-其中 \(S = \sum_i x_i\), \(S_1 = \sum_{i \in A} x_i\)。**整个统计量只依赖子集和 \(S_1\)。** 因此我们不需要完整的 `perm`（长度 n），只需要 *n1 个不重复的索引*（`np.random.choice(n, n1, replace=False)`）。
+Server CPU：
 
-| 实现 | warm 时间（R=10k, n=10k） | 加速比 vs `numpy_naive` |
-|------|--------------------------:|--------------------------:|
-| `numpy_naive`（完整 shuffle） | 0.856 s | 1.0× |
-| `numpy_trick`（子集和） | 0.831 s | 1.03× |
-| `numpy_batched`（`argsort((R,n))`） | 6.54 s | 0.13× |
-| `numpy_trick_batched`（`argpartition`） | 1.82 s | 0.47× |
+- `permutation_cpu_scaling.csv`：105 pass rows，最大
+  `n=50,000, p=50,000, R=100,000` 角落有 3 个 timeout rows。
+- `permutation_worker_sweep.csv`：固定 shape 下 8 workers 最快，说明并行度需要
+  调参。
 
-**关键发现**：在纯 NumPy 层面，`np.random.choice(..., replace=False)` 内部也是 `permutation` 实现，算法技巧本身在单循环里 **没有速度收益**。但——
+Server A100：
 
-- **批处理版 `numpy_trick_batched` 比 `numpy_batched` 快 3.6×，内存 1907 MiB vs 2289 MiB**：一旦你下沉到 `argpartition`（O(n) 而非 O(n log n)），算法技巧立刻体现。
-- 更重要的是，**算法技巧改变了心智模型**：它让我们从「我要置换一整个向量」变成「我要采样一批索引」，从而把问题映射到 `vmap` 或 GPU 上时心智负担更低。
+- `permutation_matrix_gpu.csv`：15 pass rows。
+- matched `n=5,000, p=50,000, batch_R=512` slice 中，当前 GPU matrix path
+  不赢 CPU。这是需要保留的负结果。
 
-**演讲用一句话**：*「每次改进都从重新审视统计量本身开始——再快的并行库也换不回一个恰当的恒等式。」*
+## 演讲主线
 
-## 4. 并行与内存模型（演讲核心对比）
+1. 先用 reference 与 calibration 说明 p-value/null behavior 没坏。
+2. 再讲 runtime scaling：`R`、`p` 与 batch size 决定工作量。
+3. 最后讲并行：threads/workers/GPU 都不是越多越好，必须看内存形状与
+   overhead。
 
-| 方案 | 本仓库实测 warm (R=10k) | 数据拷贝 | 说明 |
-|------|-----------------------:|---------|------|
-| 串行 NumPy | 0.856 s | 单份 `x` | 基线 |
-| `ProcessPoolExecutor` | **1.71 s** | **每进程独立数据 + pickle** → 实测子进程 RSS 总和 **833 MiB** | 小 R 下启动成本主导 |
-| `ThreadPoolExecutor`（GIL build） | **0.392 s** | **共享** 进程内数组 | 避免整表复制；**2.2×** |
-| `ThreadPoolExecutor`（free-threaded 3.14t） | **0.173 s** | **共享** 进程内数组 | 同一份线程代码，8 workers 下继续提速 |
-| Numba `prange` | **0.064 s** | 共享只读数组，一个进程 | **13.4×，全场最快** |
-| JAX `vmap` + `jit`（CPU） | **37.4 s** | 设备内存 | CPU 上是反例，见 [`03-jax-guide.md`](03-jax-guide.md) |
+图入口：
 
-图例：
+- `experiments/results/macbook_air_long/latest/figures/permutation_calibration_extended.png`
+- `experiments/results/macbook_air_long/latest/figures/permutation_power_extended.png`
+- `experiments/results/macbook_air_long/latest/figures/permutation_runtime_scaling_extended.png`
+- `experiments/results/presentation_figures/server_permutation_cpu_a100_summary.png`
+- `experiments/results/presentation_figures/server_parallelism_tradeoff.png`
 
-- [`perm_scaling.png`](../experiments/results/v2/perm_scaling.png)：runtime vs R，所有实现在同一张对数图上对比。`multiprocessing` 的启动阶梯、Numba 的平坦、JAX 的陡峭上升一目了然。
-- [`perm_memory.png`](../experiments/results/v2/perm_memory.png)：tracemalloc 峰值 + 子进程 RSS 加总。Multiprocessing 的 **833 MiB 子进程 RSS** 与其他实现的 ~1 MiB 形成鲜明对比。
-- [`perm_speedup.png`](../experiments/results/v2/perm_speedup.png)：Numba 13.4× 的柱子，和 JAX 的「负加速」放在同一坐标下。
+## SciPy 对照
 
-## 5. 随机性与可复现
-
-- **多进程**：需固定每 worker 种子或显式传递子种子序列。本仓库 [`permtest_multiprocessing.py`](../experiments/permutation_test/permtest_multiprocessing.py) 用 `seed + 100003 * j` 派生。
-- **多线程**：竞态若写共享状态会破坏可复现；本仓库设计为 **每次置换独立写临时缓冲** 或 **只读 `x` + 写独立输出槽**。
-- **JAX**：必须用 `jax.random` 与 **split key**，避免隐式全局 RNG。
-- **Numba**：手写 RNG 时要确保独立高质量种子；本仓库用 **SplitMix64 一次混合，xorshift64 作为步进器**。我们曾经因为朴素的 `(seed ^ i*const)` 种子让置换分布均值漂移了 ~0.05σ——KS 检验抓住了这个问题。教训：**并行 RNG 的质量保证不是事后诸葛亮，必须与算法一起设计**。
-
-## 6. SciPy 对照
-
-[`scipy.stats.permutation_test`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.permutation_test.html)：通用接口，支持 `vectorized`、多种 `permutation_type`。本仓库基准脚本以 **手写循环 + 多种并行后端** 为主，便于控制 **内存与进程数**。
-
-## 7. 演讲要点速查卡
-
-1. **开场定义**：把置换检验画成「同一个统计量做 R 次」的图示；统计学背景不要超过 20 秒。
-2. **算法层**：讲恒等式 → 把 R 份完整 shuffle 变成 R 份 subset-sum（不是永远值钱，但心智模型值钱）。
-3. **工程层**：[`perm_scaling.png`](../experiments/results/v2/perm_scaling.png) 里挑两条做对比——Numba 和 multiprocessing——讲一次性启动成本 vs 并行收益的拐点。
-4. **内存层**：[`perm_memory.png`](../experiments/results/v2/perm_memory.png) 讲 multiprocessing 的 833 MiB 是「看不见的内存」，而 Numba / threads / free-threaded 都是「一份数据」。
-5. **诚实的 JAX**：CPU 上的 `vmap` 是反例；GPU 上是王道。演讲如果有条件放一个 GPU 数字更好。
+[`scipy.stats.permutation_test`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.permutation_test.html)
+是通用接口，适合生产代码参考。本仓库保留手写 reference/NumPy/JAX paths，是
+为了教学：只有自己控制数据布局、随机性和 batch shape，才能解释 runtime 与
+memory 为什么变化。

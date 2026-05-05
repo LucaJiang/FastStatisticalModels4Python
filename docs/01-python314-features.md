@@ -1,78 +1,63 @@
-# Python 3.14：Free-threaded 与实验性 JIT
+# Python 3.14: Free-threaded 与实验性 JIT
 
-本文档汇总与演讲「Breaking the Speed Limit」相关的 **Python 3.14** 运行时特性。不仅提供结论，更深入探讨其底层设计机制，为现场回答高级 Python 工程师的技术提问提供充足弹药。
+本文档保留 Python 3.14 在演讲中的定位，但不再引用已经清理掉的
+历史本地 benchmark 结果。当前仓库的实验证据以 MacBook Air `latest` 结果与
+Linux server/A100 `long_safe_20260503_190133` 结果为准。
 
-## 1. Free-threaded 构建（PEP 703 / PEP 779）
+## Free-threaded 的讲法
 
-### 1.1 核心机制：移除 GIL 带来的底层重构
+Free-threaded Python 让同一进程内的 Python 线程可以真正并行执行
+Python bytecode。它对统计计算最有价值的场景不是“自动让所有 NumPy
+代码变快”，而是：
 
-- **内存分配器（mimalloc）**：为了在多线程环境下保证无锁的内存分配效率，Free-threaded 构建默认集成了 `mimalloc`。由于去除了 GIL，多个线程会并发分配/释放内存，如果继续使用旧版的 `pymalloc` 将会导致严重的锁争用。
-- **偏置引用计数（Biased Reference Counting, BRC）与延迟引用计数（Deferred Reference Counting）**：
-  - 传统 CPython 每个对象的赋值/销毁都会原子的增减 refcount，这在无 GIL 时会造成可怕的 CPU 缓存行伪共享（False Sharing）。
-  - BRC 允许将引用计数偏向"创建对象的那个线程"，通过本地线程进行操作，只有跨线程访问时才使用原子的原子操作（atomic instructions）。
-  - 对于常驻对象（如单例、内置类型或顶层函数），采用延迟引用计数或不追踪（Immortalization, PEP 683），进一步降低锁争用。
+- 多个线程共享同一份大型只读数组，避免 `multiprocessing` 的 pickle
+  与进程内存复制。
+- 每个 worker 写独立输出槽，最后合并结果，避免共享 list/dict 的锁争用。
+- Python 层调度成本足够高，而且 C/NumPy 内核已经不是唯一瓶颈。
 
-### 1.2 行为与性能代价
+当前主线中，置换检验仍然使用 `experiments/permutation/` 的
+reference/NumPy/JAX matrix 实现作为可验证统计任务。server CPU 结果里
+`permutation_worker_sweep.csv` 说明 workers 不能盲目拉满：固定
+`n=5,000, p=10,000, R=10,000` 时，本次运行的 8 workers 最快，更多
+workers 增加开销但没有线性收益。
 
-- 在 free-threaded 模式下，**单线程**代码相对传统 GIL 构建通常有 **约 5–10%** 的性能损失。原因在于即便有 BRC，依然会有不可避免的轻量级锁检查和内存屏障（Memory Barriers）开销。
-- 本地自适应解释器（PEP 659 的 Specializing Adaptive Interpreter）在无 GIL 环境下面临并发覆写字节码的问题。在 Python 3.13/3.14 中，这需要精细的锁或 RCU (Read-Copy-Update) 机制来保证类型专化的线程安全。
+## 实验性 JIT 的讲法
 
-### 1.3 实验中的表现（在 GIL 构建上的天花板）
+Python 3.14 的实验性 JIT 更适合作为“纯 Python 循环为什么会慢”的背景：
+JIT 能降低解释器 dispatch/boxing 开销，但不会替代算法重写、NumPy 的 C
+内核、Numba 的 LLVM 编译，或 JAX/XLA 的 whole-function lowering。
 
-本仓库的置换检验线程实验在同一台 Apple Silicon 8 核机器上比较了 `py312` GIL build 与 `py314t` free-threaded build（n=10k, R=10000，详见 [`perm_threads_py312_py314t.png`](../experiments/results/v2/perm_threads_py312_py314t.png)）。同一份 `ThreadPoolExecutor` 代码在 8 workers 下：
+在当前仓库里，k-means 的可讲证据来自：
 
-- `py312` GIL build：warm median **0.32 s**；
-- `py314t` free-threaded build：warm median **0.17 s**。
+- `experiments/kmeans/kmeans_reference.py`：接近统计定义的 reference。
+- `experiments/kmeans/kmeans_numpy_broadcast.py`：展示临时数组风险。
+- `experiments/kmeans/kmeans_numpy_matmul.py`：展示矩阵恒等式何时有用。
+- `experiments/kmeans/kmeans_numba.py`：展示 fused loop 与较低内存压力。
 
-标准 GIL 下线程仍然有加速，是因为 NumPy 的 `.sum()`、`.permutation()` 在 C 层释放 GIL，使线程可以重叠。Free-threaded build 继续降低 Python 层同步成本，把同一段代码的上限往 8 核心推进。
+主结论应该是：Python JIT 是运行时进步，但科学计算代码仍然要先识别
+计算图、内存形状和统计等价性。
 
----
+## 当前可引用证据
 
-## 2. 实验性 JIT（PEP 744 / PEP 774）
+- MacBook Air `latest`：3,840 个 k-means pass rows、480 个预期
+  `skipped_memory_risk` rows、450 个 permutation equivalence pass rows。
+- Server CPU：540 个 k-means CPU pass rows、105 个 permutation CPU pass
+  rows、3 个最大 permutation 形状 timeout rows。
+- Server A100：135 个 k-means A100 pass rows、15 个 permutation matrix
+  A100 pass rows。
 
-### 2.1 Copy-and-Patch 技术解析
+这些数字对应的 README：
 
-Python 3.14 搭载的实验性 JIT 并非传统的追踪式 JIT（如 PyPy 的 Tracing JIT）或基于完整 LLVM 编译的 JIT，而是基于 **Copy-and-Patch** 技术的模板 JIT（Template JIT）。
+- `experiments/results/macbook_air_long/latest/README.md`
+- `experiments/results/linux_server_cpu/long_safe_20260503_190133/README.md`
+- `experiments/results/linux_server_a100/long_safe_20260503_190133/README.md`
 
-- **Stencil（模板生成）**：在 CPython 的构建阶段（而非运行阶段），使用 LLVM 对 C 语言写好的解释器指令（Opcode）进行编译，提取出机器码模板（Stencils）。这正是 PEP 774 的核心——不再要求用户的运行环境有 LLVM，而是直接在 CPython 源码树中预编译机器码片段。
-- **运行时 Patch**：当一段 Python 代码变"热"（Hot）时，JIT 引擎只需把预设的机器码模板像"拼图"一样拷贝到内存可执行页中，把函数指针和偏移量作为参数（Patch）填入即可。
-- **优势**：编译开销极低（因为只是内存拷贝和重定位），预热极快，完全不需要运行时进行复杂的寄存器分配和指令选择。
-- **劣势**：因为 stencil 在构建时生成，**无法进行跨 opcode 的优化（例如 loop hoisting、公共子表达式消除）**，因此对于数值代码，与 Numba / JAX 的完整 LLVM 编译差距依然显著。
+## 口头边界
 
-### 2.2 演讲实验的启示：什么能被加速？
+不要把 Python 3.14 讲成“免费提速按钮”。更稳的表达是：
 
-- JIT 对于 **纯 Python 密集循环**、条件分支（控制流）有着显著加速。
-- **NumPy/C 扩展盲区**：如果在 CPython JIT 下运行高度 NumPy 向量化的代码，JIT **毫无作用**。因为运行时大部分时间在 `numpy` 的 C 库中。
-- 在我们的 k-means 实验中，`kmeans_loops.py`（N=2000, d=10, k=5）在标准 CPython 3.12 下 warm median **0.414 s**；对照 Numba 版本在 **N=100k** 时 warm median **0.0064 s**。这一巨大差距正是 Python 循环解释开销的量化，也是 CPython JIT 值得去优化的地方——但本地 `py314` 只暴露 `sys._jit`，`is_available()` 为 `False`，所以本轮只把 JIT 作为诚实限制呈现。**这是向观众传达的真实界限**：JIT 加速的是 Python 解释器层面的开销，而不是改变算法的渐进复杂度或 C 核心的执行速度。
-
----
-
-## 3. 陷阱：JIT 与 Free-threaded 的正交与互斥
-
-在 **Python 3.14** 的实验性阶段，你需要向观众诚实指出：
-
-- **现阶段，JIT 与 Free-threading 是互相独立的，甚至部分版本构建存在排斥。**
-- 并发修改字节码（JIT 编译时替换指令）在 Free-threaded 下需要非常复杂的同步原语，因此很多时候我们是在 **单线程 JIT** 和 **多线程无 JIT** 之间做选择。
-- 演讲建议：将两者解耦讲解。K-means 用于讲 JIT 带来的"原生 Python"收益；Permutation Test 用于讲 Free-threaded 解决的多进程共享内存痛点。
-- 验证方式：`python -VV`、`sys._is_gil_enabled()`、`sys.flags.jit`。3.15+ 可能会放宽此约束。
-
----
-
-## 4. Free-threaded 与科学计算栈的真实交互
-
-在 Permutation Test 的实验中，我们会发现 Free-threaded 版本的线程池性能非常优异，但有两个容易踩坑的点：
-
-1. **Thread-Safety 并不免费**：即便释放了 GIL，如果在 Python 循环里依然对全局状态（如往 `list.append` 结果）频繁访问，会导致 CPython 内部的微观锁争用，从而拖慢速度。正确的做法是：**为每个线程分配独立的写入 Buffer，最后统一 merge**（本仓库 [`permtest_freethreaded.py`](../experiments/permutation_test/permtest_freethreaded.py) 即按此设计）。
-2. **NumPy 的内部锁**：NumPy 在执行向量化运算时，内部的内存分配也可能遭遇 C 层面的锁。好在现代 NumPy 和底层 BLAS（如 OpenBLAS / MKL）对多线程有着不同程度的支持和隔离。
-
----
-
-## 5. 专家视角结论
-
-在准备这篇演讲时，应该让观众明确：Python 3.14 的到来并不意味着我们可以盲目写纯 Python 循环。它降低了"偶尔写出慢代码"的惩罚，并为构建高性能的多线程 Python 库（如在单进程内共享巨大矩阵的统计工具）提供了基础设施。
-
-**实测数据要点（Apple Silicon 8 核, Python 3.12.2, NumPy 1.26.4, Numba 0.59.1, JAX 0.4.25；另测 Python 3.14t free-threaded）**：
-
-- 同一份 ThreadPool 置换检验代码在 8 workers 下，`py312` GIL build 为 **0.32 s**，`py314t` free-threaded build 为 **0.17 s**。
-- `multiprocessing` 在 R=10000 时的子进程 RSS 加总 **833 MiB**，对照同规模线程池的 Python-level 峰值约 **1-2 MiB**。[`perm_memory.png`](../experiments/results/v2/perm_memory.png) 把这一差距做成了一张直观的对数刻度条形图。
-- 在 CPU 上运行基于 `jax.vmap` 的置换检验（R=10000）耗时 **~37 s**——比纯 NumPy 慢约 44×。JAX 在加速器上才能发挥，它在 CPU 上并非默认选项。
+1. 先用 reference 与 simulation 证明统计量没有变。
+2. 再用 profile/shape evidence 判断瓶颈是 Python loop、temporary array、
+   process copy、还是 accelerator batching。
+3. Python 3.14、Numba、JAX 都是工具箱的一部分；谁赢取决于 workload
+   形状，而不是 logo。
