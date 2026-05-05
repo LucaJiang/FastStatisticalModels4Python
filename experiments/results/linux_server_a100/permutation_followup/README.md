@@ -1,0 +1,40 @@
+# A100 permutation follow-up
+
+Generated/updated: 2026-05-05T20:24:42+0800
+
+This suite preserves the feature-wise two-group mean-difference statistic and uses host-built W batches from one NumPy seed stream for the A100 path and trusted CPU checks.
+
+## CSV status
+- `a100_permutation_decomposition.csv`: 2 rows
+  - check: 2
+- `a100_permutation_batch_sweep.csv`: 6 rows
+  - check: 6
+- `a100_permutation_shape_sweep.csv`: 29 rows
+  - check: 29
+- `a100_permutation_kernel_only.csv`: 35 rows
+  - check: 35
+- `cpu_matched_permutation_baseline.csv`: 2 rows
+  - check: 2
+
+## Correctness
+- Rows passing or checking the small matched CPU/JAX subset: 74.
+- Exact `pass` rows: 0; `check` rows: 74. The A100 float32 subset is kept as `check` because tiny statistic differences can flip about one permutation count in p-values.
+- `max_abs_p_diff` and `max_abs_stat_diff` are from a bounded small matched subset for each benchmark row; large rows are timed without changing the statistic or permutation stream.
+
+## End-to-end vs kernel-only
+- End-to-end rows include W construction, host-to-device transfer, `W @ X`, p-value reduction, and collection of reduced results.
+- Kernel-only rows are labeled `kernel-only hypothesis, not end-to-end permutation test`; they time only device-resident `W_batch @ X_device`.
+
+## Bottleneck summary
+- Dominant measured A100 end-to-end stage: `permutation_generation_time_s`.
+- A100 becomes faster at n=5000, p=50000, R=10000, batch_R=4096.
+
+## Unavailable / OOM / timeout rows
+- None recorded in this run; Stage 3 stress rows completed within the memory guard.
+
+## Figures
+- `figures/figure1_a100_end_to_end_decomposition.png`
+- `figures/a100_permutation_decomposition_clean.png` and `experiments/results/presentation_figures/a100_permutation_decomposition_clean.{png,svg}`
+- `figures/figure2_a100_batch_R_sweep.png`
+- `figures/figure3_cpu_vs_a100_break_even_map.png`
+- `figures/figure4_kernel_only_vs_end_to_end.png`

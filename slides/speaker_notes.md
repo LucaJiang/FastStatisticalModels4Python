@@ -202,19 +202,21 @@ This gate checks statistical behavior under the null. For a valid permutation te
 
 In this run, the mean replicate-level estimate is 0.051, so the optimized path passes the calibration check. I am showing this before timing because a fast permutation test with broken null behavior would be scientifically useless.
 
-## Slide 21 - Server permutation negative GPU result
+## Slide 21 - GPU decision map
 
-State the result honestly. CPU cost grows quickly with R and p. The A100 matrix path is validated but slower than CPU on the matched slice.
+This is the practical GPU question. The point is not whether A100 is good or bad. The point is whether this statistical computation has the right shape for A100.
 
-Frame this as success of the workflow, not failure of the talk. The workflow prevented you from telling a false GPU story.
+If the full pipeline is dominated by permutation generation, W construction, transfer, or collection, CPU can win even when the matrix multiply itself is fast. GPU becomes useful when the expensive work is large, batched, and stays on device long enough to amortize overhead. That is why we show a break-even map rather than a single speedup number.
 
-## Slide 22 - Negative result is evidence
+In this measured run, A100 becomes faster at n=5,000, p=10,000, R=5,000, batch_R=8,192. Kernel-only timing is deliberately excluded from the decision map.
 
-Use this slide to explain what the negative result tells us.
+## Slide 22 - A100 pipeline decomposition
 
-The statistic passed. The speed claim failed. The next question is more precise: W construction, transfer, batch size, dtype, or matrix multiplication.
+This slide decomposes the A100 path. The key point is not simply that the GPU is slow or fast; it is where the time goes.
 
-Be explicit that the timing-layer table is a next-bottleneck diagram unless measured decomposition exists. Do not imply measured decomposition if it has not been run.
+If W @ X is a small fraction, then the statistical algebra found a GPU-friendly kernel, but the surrounding pipeline - permutation generation, W construction, transfer, or collection - is the real bottleneck. That is why the next optimization target is the pipeline, not changing the statistic.
+
+Say the timing semantics precisely: this is full scenario timing, compile excluded, transfer included. The named stages are reconciled to the recorded total with an explicit other-overhead segment.
 
 ## Slide 23 - Parallelism
 
