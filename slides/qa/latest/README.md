@@ -1,56 +1,55 @@
-# Reveal Deck QA - latest
+# Reveal.js Deck QA - Latest
 
-Generated from local server `http://localhost:8000/slides/index.html`.
+Generated: 2026-05-05
 
 ## Summary
 
-- Total slide count: 32
-- Web screenshots: 32 files in `slides/qa/latest/web/`
-- PDF screenshots: 32 files in `slides/qa/latest/pdf/`
-- Exported PDF: `slides/pycon_deck.pdf`
-- PDF blank-page check: none
+- Total slide count: 32.
+- Main/backup split: 27 main-path slides, 5 backup slides.
+- Web screenshots: 32 saved in `slides/qa/latest/web/`.
+- Print/PDF screenshots: 32 saved in `slides/qa/latest/pdf/`.
+- Exported PDF: `slides/qa/latest/deck-export.pdf`.
+- PDF page count: 32.
+- PDF page size: 1017.12 x 571.92 pts.
 
-## Broken Assets And Console
+## Broken URLs / Console
 
-- Broken local image/video/poster URLs: none detected
-- HTTP 4xx/5xx local resource responses: none
-- Browser console errors/warnings: none
-- Request failures: none
+- Broken image/video/poster URLs: 0 of 14 checked assets.
+- Browser console errors/warnings: 0.
+- Failed network requests: 0.
+- Print/PDF console errors/warnings: 0.
+- Print/PDF failed network requests: 0.
 
-## Video Slide QA
+## Video Slides
 
-- Slide 9: `kmeans_animation.webm` autoplay=True, muted=True, loop=True, playsinline=True, paused=False, size=800x411
-- Slide 16: `permutation_animation.webm` autoplay=True, muted=True, loop=True, playsinline=True, paused=False, size=800x411
+- Video 1: autoplay=True, muted=True, loop=True, playsinline=True, readyState=4, paused=False, size=851x437.
+- Video 2: autoplay=True, muted=True, loop=True, playsinline=True, readyState=4, paused=False, size=851x437.
 
-PDF/print fallback:
+PDF poster fallback:
 
-- Slide 9: poster visible=True, size=937x437, `kmeans_animation_poster.png`
-- Slide 16: poster visible=True, size=937x437, `permutation_animation_poster.png`
+- Slide 9: video display `none`, poster display `block`, poster `assets/posters/kmeans_animation_poster.png`, box 851x437.
+- Slide 16: video display `none`, poster display `block`, poster `assets/posters/permutation_animation_poster.png`, box 851x437.
 
-Result: video assets autoplay in web mode and poster fallbacks are visible in print/PDF mode.
+Result: browser mode plays the videos, and print/PDF mode hides videos and shows poster PNGs.
 
-## Layout Findings
+## Layout / Readability
 
-- Clipped text after fixes: none detected in manual review.
-- Overlapping labels after fixes: none detected in manual review.
-- Tiny unreadable text: none detected below the 13.5px QA threshold in deck text.
-- Automated heuristic notes: Slide 6 flagged inline `W @ X` text inside its sentence; manual screenshot review found no visual collision.
+- Automated overflow scan: 6 slides with minor font-metric overflows: 1, 8, 15, 19, 20, 27.
+- Visual review of the flagged slides found no clipped text after fixing Correctness Gate 1.
+- No broken poster frames or blank PDF video boxes found.
+- Correctness Gate 1 no longer plots zero p-values on a log axis; JAX correctness tier is visible as CPU/x64, not A100.
+- Correctness Gate 2 uses the calibration card/ruler, not a sorted-replicate S-curve.
+- The PDF export initially produced a blank extra page; print CSS now overrides Reveal's `.pdf-page` layout and exports 32 pages.
 
-## PDF Versus Web
+## A100 Narrative Check
 
-- PDF export uses poster frames for the two method animation slides; no blank video boxes were found.
-- PDF screenshot review of the revised correctness gates and A100/parallelism slides did not show bad divergence from web mode.
+- No slide is marked as pending.
+- Slide 21 scopes speedup as matched CPU matrix baseline divided by A100 streamed full end-to-end; compile excluded, transfer included, kernel-only excluded.
+- Slide 21 reconciles the old negative matched slice with the new streamed-reduction shape sweep.
+- Slide 22 labels full-scenario A100 decomposition semantics and includes residual `other overhead` in the figure.
+- Repository READMEs now label historical `check` rows as accepted bounded checks, not exact `pass` rows; future accepted GPU rows should use `pass_gpu_tolerance`.
 
-## Correctness Gate Checks
+## Remaining Notes
 
-- Gate 1 is a validation dashboard and no longer plots zero p-value differences on a log axis.
-- Gate 2 is a calibration dashboard/ruler and no longer plots sorted null replicate index as an S-curve.
-
-## A100 Pending State
-
-A100-related pending slides:
-
-- Slide 21: `Server permutation: CPU scale is measured; A100 follow-up is pending`
-- Slide 22: `Use the current slice to ask the next question, not to close the case`
-
-Both slides mark the current matched A100 slice as non-final and state that decomposition / batch-size follow-up is pending.
+- The committed break-even result CSVs are not present in this repository snapshot; the scripts now add the requested CPU-baseline scope fields when rerun.
+- The decision-map PNG still contains a small internal colorbar phrase from the original figure, but the slide caption and script source now use the scoped matched CPU matrix baseline wording.

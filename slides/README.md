@@ -1,67 +1,73 @@
 # HTML slides (Reveal.js, 16:9)
 
-## Files
+## Canonical files
 
-- [`index.html`](index.html) - 1280x720 Reveal deck with 25 main slides plus 5 clearly marked backup slides; uses Reveal.js from jsDelivr CDN (requires network for first load).
-- [`timeline_v3.md`](timeline_v3.md) - 30-minute talk plan aligned to `docs/replanned_timeline_and_codex_instructions.md`.
-- [`speaker_notes_v3.md`](speaker_notes_v3.md) - standalone speaker notes matching the embedded Reveal notes.
+- [`index.html`](index.html) is the canonical Reveal.js deck.
+- [`speaker_notes.md`](speaker_notes.md) is the canonical speaker-notes file.
+- [`speaker_notes_v3.md`](speaker_notes_v3.md) is retained for compatibility and should match `speaker_notes.md`.
+- [`timeline_v3.md`](timeline_v3.md) is the 30-minute talk timeline.
+
+Current structure: 32 slides total, with slides 1-27 on the main path and slides 28-32 as backup. The main path stays at 27 because slides 9 and 16 are short method-transition video slides, not full content blocks.
 
 ## View locally
 
-**Option A — open the file**
+Use the project conda environment by default:
 
 ```bash
-open slides/index.html   # macOS
-xdg-open slides/index.html
-```
-
-Use a local static server if browser security blocks relative images:
-
-**Option B — HTTP server (recommended)**
-
-```bash
-cd /path/to/FastStatisticalModels4Python
+conda activate py312
 python -m http.server 8000
-# Visit http://localhost:8000/slides/
 ```
 
-## Print / PDF export
-
-Open the deck through the local server, then add `?print-pdf`:
+Then open:
 
 ```text
-http://localhost:8000/slides/?print-pdf
+http://localhost:8000/slides/index.html
 ```
 
-Exported PDFs should have 30 non-blank pages: 25 main slides and 5 backup slides.
+Print/PDF mode:
 
-## Controls
+```text
+http://localhost:8000/slides/index.html?print-pdf
+```
 
-| Key | Action |
-|-----|--------|
-| Arrow keys | Next / previous slide |
-| `Space` | Next fragment / slide |
-| `Esc` | Slide overview |
-| `S` | Speaker view (notes + timer) |
-| `F` | Fullscreen |
+PDF export should show 32 non-blank pages. Video slides use MP4/WebM in browser mode and poster PNG fallbacks in print/PDF mode.
 
-## Updating numbers and figures
+## Current figure sources
 
-1. Re-run benchmarks under `experiments/` and refresh CSV/PNG in `experiments/results/`.
-2. For the current MacBook evidence figures, use [`experiments/results/macbook_air_long/latest/figure_manifest.csv`](../experiments/results/macbook_air_long/latest/figure_manifest.csv).
-3. For the server/A100 slides, use the 16:9 summaries in [`experiments/results/presentation_figures/`](../experiments/results/presentation_figures/).
-4. Regenerate 16:9 MacBook figures with:
-   ```bash
-   /Users/lucajiang/anaconda3/envs/py312/bin/python -m experiments.visualization.plot_macbook_air_evidence \
-     --results-dir experiments/results/macbook_air_long/latest
-   ```
-5. Regenerate 16:9 server figures with:
-   ```bash
-   /Users/lucajiang/anaconda3/envs/py312/bin/python -m experiments.visualization.plot_server_talk_evidence
-   ```
-6. Edit `slides/index.html`, `timeline_v3.md`, and `speaker_notes_v3.md` together.
-7. Keep a one-line footnote with Python / hardware version for PyCon slides.
+- MacBook figures: [`experiments/results/macbook_air_long/latest/figures/`](../experiments/results/macbook_air_long/latest/figures/)
+- Server and A100 presentation figures: [`experiments/results/presentation_figures/`](../experiments/results/presentation_figures/)
+- Video assets: [`assets/videos/`](assets/videos/)
+- Video poster frames: [`assets/posters/`](assets/posters/)
 
-## Offline / USB copy
+## Regenerate figures
 
-To bundle without `../experiments/results/`, copy needed PNGs into `slides/assets/` and update `src` attributes in `index.html`.
+Regenerate MacBook evidence figures:
+
+```bash
+python -m experiments.visualization.plot_macbook_air_evidence \
+  --results-dir experiments/results/macbook_air_long/latest
+```
+
+Regenerate server CPU and k-means/A100 presentation figures:
+
+```bash
+python -m experiments.visualization.plot_server_talk_evidence
+```
+
+Regenerate the current A100 permutation break-even figures from existing break-even CSVs when those CSVs are present on the experiment server:
+
+```bash
+python -m experiments.server.a100_permutation_break_even plot \
+  --out-dir experiments/results/linux_server_a100/permutation_break_even \
+  --presentation-dir experiments/results/presentation_figures
+```
+
+The break-even map uses `a100_streamed_reduction`; speedup is scoped to the matched CPU matrix baseline divided by A100 streamed full end-to-end. Compile is excluded, transfer is included, and kernel-only rows are not used for CPU/A100 speedup decisions.
+
+## Update checklist
+
+- Keep `index.html`, `speaker_notes.md`, `speaker_notes_v3.md`, `timeline_v3.md`, and this README in sync.
+- Do not change statistical claims or benchmark numbers unless regenerated CSVs support the change.
+- Keep the old A100 matched-slice negative result labeled as pre-break-even evidence: `n=5,000`, `p=50,000`, `batch_R=512`, before streamed reduction and broader shape sweep.
+- Keep A100 correctness wording precise: historical `check` rows are not exact `pass` rows; new accepted GPU rows should use `pass_gpu_tolerance`.
+- Put detailed metadata in notes or READMEs, not dense slide captions.

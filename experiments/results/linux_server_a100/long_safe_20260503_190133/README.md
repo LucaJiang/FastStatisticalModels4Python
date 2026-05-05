@@ -114,7 +114,7 @@ Inputs and transformation:
 
 Conclusion supported by this figure:
 
-For the matched `R=1,000` and `R=10,000` points, CPU is faster than A100 in this implementation. This is an important negative result: the current JAX GPU permutation path has enough overhead that it does not beat the CPU baseline on the matched slice, even though it validates the matrix reformulation.
+For the old matched `R=1,000` and `R=10,000` points at `n=5,000`, `p=50,000`, and `batch_R=512`, CPU is faster than A100 in this implementation. This is historical pre-break-even evidence: it predates the streamed-reduction follow-up, larger `batch_R` sweep, and broader shape sweep. It should not be read as the final A100 permutation conclusion.
 
 ### `figures/permutation_matrix_reformulation.png`
 

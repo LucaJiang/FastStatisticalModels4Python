@@ -17,8 +17,9 @@ This suite preserves the feature-wise two-group mean-difference statistic and us
   - check: 2
 
 ## Correctness
-- Rows passing or checking the small matched CPU/JAX subset: 74.
-- Exact `pass` rows: 0; `check` rows: 74. The A100 float32 subset is kept as `check` because tiny statistic differences can flip about one permutation count in p-values.
+- Accepted small matched CPU/JAX subset rows: 74.
+- Exact `pass` rows: 0; historical `check` rows: 74. These are accepted bounded checks under the then-current status vocabulary, not exact pass rows.
+- New accepted A100 float32 rows should be emitted as `pass_gpu_tolerance`; tiny statistic differences can flip about one permutation count in p-values.
 - `max_abs_p_diff` and `max_abs_stat_diff` are from a bounded small matched subset for each benchmark row; large rows are timed without changing the statistic or permutation stream.
 
 ## End-to-end vs kernel-only
@@ -26,7 +27,7 @@ This suite preserves the feature-wise two-group mean-difference statistic and us
 - Kernel-only rows are labeled `kernel-only hypothesis, not end-to-end permutation test`; they time only device-resident `W_batch @ X_device`.
 
 ## Bottleneck summary
-- Dominant measured A100 end-to-end stage: `permutation_generation_time_s`.
+- Largest recorded named A100 end-to-end stage in this run: `permutation_generation_time_s`.
 - A100 becomes faster at n=5000, p=50000, R=10000, batch_R=4096.
 
 ## Unavailable / OOM / timeout rows

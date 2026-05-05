@@ -22,6 +22,7 @@ if str(ROOT / "experiments") not in sys.path:
 
 from common.server_utils import timestamp
 from server.a100_permutation_followup import (  # noqa: E402
+    ACCEPTED_CORRECTNESS_STATUSES,
     CPU_FIELDS,
     DECOMP_FIELDS,
     KERNEL_FIELDS,
@@ -48,6 +49,9 @@ CSV_FIELDS = [
     "seed",
     "dtype",
     "best_cpu_implementation",
+    "best_validated_cpu_implementation",
+    "best_validated_cpu_end_to_end_time_s",
+    "cpu_baseline_scope",
     "cpu_end_to_end_time_s",
     "cpu_status",
     "cpu_timeout_status",
@@ -150,10 +154,10 @@ def summary_row(
     notes: str = "",
 ) -> dict[str, Any]:
     cpu_time = None
-    if cpu_row and str(cpu_row.get("correctness_status")) in {"pass", "check"}:
+    if cpu_row and str(cpu_row.get("correctness_status")) in ACCEPTED_CORRECTNESS_STATUSES:
         cpu_time = float(cpu_row.get("end_to_end_time_s") or cpu_row.get("cpu_time_s") or "nan")
     a100_time = None
-    if a100_row and str(a100_row.get("correctness_status")) in {"pass", "check"}:
+    if a100_row and str(a100_row.get("correctness_status")) in ACCEPTED_CORRECTNESS_STATUSES:
         a100_time = float(a100_row.get("end_to_end_time_s") or "nan")
     speedup = ""
     winner = "unavailable"
@@ -162,6 +166,8 @@ def summary_row(
         speedup = as_float(speedup_val)
         winner = "a100" if speedup_val > 1.0 else "cpu"
     est = estimates(shape.n, shape.p, shape.batch_R, shape.dtype)
+    cpu_impl = (cpu_row or {}).get("implementation", "numpy_matrix_same_stream")
+    cpu_scope = "matched CPU matrix baseline: numpy_matrix_same_stream batched matrix path; not a best-of-all-CPU search"
     return {
         "run_id": run_id,
         "timestamp": timestamp(),
@@ -173,7 +179,10 @@ def summary_row(
         "n_batches": n_batches(shape),
         "seed": shape.seed,
         "dtype": shape.dtype,
-        "best_cpu_implementation": (cpu_row or {}).get("implementation", "numpy_matrix_same_stream"),
+        "best_cpu_implementation": cpu_impl,
+        "best_validated_cpu_implementation": cpu_impl,
+        "best_validated_cpu_end_to_end_time_s": as_float(cpu_time),
+        "cpu_baseline_scope": cpu_scope,
         "cpu_end_to_end_time_s": as_float(cpu_time),
         "cpu_status": (cpu_row or {}).get("correctness_status", ""),
         "cpu_timeout_status": (cpu_row or {}).get("timeout_status", ""),
@@ -291,7 +300,7 @@ def choose_best_batch(batch_rows: list[dict[str, Any]]) -> int:
     ok = [
         row
         for row in batch_rows
-        if row.get("a100_status") in {"pass", "check"} and row.get("a100_end_to_end_time_s") not in {"", None}
+        if row.get("a100_status") in ACCEPTED_CORRECTNESS_STATUSES and row.get("a100_end_to_end_time_s") not in {"", None}
     ]
     if not ok:
         return 4096
@@ -354,6 +363,9 @@ def run_suite(args: argparse.Namespace) -> None:
             run_kernel=True,
         )
         row["cpu_end_to_end_time_s"] = fixed_cpu.get("end_to_end_time_s", "")
+        row["best_validated_cpu_implementation"] = fixed_cpu.get("implementation", "numpy_matrix_same_stream")
+        row["best_validated_cpu_end_to_end_time_s"] = fixed_cpu.get("end_to_end_time_s", "")
+        row["cpu_baseline_scope"] = "matched CPU matrix baseline: numpy_matrix_same_stream batched matrix path; not a best-of-all-CPU search"
         row["cpu_status"] = fixed_cpu.get("correctness_status", "")
         if row["cpu_end_to_end_time_s"] and row["a100_end_to_end_time_s"]:
             speedup = float(row["cpu_end_to_end_time_s"]) / float(row["a100_end_to_end_time_s"])
@@ -497,7 +509,7 @@ def make_figures(out_dir: Path, presentation_dir: Path) -> None:
                 txt = f"{val:.1f}x"
             ax.text(j, i, txt, ha="center", va="center", fontsize=10, weight="bold", color="#17202A")
     cb = fig.colorbar(im, ax=ax, fraction=0.035, pad=0.02)
-    cb.set_label("speedup = CPU full e2e / A100 streamed full e2e")
+    cb.set_label("speedup = matched CPU matrix full e2e / A100 streamed full e2e")
     winners = shape[pd.to_numeric(shape["speedup_cpu_over_a100"], errors="coerce") > 1.0]
     if winners.empty:
         takeaway = "No end-to-end A100 break-even found in measured range."
@@ -511,7 +523,7 @@ def make_figures(out_dir: Path, presentation_dir: Path) -> None:
     plt.close(fig)
 
     decomp = pd.read_csv(out_dir / "decomposition_representative_shapes.csv")
-    decomp = decomp[decomp.get("correctness_status", pd.Series(dtype=str)).isin(["pass", "check"])].copy()
+    decomp = decomp[decomp.get("correctness_status", pd.Series(dtype=str)).isin(ACCEPTED_CORRECTNESS_STATUSES)].copy()
     if not decomp.empty:
         decomp["total"] = pd.to_numeric(decomp["total_end_to_end_time_s"], errors="coerce")
         decomp["perm_generation_s"] = pd.to_numeric(decomp["permutation_generation_time_s"], errors="coerce").fillna(0.0)
@@ -635,7 +647,7 @@ def make_figures(out_dir: Path, presentation_dir: Path) -> None:
         ax.bar(x - 1.5 * width, pd.to_numeric(reps["kernel_only_time_s"], errors="coerce"), width, label="kernel-only W @ X\n(not full test)")
         ax.bar(x - 0.5 * width, pd.to_numeric(reps["a100_end_to_end_time_s"], errors="coerce"), width, label="A100 full e2e")
         ax.bar(x + 0.5 * width, pd.to_numeric(reps["a100_streamed_reduction_time_s"], errors="coerce"), width, label="A100 streamed reduction")
-        ax.bar(x + 1.5 * width, pd.to_numeric(reps["cpu_end_to_end_time_s"], errors="coerce"), width, label="best CPU full e2e")
+        ax.bar(x + 1.5 * width, pd.to_numeric(reps["cpu_end_to_end_time_s"], errors="coerce"), width, label="matched CPU matrix full e2e")
         ax.set_yscale("log")
         ax.set_xticks(x, labels)
         ax.set_ylabel("seconds, log scale")
@@ -655,7 +667,8 @@ def write_readme(out_dir: Path) -> None:
     cpu = pd.read_csv(out_dir / "cpu_matched_baselines.csv")
     correct = pd.read_csv(out_dir / "correctness_checks.csv")
     lines.append("## CPU baseline")
-    lines.append("- Best trusted CPU implementation used here: `numpy_matrix_same_stream` batched matrix path.")
+    lines.append("- Matched CPU matrix baseline used here: `numpy_matrix_same_stream` batched matrix path.")
+    lines.append("- Scope: this is not an exhaustive best-of-all-CPU search; speedup means matched CPU matrix baseline divided by A100 streamed full end-to-end.")
     lines.append(f"- CPU rows recorded: {len(cpu)}.")
     lines.append("")
     lines.append("## Break-even")
@@ -690,6 +703,13 @@ def write_readme(out_dir: Path) -> None:
     lines.append(f"- Correctness check rows: {len(correct)}.")
     for key, val in correct["correctness_status"].value_counts(dropna=False).items():
         lines.append(f"  - {key}: {val}")
+    p_diff = pd.to_numeric(correct.get("max_abs_p_diff", pd.Series(dtype=float)), errors="coerce").dropna()
+    stat_diff = pd.to_numeric(correct.get("max_abs_stat_diff", pd.Series(dtype=float)), errors="coerce").dropna()
+    if not p_diff.empty:
+        lines.append(f"- Max recorded `max_abs_p_diff`: {float(p_diff.max()):.6g}.")
+    if not stat_diff.empty:
+        lines.append(f"- Max recorded `max_abs_stat_diff`: {float(stat_diff.max()):.6g}.")
+    lines.append("- Historical `check` rows mean accepted bounded CPU/JAX comparisons under the then-current status vocabulary; new accepted GPU rows are emitted as `pass_gpu_tolerance`.")
     lines.append("")
     lines.append("## OOM / memory-risk / timeout")
     for name in ["batch_R_sweep.csv", "break_even_shape_sweep.csv", "n_sensitivity_sweep.csv", "cpu_matched_baselines.csv"]:

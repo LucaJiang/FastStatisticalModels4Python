@@ -36,9 +36,12 @@ CPU_TIMEOUT_S = 20 * 60
 DEFAULT_DTYPE = "float32"
 STATUS_PASS = "pass"
 STATUS_CHECK = "check"
+STATUS_PASS_GPU_TOLERANCE = "pass_gpu_tolerance"
+STATUS_MANUAL_CHECK = "manual_check"
 STATUS_SKIPPED = "skipped"
 STATUS_TIMEOUT = "timeout"
 STATUS_FAIL = "fail"
+ACCEPTED_CORRECTNESS_STATUSES = {STATUS_PASS, STATUS_CHECK, STATUS_PASS_GPU_TOLERANCE}
 
 COMMON_FIELDS = [
     "run_id",
@@ -261,7 +264,15 @@ def cpu_matrix_from_batches(x: Any, labels: Any, r: int, batch_r: int, seed: int
     return pvals, first_stats, perm_s, build_s, matmul_s
 
 
-def correctness_check(n: int, p: int, r: int, batch_r: int, seed: int, dtype: str) -> tuple[str, float, float, str]:
+def correctness_check(
+    n: int,
+    p: int,
+    r: int,
+    batch_r: int,
+    seed: int,
+    dtype: str,
+    accepted_status: str = STATUS_PASS_GPU_TOLERANCE,
+) -> tuple[str, float, float, str]:
     import numpy as np
 
     small_n = min(n, 256)
@@ -301,7 +312,7 @@ def correctness_check(n: int, p: int, r: int, batch_r: int, seed: int, dtype: st
         gpu_p = np.asarray((exceed + 1.0) / (small_r + 1.0))
         max_p = float(np.max(np.abs(gpu_p - cpu_p)))
         max_stat = float(np.max(np.abs(np.asarray(first_stats, dtype=np.float64) - np.asarray(cpu_stats, dtype=np.float64))))
-        status = STATUS_PASS if max_p <= 1e-6 and max_stat <= 1e-4 else STATUS_CHECK
+        status = accepted_status if max_p <= 1e-6 and max_stat <= 1e-4 else STATUS_MANUAL_CHECK
         return status, max_p, max_stat, f"small_check n={small_n} p={small_p} R={small_r} batch_R={small_b}"
     except Exception as exc:
         return STATUS_FAIL, math.nan, math.nan, f"correctness_check_failed={exc!r}"
@@ -551,7 +562,15 @@ def cpu_child_main(params: dict[str, Any]) -> None:
 
 def run_cpu_baseline(shape: Shape, run_id: str, timeout_s: int) -> dict[str, Any]:
     row = common_row("cpu_matched_baseline", shape, "numpy_matrix_same_stream", "linux_server_cpu", run_id)
-    status, max_p, max_stat, check_note = correctness_check(shape.n, shape.p, shape.R, shape.batch_R, shape.seed, shape.dtype)
+    status, max_p, max_stat, check_note = correctness_check(
+        shape.n,
+        shape.p,
+        shape.R,
+        shape.batch_R,
+        shape.seed,
+        shape.dtype,
+        accepted_status=STATUS_CHECK,
+    )
     row.update(
         {
             "correctness_status": status,
@@ -621,7 +640,7 @@ def choose_best_batch(batch_csv: Path) -> int:
     if not batch_csv.exists():
         return 1024
     df = pd.read_csv(batch_csv)
-    ok = df[df["correctness_status"].isin([STATUS_PASS, STATUS_CHECK])].copy()
+    ok = df[df["correctness_status"].isin(ACCEPTED_CORRECTNESS_STATUSES)].copy()
     if ok.empty or "end_to_end_time_s" not in ok:
         return 1024
     ok["end_to_end_time_s"] = pd.to_numeric(ok["end_to_end_time_s"], errors="coerce")
@@ -828,7 +847,7 @@ def make_figures(out_dir: Path, presentation_dir: Path) -> None:
     kernel = load_csv(out_dir / "a100_permutation_kernel_only.csv")
     cpu = load_csv(out_dir / "cpu_matched_permutation_baseline.csv")
 
-    ok_decomp = decomp[decomp.get("correctness_status", pd.Series(dtype=str)).isin([STATUS_PASS, STATUS_CHECK])].copy() if not decomp.empty else decomp
+    ok_decomp = decomp[decomp.get("correctness_status", pd.Series(dtype=str)).isin(ACCEPTED_CORRECTNESS_STATUSES)].copy() if not decomp.empty else decomp
     if not ok_decomp.empty:
         for col in stage_labels:
             ok_decomp[col] = pd.to_numeric(ok_decomp[col], errors="coerce").fillna(0.0)
@@ -856,10 +875,10 @@ def make_figures(out_dir: Path, presentation_dir: Path) -> None:
         plt.close(fig)
         make_clean_decomposition_figure(plot_df, cpu, fig_dir, presentation_dir)
 
-    ok_batch = batch[batch.get("correctness_status", pd.Series(dtype=str)).isin([STATUS_PASS, STATUS_CHECK])].copy() if not batch.empty else batch
+    ok_batch = batch[batch.get("correctness_status", pd.Series(dtype=str)).isin(ACCEPTED_CORRECTNESS_STATUSES)].copy() if not batch.empty else batch
     if not ok_batch.empty:
         ok_batch["end_to_end_time_s"] = pd.to_numeric(ok_batch["end_to_end_time_s"], errors="coerce")
-        k_ok = kernel[kernel.get("correctness_status", pd.Series(dtype=str)).isin([STATUS_PASS, STATUS_CHECK])].copy() if not kernel.empty else kernel
+        k_ok = kernel[kernel.get("correctness_status", pd.Series(dtype=str)).isin(ACCEPTED_CORRECTNESS_STATUSES)].copy() if not kernel.empty else kernel
         k_ok = k_ok[k_ok.get("source", "") == "batch_sweep"].copy() if "source" in k_ok else k_ok
         if not k_ok.empty:
             k_ok["kernel_only_time_s"] = pd.to_numeric(k_ok["kernel_only_time_s"], errors="coerce")
@@ -889,8 +908,8 @@ def make_figures(out_dir: Path, presentation_dir: Path) -> None:
         plt.close(fig)
 
     if not shape.empty and not cpu.empty:
-        ok_shape = shape[shape.get("correctness_status", pd.Series(dtype=str)).isin([STATUS_PASS, STATUS_CHECK])].copy()
-        ok_cpu = cpu[cpu.get("correctness_status", pd.Series(dtype=str)).isin([STATUS_PASS, STATUS_CHECK])].copy()
+        ok_shape = shape[shape.get("correctness_status", pd.Series(dtype=str)).isin(ACCEPTED_CORRECTNESS_STATUSES)].copy()
+        ok_cpu = cpu[cpu.get("correctness_status", pd.Series(dtype=str)).isin(ACCEPTED_CORRECTNESS_STATUSES)].copy()
         if not ok_shape.empty and not ok_cpu.empty:
             ok_shape["end_to_end_time_s"] = pd.to_numeric(ok_shape["end_to_end_time_s"], errors="coerce")
             ok_cpu["end_to_end_time_s"] = pd.to_numeric(ok_cpu["end_to_end_time_s"], errors="coerce")
@@ -917,9 +936,9 @@ def make_figures(out_dir: Path, presentation_dir: Path) -> None:
                 plt.close(fig)
 
     if not kernel.empty:
-        k_ok = kernel[kernel.get("correctness_status", pd.Series(dtype=str)).isin([STATUS_PASS, STATUS_CHECK])].copy()
+        k_ok = kernel[kernel.get("correctness_status", pd.Series(dtype=str)).isin(ACCEPTED_CORRECTNESS_STATUSES)].copy()
         e2e = pd.concat([batch, decomp, shape], ignore_index=True) if not batch.empty or not decomp.empty or not shape.empty else pd.DataFrame()
-        e2e_ok = e2e[e2e.get("correctness_status", pd.Series(dtype=str)).isin([STATUS_PASS, STATUS_CHECK])].copy() if not e2e.empty else e2e
+        e2e_ok = e2e[e2e.get("correctness_status", pd.Series(dtype=str)).isin(ACCEPTED_CORRECTNESS_STATUSES)].copy() if not e2e.empty else e2e
         if not k_ok.empty and not e2e_ok.empty:
             k_ok["kernel_only_time_s"] = pd.to_numeric(k_ok["kernel_only_time_s"], errors="coerce")
             e2e_ok["end_to_end_time_s"] = pd.to_numeric(e2e_ok["end_to_end_time_s"], errors="coerce")
@@ -1173,16 +1192,31 @@ def write_readme(out_dir: Path) -> None:
     lines.append("## Correctness")
     pass_rows = []
     exact_pass_rows = 0
+    gpu_tolerance_rows = 0
     check_rows = 0
+    manual_check_rows = 0
+    max_p_diffs = []
+    max_stat_diffs = []
     for path in paths.values():
         if path.exists():
             df = pd.read_csv(path)
             if "correctness_status" in df:
-                pass_rows.append(int(df["correctness_status"].isin([STATUS_PASS, STATUS_CHECK]).sum()))
+                pass_rows.append(int(df["correctness_status"].isin(ACCEPTED_CORRECTNESS_STATUSES).sum()))
                 exact_pass_rows += int((df["correctness_status"] == STATUS_PASS).sum())
+                gpu_tolerance_rows += int((df["correctness_status"] == STATUS_PASS_GPU_TOLERANCE).sum())
                 check_rows += int((df["correctness_status"] == STATUS_CHECK).sum())
-    lines.append(f"- Rows passing or checking the small matched CPU/JAX subset: {sum(pass_rows)}.")
-    lines.append(f"- Exact `pass` rows: {exact_pass_rows}; `check` rows: {check_rows}. The A100 float32 subset is kept as `check` because tiny statistic differences can flip about one permutation count in p-values.")
+                manual_check_rows += int((df["correctness_status"] == STATUS_MANUAL_CHECK).sum())
+            if "max_abs_p_diff" in df:
+                max_p_diffs.extend(pd.to_numeric(df["max_abs_p_diff"], errors="coerce").dropna().tolist())
+            if "max_abs_stat_diff" in df:
+                max_stat_diffs.extend(pd.to_numeric(df["max_abs_stat_diff"], errors="coerce").dropna().tolist())
+    lines.append(f"- Accepted small matched CPU/JAX subset rows: {sum(pass_rows)}.")
+    lines.append(f"- Exact `pass` rows: {exact_pass_rows}; `pass_gpu_tolerance` rows: {gpu_tolerance_rows}; historical `check` rows: {check_rows}; `manual_check` rows: {manual_check_rows}.")
+    lines.append("- `check` is retained only for historical/backward-compatible rows. New A100 rows that meet the bounded float32 tolerance are emitted as `pass_gpu_tolerance`.")
+    if max_p_diffs:
+        lines.append(f"- Max recorded `max_abs_p_diff`: {max(max_p_diffs):.6g}.")
+    if max_stat_diffs:
+        lines.append(f"- Max recorded `max_abs_stat_diff`: {max(max_stat_diffs):.6g}.")
     lines.append("- `max_abs_p_diff` and `max_abs_stat_diff` are from a bounded small matched subset for each benchmark row; large rows are timed without changing the statistic or permutation stream.")
     lines.append("")
     lines.append("## End-to-end vs kernel-only")
@@ -1197,7 +1231,7 @@ def write_readme(out_dir: Path) -> None:
     e2e = pd.concat([df for df in [decomp, batch, shape] if not df.empty], ignore_index=True) if any(not df.empty for df in [decomp, batch, shape]) else pd.DataFrame()
     lines.append("## Bottleneck summary")
     if not e2e.empty:
-        ok = e2e[e2e["correctness_status"].isin([STATUS_PASS, STATUS_CHECK])].copy()
+        ok = e2e[e2e["correctness_status"].isin(ACCEPTED_CORRECTNESS_STATUSES)].copy()
         stage_cols = [
             "permutation_generation_time_s",
             "W_build_host_time_s",
@@ -1211,10 +1245,10 @@ def write_readme(out_dir: Path) -> None:
                 ok[col] = pd.to_numeric(ok[col], errors="coerce").fillna(0.0)
             sums = ok[stage_cols].sum()
             dominant = str(sums.idxmax())
-            lines.append(f"- Dominant measured A100 end-to-end stage: `{dominant}`.")
+            lines.append(f"- Largest recorded named A100 end-to-end stage in this run: `{dominant}`.")
     if not shape.empty and not cpu.empty:
-        ok_shape = shape[shape["correctness_status"].isin([STATUS_PASS, STATUS_CHECK])].copy()
-        ok_cpu = cpu[cpu["correctness_status"].isin([STATUS_PASS, STATUS_CHECK])].copy()
+        ok_shape = shape[shape["correctness_status"].isin(ACCEPTED_CORRECTNESS_STATUSES)].copy()
+        ok_cpu = cpu[cpu["correctness_status"].isin(ACCEPTED_CORRECTNESS_STATUSES)].copy()
         if not ok_shape.empty and not ok_cpu.empty:
             ok_shape["end_to_end_time_s"] = pd.to_numeric(ok_shape["end_to_end_time_s"], errors="coerce")
             ok_cpu["end_to_end_time_s"] = pd.to_numeric(ok_cpu["end_to_end_time_s"], errors="coerce")

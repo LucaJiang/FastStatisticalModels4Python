@@ -1912,7 +1912,7 @@ z
      </g>
     </g>
     <g id="text_41">
-     <!-- speedup = CPU full e2e / A100 streamed full e2e -->
+     <!-- speedup = matched CPU matrix full e2e / A100 streamed full e2e -->
      <g transform="translate(882.696756 391.089418) rotate(-90) scale(0.13 -0.13)">
       <defs>
        <path id="DejaVuSans-64" d="M 2906 2969 

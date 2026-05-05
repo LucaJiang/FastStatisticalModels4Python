@@ -1,6 +1,6 @@
 # Speaker Notes - Revised Main Deck
 
-Target: 30 minutes. Main path is slides 1-27. Slides 28-32 are backup.
+Target: 30 minutes. Main path is slides 1-27. Slides 28-32 are backup. This keeps a 27-slide main path because slides 9 and 16 are short method-transition video slides, not full content blocks.
 
 ## Timing overview
 
@@ -204,11 +204,13 @@ In this run, the mean replicate-level estimate is 0.051, so the optimized path p
 
 ## Slide 21 - GPU decision map
 
-This is the practical GPU question. The point is not whether A100 is good or bad. The point is whether this statistical computation has the right shape for A100.
+This is the practical GPU question. The old matched slice at n=5,000, p=50,000, batch_R=512 was negative: the CPU matrix path was faster. The follow-up did not change the statistic; it changed the pipeline to streamed reduction, larger batch_R, and a broader shape sweep.
+
+The point is not whether A100 is good or bad. The point is whether this statistical computation has the right shape for A100.
 
 If the full pipeline is dominated by permutation generation, W construction, transfer, or collection, CPU can win even when the matrix multiply itself is fast. GPU becomes useful when the expensive work is large, batched, and stays on device long enough to amortize overhead. That is why we show a break-even map rather than a single speedup number.
 
-In this measured run, A100 becomes faster at n=5,000, p=10,000, R=5,000, batch_R=8,192. Kernel-only timing is deliberately excluded from the decision map.
+In this measured run, A100 becomes faster at n=5,000, p=10,000, R=5,000, batch_R=8,192, and the largest measured speedup is 8.54x at n=5,000, p=500,000, R=5,000. This is a shape and pipeline result, not a logo result. Kernel-only timing is deliberately excluded from the decision map.
 
 ## Slide 22 - A100 pipeline decomposition
 

@@ -18,11 +18,11 @@ Older quick-validation outputs, the incomplete long run, and the pre-x64 full ru
 ## Reproduce current curated figures
 
 ```bash
-/Users/lucajiang/anaconda3/envs/py312/bin/python -m experiments.run_macbook_evidence_extra \
+python -m experiments.run_macbook_evidence_extra \
   --output-dir experiments/results/macbook_air_long/latest \
   --checkpoint-every 20 --max-iter 15
 
-/Users/lucajiang/anaconda3/envs/py312/bin/python -m experiments.visualization.plot_macbook_air_evidence \
+python -m experiments.visualization.plot_macbook_air_evidence \
   --results-dir experiments/results/macbook_air_long/latest
 ```
 

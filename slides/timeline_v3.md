@@ -1,8 +1,8 @@
 # Timeline v3 - 30 minute talk
 
-This timeline follows `docs/replanned_timeline_and_codex_instructions.md`: laptop simulation defines trust, server CPU tests scale, and A100 is an evidence ladder rung, not a leaderboard trophy.
+This timeline matches `slides/index.html`: 32 total slides, 27 main-path slides, and 5 backup slides. The main path intentionally keeps 27 slides because the k-means and permutation video slides are short method-transition slides.
 
-The timed path is 25 non-blank main slides. Five lower-priority evidence slides remain after the close as backup.
+The narrative is an evidence ladder, not a hardware leaderboard: laptop simulation defines trust, server CPU tests scale, and A100 is useful only when the validated statistical computation has an accelerator-shaped pipeline.
 
 ## 0:00-1:00 - Title and thesis
 
@@ -10,64 +10,61 @@ Slide 1: Breaking the Speed Limit
 
 Purpose: establish the thesis. Simulation is how statisticians write tests; a faster implementation that changes the statistic is not an optimization.
 
-## 1:00-7:00 - Simulation-driven statistical computing
+## 1:00-8:00 - Simulation-driven statistical computing
 
-Slide 2: Simulation-driven statistical computing is statistical CI  
-Slide 3: Simulation is how statisticians write tests  
-Slide 4: Six steps before optimization is allowed  
-Slide 5: Three ways statistical software fails  
-Slide 6: The environment ladder is not a leaderboard  
-Slide 7: Each tier answers a different question
+Slide 2: From a statistician's point of view, speed is only useful after trust  
+Slide 3: Simulation creates the answer key  
+Slide 4: Statistical CI  
+Slide 5: Python stays the scientific interface  
+Slide 6: Why these two examples  
+Slide 7: Evidence ladder
 
-Purpose: build the PyCon/programmer bridge and explain why MacBook, server CPU, and A100 evidence should not be collapsed into one ranking.
+Purpose: build the PyCon/programmer bridge, explain why Python remains the interface, and define the trust-before-speed measurement contract.
 
-## 7:00-8:30 - Benchmark contract and workloads
+## 8:00-16:00 - Workload 1: k-means
 
-Slide 8: Measurement contract  
-Slide 9: Two workloads, two pressure points
+Slide 8: Workload 1 - k-means as iterative simulation pressure  
+Slide 9: How k-means moves  
+Slide 10: Why k-means works here  
+Slide 11: Recovery surfaces  
+Slide 12: First prove optimized paths preserve the reference  
+Slide 13: Server k-means: A100 wins only after enough work exists  
+Slide 14: k-means takeaway
 
-Purpose: define the benchmark contract, metadata, and the two statistical workloads before showing results.
+Purpose: show iterative model-fitting pressure: assignment/update dependence, recovery before runtime, reference equivalence before optimization, and conditional CPU/GPU scale behavior.
 
-## 8:30-15:30 - Workload 1: k-means
+## 16:00-24:00 - Workload 2: permutation tests
 
-Slide 10: k-means as iterative simulation pressure  
-Slide 11: Simulation grid reveals hard cases  
-Slide 12: Optimized paths must preserve the reference  
-Slide 13: Runtime is useful only after recovery is visible  
-Slide 14: Server k-means: A100 wins only after enough work exists  
-Slide 15: The right k-means implementation depends on shape
+Slide 15: Workload 2 - permutation tests as resampling pressure  
+Slide 16: How a permutation test scales  
+Slide 17: Why permutation tests work here  
+Slide 18: Same statistic, different formulation  
+Slide 19: First, prove the matrix path matches the reference  
+Slide 20: Then check null calibration  
+Slide 21: When does GPU help for permutation tests?  
+Slide 22: Where does A100 time go?  
+Slide 23: More workers is not a moral victory
 
-Purpose: show that recovery and reference preservation come before runtime, then use server/A100 evidence as conditional scale evidence.
+Purpose: move from loop reference to matrix formulation, then through two correctness gates before runtime. The A100 story is now explicitly reconciled: the old matched slice was negative, and the follow-up changed the pipeline with streamed reduction, larger `batch_R`, and a broader shape sweep while preserving the statistic.
 
-## 15:30-23:30 - Workload 2: permutation tests
+## 24:00-27:30 - Tool roles and AI/Codex
 
-Slide 16: Permutation tests as resampling pressure  
-Slide 17: Same permutations, different formulation  
-Slide 18: Permutation correctness: equivalence and null calibration  
-Slide 19: Server permutation: scale evidence includes negative results  
-Slide 20: Why the A100 permutation result stays in the deck  
-Slide 21: Parallelism is a tuning parameter, not a moral victory
+Slide 24: Python 3.14, Numba, and JAX solve different parts of the workflow  
+Slide 25: Codex can generate variants; the statistician owns the contract
 
-Purpose: move from loop reference to matrix formulation, correctness/calibration, server scale, and a validated negative A100 result.
+Purpose: explain that Python 3.14, Numba, threads/processes, JAX, and A100 solve different bottlenecks. AI tooling helps with variants and experiment hygiene; the statistician owns the statistical contract.
 
-## 23:30-26:30 - Python 3.14, parallelism, and AI/Codex
+## 27:30-30:00 - Decision guide and close
 
-Slide 22: Where Python 3.14 fits  
-Slide 23: AI/Codex helps generate variants, not truth
+Slide 26: Choose the smallest tool that preserves the statistic  
+Slide 27: Make the statistic testable, then make the bottleneck fast
 
-Purpose: explain runtime ceilings, GIL/JIT availability logging, parallelism as a tuning parameter, and the boundary between Codex-generated variants and human-owned statistical contracts.
-
-## 26:30-30:00 - Decision guide and close
-
-Slide 24: Decision guide  
-Slide 25: Choose the smallest tool...
-
-Purpose: leave the audience with a practical tool-selection rule: choose the smallest tool that preserves the statistic and removes the proven bottleneck.
+Purpose: leave the audience with a practical tool-selection rule: preserve the statistic first, then accelerate the proven bottleneck.
 
 ## Backup
 
-Backup slide 1: Backup evidence divider  
-Backup slide 2: Shape stress: K and d become the bottleneck  
-Backup slide 3: Power rises with effect size, not wishful thinking  
-Backup slide 4: Runtime scaling follows the computational shape  
-Backup slide 5: What the agent actually changed
+Slide 28: Evidence map: keep tiers separate  
+Slide 29: Shape stress: K and d become the bottleneck  
+Slide 30: Permutation power rises with effect size  
+Slide 31: Local permutation runtime follows computational shape  
+Slide 32: What the agent actually changed

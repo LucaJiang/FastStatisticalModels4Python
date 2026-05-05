@@ -3,7 +3,8 @@
 Generated/updated: 2026-05-05T21:23:58+0800
 
 ## CPU baseline
-- Best trusted CPU implementation used here: `numpy_matrix_same_stream` batched matrix path.
+- Matched CPU matrix baseline used here: `numpy_matrix_same_stream` batched matrix path.
+- Scope: this is not an exhaustive best-of-all-CPU search; speedup means matched CPU matrix baseline divided by A100 streamed full end-to-end.
 - CPU rows recorded: 27.
 
 ## Break-even
@@ -29,6 +30,9 @@ Generated/updated: 2026-05-05T21:23:58+0800
 ## Correctness
 - Correctness check rows: 97.
   - check: 97
+- Historical `check` rows mean accepted bounded CPU/JAX comparisons under the then-current status vocabulary; they are not exact `pass` rows.
+- New accepted GPU rows should be emitted as `pass_gpu_tolerance`.
+- The result CSVs with `max_abs_p_diff` and `max_abs_stat_diff` are generated on the experiment server but are not committed in this repository snapshot.
 
 ## OOM / memory-risk / timeout
 - `batch_R_sweep.csv`: 0 timeout/skipped/memory-risk/fail rows.
