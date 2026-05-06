@@ -1,0 +1,11 @@
+workload,method,parallelism_count,median_warm_time_s,min_warm_time_s,peak_memory_mb,correctness_status,row_status,resource_isolation,interpretation
+kmeans,numba_cpu_parallel,1,20.5111426,20.0257574,1717.83594,pass,completed,shared_server,main controlled count
+kmeans,numba_cpu_parallel,4,8.61884317,8.24782862,1718.00781,pass,completed,shared_server,main controlled count
+kmeans,numba_cpu_parallel,16,6.42437343,5.63064071,1718.08594,pass,completed,shared_server,main controlled count
+kmeans,numba_cpu_parallel,64,4.74813531,4.68561687,1718.05469,pass,completed,shared_server,shared-server evidence; may reflect contention
+kmeans,numba_cpu_parallel,128,4.42132746,4.38052566,1718.16797,pass,completed,shared_server,shared-server evidence; may reflect contention
+permutation,process_pool_same_stream,1,1.98392151,1.97475294,804.855469,pass,completed,shared_server,main controlled count
+permutation,process_pool_same_stream,4,1.07472152,1.05852576,2438.43359,pass,completed,shared_server,main controlled count
+permutation,process_pool_same_stream,16,0.902549223,0.881185135,7397.73047,pass,completed,shared_server,main controlled count
+permutation,process_pool_same_stream,64,0.981275251,0.947120939,28120.5469,pass,completed,shared_server,shared-server evidence; may reflect contention
+permutation,process_pool_same_stream,128,1.12579955,1.10017383,57864.8203,pass,completed,shared_server,shared-server evidence; may reflect contention

@@ -22,6 +22,8 @@ Generated: 2026-05-06
 - Lightweight break-even summary CSVs are committed: `break_even_shape_sweep_summary.csv`, `decomposition_representative_shapes_summary.csv`, `cpu_matched_baselines_summary.csv`, and `correctness_checks_summary.csv`.
 - Decision-map colorbar wording is scoped correctly: `speedup = matched CPU matrix baseline / A100 streamed full end-to-end`.
 - Current deck structure remains 32 slides: slides 1-27 main path, slides 28-32 backup.
+- Slide 23 uses the expanded Linux server CPU sweep at 1/4/16/64/128 workers or threads.
+- Slide 23 marks high-count rows as shared-server evidence because affinity exposed 512 CPUs but no exclusive scheduler allocation was detected.
 
 ## Broken URLs / Console
 
@@ -51,7 +53,7 @@ Result: browser mode plays the videos, and print/PDF mode hides videos and shows
 - Slide 9 k-means animation was regenerated with K=4, overlapping and imbalanced clusters, poor initialization, 10 Lloyd iterations, centroid paths, MP4/WebM output, and a poster PNG.
 - Slides 10, 14, 24, 25, and 26 replace dense tables or long prose with cards, rules, and a decision tree.
 - Slides 19 and 20 remain validation dashboards with no log-zero p-value plot and no sorted-replicate S-curve.
-- Slide 23 now transitions from GPU tuning to CPU parallelism: GPU is not the only scaling knob; CPU parallelism also needs tuning.
+- Slide 23 now shows the expanded Linux server CPU parallelism evidence. k-means kept improving through 128 in this shared-server run; permutation was fastest at 16 workers and memory rose to about 58 GiB at 128.
 
 ## Layout / Readability
 
@@ -68,6 +70,7 @@ Result: browser mode plays the videos, and print/PDF mode hides videos and shows
 - Slide 21 reconciles the old negative matched slice with the new streamed-reduction shape sweep.
 - Slide 21 scopes speedup as matched CPU matrix baseline divided by A100 streamed full end-to-end; compile excluded, transfer included, kernel-only excluded.
 - Slide 22 labels full-scenario A100 decomposition semantics and includes residual `other overhead` in the figure.
+- Slide 23 is explicitly Linux server CPU evidence, not MacBook evidence, and does not claim that 128 workers are intrinsically bad.
 - No slide presents the old matched A100 permutation result as the final conclusion.
 
 ## Remaining Notes

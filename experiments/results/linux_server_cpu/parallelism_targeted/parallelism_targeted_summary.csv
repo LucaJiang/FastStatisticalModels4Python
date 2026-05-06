@@ -1,0 +1,12 @@
+workload,method,parallelism_count,median_warm_time_s,p25_warm_time_s,p75_warm_time_s,peak_memory_mb,correctness_status,load_status
+kmeans,numba_cpu_serial,1,20.2018533,20.1314479,22.2744392,1718.32031,pass,ok
+kmeans,numba_cpu_parallel,1,20.2012063,20.176373,20.3611399,1718.03516,pass,ok
+kmeans,numba_cpu_parallel,4,10.4806397,10.3326808,10.6871872,1718.04688,pass,ok
+kmeans,numba_cpu_parallel,16,4.95960192,4.94513735,5.02619265,1718.18359,pass,ok
+kmeans,numpy_blas_or_matmul,1,7.7541717,7.75086747,7.75931052,1733.53516,pass,ok
+kmeans,numpy_blas_or_matmul,4,8.92445321,8.49499167,9.12349565,1850.22656,pass,ok
+kmeans,numpy_blas_or_matmul,16,6.63122226,6.31961105,6.83322903,2148.11328,pass,ok
+permutation,numpy_matrix_same_stream,1,1.96218267,1.95912991,1.96293639,805.636719,pass,ok
+permutation,process_pool_same_stream,1,1.95839837,1.95819412,1.95994879,805.570312,pass,ok
+permutation,process_pool_same_stream,4,1.04856452,1.04699378,1.05286659,2437.32812,pass,ok
+permutation,process_pool_same_stream,16,0.881889316,0.878267832,0.929132773,7398.66016,pass,ok

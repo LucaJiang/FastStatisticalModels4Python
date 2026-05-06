@@ -430,54 +430,153 @@ def run_suite(args: argparse.Namespace) -> None:
 
 def make_representative_decomposition(out_dir: Path, run_id: str, batch_r: int, seed: int) -> None:
     shape_df = pd.read_csv(out_dir / "break_even_shape_sweep.csv")
-    ok = shape_df[pd.to_numeric(shape_df["speedup_cpu_over_a100"], errors="coerce").notna()].copy()
+    ok = shape_df[
+        pd.to_numeric(shape_df["speedup_cpu_over_a100"], errors="coerce").notna()
+        & shape_df["a100_status"].astype(str).isin(["pass", "check"])
+    ].copy()
     ok["speedup"] = pd.to_numeric(ok["speedup_cpu_over_a100"], errors="coerce")
-    reps: list[Shape] = []
+    reps: list[tuple[str, Shape]] = []
     if not ok.empty:
-        cpu_fast = ok[ok["speedup"] < 0.8]
-        near = ok[(ok["speedup"] >= 0.8) & (ok["speedup"] <= 1.25)]
-        gpu_fast = ok[ok["speedup"] > 1.25]
-        largest = ok.sort_values(["p", "R"]).tail(1)
-        for sub in [cpu_fast.sort_values("speedup").head(1), near.iloc[(near["speedup"] - 1.0).abs().argsort()].head(1) if not near.empty else near, gpu_fast.sort_values("speedup", ascending=False).head(1), largest]:
-            if not sub.empty:
-                r = sub.iloc[0]
-                reps.append(Shape(int(r.n), int(r.p), int(r.R), int(r.batch_R), seed=seed, source="representative_break_even"))
-    unique: list[Shape] = []
-    seen = set()
-    for shape in reps:
-        key = (shape.n, shape.p, shape.R, shape.batch_R)
-        if key not in seen:
-            seen.add(key)
-            unique.append(shape)
+        chosen: set[tuple[int, int, int, int]] = set()
+
+        def add_rep(category: str, candidates: pd.DataFrame) -> None:
+            if candidates.empty:
+                return
+            for r in candidates.itertuples():
+                key = (int(r.n), int(r.p), int(r.R), int(r.batch_R))
+                if key in chosen:
+                    continue
+                chosen.add(key)
+                reps.append(
+                    (
+                        category,
+                        Shape(int(r.n), int(r.p), int(r.R), int(r.batch_R), seed=seed, source="representative_break_even"),
+                    )
+                )
+                return
+
+        add_rep("CPU-faster region", ok[ok["speedup"] < 1.0].sort_values("speedup"))
+        add_rep("near break-even region", ok[ok["speedup"] > 1.0].assign(distance=(ok["speedup"] - 1.0).abs()).sort_values("distance"))
+        add_rep("A100-faster region", ok[ok["speedup"] >= 2.0].assign(distance=(ok["speedup"] - 3.0).abs()).sort_values("distance"))
+        add_rep("largest/highest-speedup region", ok.sort_values(["speedup", "p", "R"], ascending=[False, False, False]))
+
+    existing_rows: dict[tuple[int, int, int, int], dict[str, Any]] = {}
+    decomp_path = out_dir / "decomposition_representative_shapes.csv"
+    if decomp_path.exists():
+        for row in pd.read_csv(decomp_path).to_dict("records"):
+            if str(row.get("correctness_status")) in {"pass", "check"}:
+                key = (int(row["n"]), int(row["p"]), int(row["R"]), int(row["batch_R"]))
+                existing_rows[key] = row
+
     rows = []
-    for shape in unique:
-        print(f"[decomp] n={shape.n} p={shape.p} R={shape.R} batch_R={shape.batch_R}", flush=True)
-        try:
-            row = run_decomposition(shape, run_id)
-        except Exception as exc:
-            note = repr(exc)
-            status = "oom" if any(token in note.lower() for token in ["out of memory", "resource_exhausted", "oom"]) else "fail"
-            est = estimates(shape.n, shape.p, shape.batch_R, shape.dtype)
-            row = {
-                "run_id": run_id,
-                "timestamp": timestamp(),
-                "benchmark": "representative_break_even_decomposition",
-                "implementation": "a100_streamed_reduction",
-                "correctness_status": status,
-                "dtype": shape.dtype,
-                "device": "a100",
-                "n": shape.n,
-                "p": shape.p,
-                "R": shape.R,
-                "batch_R": shape.batch_R,
-                "seed": shape.seed,
-                "total_end_to_end_time_s": "",
-                "estimated_device_memory_per_batch_gib": as_float(est["estimated_device_memory_per_batch_gib"]),
-                "notes": f"representative_decomposition_{status}: {note[-700:]}",
-            }
+    category_by_key: dict[tuple[int, int, int, int], str] = {}
+    for category, shape in reps:
+        key = (shape.n, shape.p, shape.R, shape.batch_R)
+        category_by_key[key] = category
+        if key in existing_rows:
+            row = existing_rows[key]
+        else:
+            print(f"[decomp] {category}: n={shape.n} p={shape.p} R={shape.R} batch_R={shape.batch_R}", flush=True)
+            try:
+                row = run_decomposition(shape, run_id)
+            except Exception as exc:
+                note = repr(exc)
+                status = "oom" if any(token in note.lower() for token in ["out of memory", "resource_exhausted", "oom"]) else "fail"
+                est = estimates(shape.n, shape.p, shape.batch_R, shape.dtype)
+                row = {
+                    "run_id": run_id,
+                    "timestamp": timestamp(),
+                    "benchmark": "representative_break_even_decomposition",
+                    "implementation": "a100_streamed_reduction",
+                    "correctness_status": status,
+                    "dtype": shape.dtype,
+                    "device": "a100",
+                    "n": shape.n,
+                    "p": shape.p,
+                    "R": shape.R,
+                    "batch_R": shape.batch_R,
+                    "seed": shape.seed,
+                    "total_end_to_end_time_s": "",
+                    "estimated_device_memory_per_batch_gib": as_float(est["estimated_device_memory_per_batch_gib"]),
+                    "notes": f"representative_decomposition_{status}: {note[-700:]}",
+                }
         row["benchmark"] = "representative_break_even_decomposition"
+        row["representative_category"] = category
         rows.append(row)
-        write_csv(out_dir / "decomposition_representative_shapes.csv", rows, DECOMP_FIELDS)
+        write_csv(decomp_path, rows, DECOMP_FIELDS + ["representative_category"])
+    write_decomposition_summary(out_dir, category_by_key)
+
+
+def write_decomposition_summary(out_dir: Path, category_by_key: dict[tuple[int, int, int, int], str] | None = None) -> None:
+    path = out_dir / "decomposition_representative_shapes.csv"
+    if not path.exists():
+        return
+    decomp = pd.read_csv(path)
+    decomp = decomp[decomp.get("correctness_status", pd.Series(dtype=str)).isin(["pass", "check"])].copy()
+    if decomp.empty:
+        return
+    category_by_key = category_by_key or {}
+    for col in [
+        "total_end_to_end_time_s",
+        "permutation_generation_time_s",
+        "W_build_host_time_s",
+        "host_to_device_transfer_time_s",
+        "device_compute_time_s",
+        "pvalue_reduction_time_s",
+        "device_to_host_collect_time_s",
+    ]:
+        decomp[col] = pd.to_numeric(decomp[col], errors="coerce").fillna(0.0)
+    decomp["other_overhead_s"] = (
+        decomp["total_end_to_end_time_s"]
+        - decomp[
+            [
+                "permutation_generation_time_s",
+                "W_build_host_time_s",
+                "host_to_device_transfer_time_s",
+                "device_compute_time_s",
+                "pvalue_reduction_time_s",
+                "device_to_host_collect_time_s",
+            ]
+        ].sum(axis=1)
+    ).clip(lower=0.0)
+    stage_cols = [
+        "permutation_generation_time_s",
+        "W_build_host_time_s",
+        "host_to_device_transfer_time_s",
+        "device_compute_time_s",
+        "pvalue_reduction_time_s",
+        "device_to_host_collect_time_s",
+        "other_overhead_s",
+    ]
+    decomp["stage_sum_s"] = decomp[stage_cols].sum(axis=1)
+    decomp["stage_sum_delta_s"] = decomp["total_end_to_end_time_s"] - decomp["stage_sum_s"]
+    decomp["wx_share"] = decomp["device_compute_time_s"] / decomp["total_end_to_end_time_s"]
+    decomp["representative_category"] = [
+        row.get("representative_category")
+        or category_by_key.get((int(row["n"]), int(row["p"]), int(row["R"]), int(row["batch_R"])), "")
+        for row in decomp.to_dict("records")
+    ]
+    summary_cols = [
+        "representative_category",
+        "n",
+        "p",
+        "R",
+        "batch_R",
+        "total_end_to_end_time_s",
+        "permutation_generation_time_s",
+        "W_build_host_time_s",
+        "host_to_device_transfer_time_s",
+        "device_compute_time_s",
+        "pvalue_reduction_time_s",
+        "device_to_host_collect_time_s",
+        "other_overhead_s",
+        "stage_sum_s",
+        "stage_sum_delta_s",
+        "wx_share",
+        "correctness_status",
+        "notes",
+    ]
+    write_csv(out_dir / "decomposition_representative_shapes_summary.csv", decomp[summary_cols].to_dict("records"), summary_cols)
 
 
 def make_figures(out_dir: Path, presentation_dir: Path) -> None:
@@ -489,6 +588,15 @@ def make_figures(out_dir: Path, presentation_dir: Path) -> None:
     shape = pd.read_csv(out_dir / "break_even_shape_sweep.csv")
     shape["speedup"] = pd.to_numeric(shape["speedup_cpu_over_a100"], errors="coerce")
     pivot = shape.pivot_table(index="R", columns="p", values="speedup", aggfunc="first").sort_index(ascending=True)
+    status_lookup = {
+        (int(row.R), int(row.p)): {
+            "winner": str(row.winner).lower(),
+            "a100_status": str(row.a100_status).lower(),
+            "cpu_timeout_status": str(row.cpu_timeout_status).lower(),
+            "notes": str(row.notes).lower(),
+        }
+        for row in shape.itertuples()
+    }
     fig, ax = plt.subplots(figsize=(12.8, 7.2))
     fig.patch.set_facecolor("#FBF7EF")
     ax.set_facecolor("#FFFFFF")
@@ -504,7 +612,15 @@ def make_figures(out_dir: Path, presentation_dir: Path) -> None:
         for j, p in enumerate(pivot.columns):
             val = pivot.loc[r, p]
             if pd.isna(val):
-                txt = "timeout\n/skip"
+                status = status_lookup.get((int(r), int(p)), {})
+                if status.get("a100_status") == "oom":
+                    txt = "A100\nOOM"
+                elif "memory-risk" in status.get("winner", "") or "memory-risk" in status.get("notes", ""):
+                    txt = "memory\nrisk"
+                elif "timeout" in status.get("cpu_timeout_status", ""):
+                    txt = "CPU\ntimeout"
+                else:
+                    txt = "unavail."
             else:
                 txt = f"{val:.1f}x"
             ax.text(j, i, txt, ha="center", va="center", fontsize=10, weight="bold", color="#17202A")
@@ -528,96 +644,75 @@ def make_figures(out_dir: Path, presentation_dir: Path) -> None:
         decomp["total"] = pd.to_numeric(decomp["total_end_to_end_time_s"], errors="coerce")
         decomp["perm_generation_s"] = pd.to_numeric(decomp["permutation_generation_time_s"], errors="coerce").fillna(0.0)
         decomp["build_w_s"] = pd.to_numeric(decomp["W_build_host_time_s"], errors="coerce").fillna(0.0)
-        decomp["transfer_collect_s"] = (
-            pd.to_numeric(decomp["host_to_device_transfer_time_s"], errors="coerce").fillna(0.0)
-            + pd.to_numeric(decomp["device_to_host_collect_time_s"], errors="coerce").fillna(0.0)
-        )
+        decomp["transfer_s"] = pd.to_numeric(decomp["host_to_device_transfer_time_s"], errors="coerce").fillna(0.0)
         decomp["wx_s"] = pd.to_numeric(decomp["device_compute_time_s"], errors="coerce").fillna(0.0)
+        decomp["reduction_s"] = pd.to_numeric(decomp["pvalue_reduction_time_s"], errors="coerce").fillna(0.0)
+        decomp["collect_s"] = pd.to_numeric(decomp["device_to_host_collect_time_s"], errors="coerce").fillna(0.0)
         decomp["named_stage_sum_s"] = (
             decomp["perm_generation_s"]
             + decomp["build_w_s"]
-            + decomp["transfer_collect_s"]
+            + decomp["transfer_s"]
             + decomp["wx_s"]
-            + pd.to_numeric(decomp["pvalue_reduction_time_s"], errors="coerce").fillna(0.0)
+            + decomp["reduction_s"]
+            + decomp["collect_s"]
         )
         decomp["other_s"] = (decomp["total"] - decomp["named_stage_sum_s"]).clip(lower=0.0).fillna(0.0)
+        decomp["wx_share"] = np.divide(decomp["wx_s"], decomp["total"], out=np.zeros(len(decomp)), where=decomp["total"].to_numpy(float) > 0)
         stage_cols = [
             ("perm_generation_s", "perm generation", "#4D7FEA"),
             ("build_w_s", "build W", "#2F7D32"),
-            ("transfer_collect_s", "transfer/collect", "#E66A2C"),
+            ("transfer_s", "transfer", "#E66A2C"),
             ("wx_s", "W @ X", "#B51E59"),
+            ("reduction_s", "reduction", "#7C3AED"),
+            ("collect_s", "collect", "#F2B84B"),
             ("other_s", "other overhead", "#6F7782"),
         ]
         def compact_count(value: float) -> str:
             return f"{value / 1000:.0f}k" if value >= 1000 else str(int(value))
 
         labels = [
-            f"p={compact_count(r.p)}, R={compact_count(r.R)}\n{int(math.ceil(r.R / r.batch_R))} batch, {float(r.total):.2f}s"
+            f"{getattr(r, 'representative_category', '')}\np={compact_count(r.p)}, R={compact_count(r.R)}"
             for r in decomp.itertuples()
         ]
-        fig, (ax_abs, ax_pct) = plt.subplots(
-            1,
-            2,
-            figsize=(12.8, 7.2),
-            gridspec_kw={"width_ratios": [1.35, 1.0], "wspace": 0.16},
-        )
+        fig, ax_abs = plt.subplots(figsize=(12.8, 7.2))
         fig.patch.set_facecolor("#FBF7EF")
         y = np.arange(len(decomp))
         left = np.zeros(len(decomp))
         for col, lab, color in stage_cols:
             vals = decomp[col].to_numpy(float)
-            ax_abs.barh(y, vals, left=left, color=color, height=0.5, label=lab)
+            ax_abs.barh(y, vals, left=left, color=color, height=0.58, label=lab)
             left += vals
-        for i, total in enumerate(decomp["total"]):
-            ax_abs.text(float(total) * 1.015, i, f"{float(total):.2f}s", va="center", fontsize=10, weight="bold")
+        for i, row in enumerate(decomp.itertuples()):
+            ax_abs.text(
+                float(row.total) * 1.012,
+                i,
+                f"{float(row.total):.2f}s | W @ X {100*float(row.wx_share):.0f}%",
+                va="center",
+                fontsize=9.5,
+                weight="bold",
+            )
         ax_abs.set_yticks(y, labels)
         ax_abs.invert_yaxis()
         ax_abs.set_xlabel("seconds per full scenario")
-        ax_abs.set_title("Measured full scenario", weight="bold", fontsize=12)
+        ax_abs.set_title("A100 streamed full scenario timing", weight="bold", fontsize=12)
         ax_abs.grid(axis="x", alpha=0.25)
-        ax_abs.set_xlim(0, float(decomp["total"].max()) * 1.18)
-
-        pct_left = np.zeros(len(decomp))
-        pct_labels = {"perm generation": "perm gen", "transfer/collect": "transfer\ncollect"}
-        for col, lab, color in stage_cols:
-            vals = decomp[col].to_numpy(float)
-            pct = np.divide(vals, decomp["total"].to_numpy(float), out=np.zeros_like(vals), where=decomp["total"].to_numpy(float) > 0)
-            ax_pct.barh(y, pct, left=pct_left, color=color, height=0.5)
-            for i, share in enumerate(pct):
-                if share >= 0.18:
-                    display_lab = pct_labels.get(lab, lab)
-                    ax_pct.text(
-                        pct_left[i] + share / 2,
-                        i,
-                        f"{display_lab}\n{100*share:.0f}%",
-                        color="white",
-                        ha="center",
-                        va="center",
-                        fontsize=9,
-                        weight="bold",
-                    )
-            pct_left += pct
-        ax_pct.set_yticks([])
-        ax_pct.set_xlim(0, 1)
-        ax_pct.set_xlabel("share of full scenario")
-        ax_pct.set_title("Percent of time", weight="bold", fontsize=12)
-        ax_pct.grid(axis="x", alpha=0.25)
-        ax_pct.set_xticks([0, 0.25, 0.5, 0.75, 1.0], ["0%", "25%", "50%", "75%", "100%"])
-        fig.suptitle("Where does A100 time go?", weight="bold", fontsize=19, y=0.96)
+        ax_abs.set_xlim(0, float(decomp["total"].max()) * 1.22)
+        fig.suptitle("A fast kernel is not enough; the full pipeline decides.", weight="bold", fontsize=19, y=0.96)
         fig.text(
             0.5,
             0.91,
-            "A100 streamed full scenario, compile excluded, transfer included; n=5,000, batch_R=8,192, float32",
+            "A100 streamed reduction, full scenario timing; compile excluded, transfer included; no kernel-only comparison",
             ha="center",
             fontsize=10,
             color="#25313C",
         )
         handles, legend_labels = ax_abs.get_legend_handles_labels()
-        fig.legend(handles, legend_labels, loc="upper center", ncol=5, frameon=False, fontsize=8.5, bbox_to_anchor=(0.5, 0.875))
-        fig.subplots_adjust(left=0.16, right=0.98, bottom=0.13, top=0.80, wspace=0.16)
+        fig.legend(handles, legend_labels, loc="upper center", ncol=7, frameon=False, fontsize=8.5, bbox_to_anchor=(0.5, 0.875))
+        fig.subplots_adjust(left=0.24, right=0.97, bottom=0.13, top=0.80)
         fig.savefig(presentation_dir / "a100_pipeline_decomposition_representative.png", dpi=220)
         fig.savefig(presentation_dir / "a100_pipeline_decomposition_representative.svg", format="svg")
         plt.close(fig)
+        write_decomposition_summary(out_dir)
 
     batch = pd.read_csv(out_dir / "batch_R_sweep.csv")
     batch["a100"] = pd.to_numeric(batch["a100_streamed_reduction_time_s"], errors="coerce")
@@ -690,6 +785,14 @@ def write_readme(out_dir: Path) -> None:
     lines.append("## Kernel-only vs end-to-end")
     lines.append("- Kernel-only rows are labeled as not full permutation tests and are not used for CPU/A100 speedup decisions.")
     lines.append("")
+    decomp_path = out_dir / "decomposition_representative_shapes.csv"
+    if decomp_path.exists():
+        decomp = pd.read_csv(decomp_path)
+        lines.append("## Representative A100 decomposition")
+        lines.append(f"- Representative rows recorded: {len(decomp)}.")
+        lines.append("- Rows cover CPU-faster, near break-even, A100-faster, and largest/highest-speedup regions from the canonical break-even grid.")
+        lines.append("- `decomposition_representative_shapes_summary.csv` includes explicit other overhead and stage-sum reconciliation.")
+        lines.append("")
     lines.append("## Timing semantics")
     lines.append("- CPU/A100 comparisons are full scenario end-to-end, warm timing, compile excluded, transfer included for A100.")
     lines.append("- Representative decomposition rows report named stages plus residual Python/JAX loop overhead. Figures include this residual as `other overhead` so stacked bars reconcile to `total_end_to_end_time_s`.")
@@ -698,6 +801,13 @@ def write_readme(out_dir: Path) -> None:
     lines.append("## Batch_R")
     best_batch = choose_best_batch(batch.to_dict("records"))
     lines.append(f"- Best safe batch_R from Stage 1: {best_batch}.")
+    lines.append("")
+    lines.append("## Targeted rerun policy")
+    lines.append("- 2026-05-06 targeted rerun covered only cells previously marked timeout/skipped/unavailable/memory-risk in the Stage 2 break-even grid.")
+    lines.append("- Targeted CPU timeout was raised to 14,400 seconds (4 hours) per cell; both targeted CPU baselines completed.")
+    lines.append("- Targeted A100 reruns kept the canonical definition: streamed full end-to-end path, compile excluded, transfer included, kernel-only excluded, batch_R=8,192.")
+    lines.append("- The targeted A100 rerun used `XLA_PYTHON_CLIENT_PREALLOCATE=false` and retried with `TF_GPU_ALLOCATOR=cuda_malloc_async`; the two p=500,000 high-R cells still failed during JAX autotune/OOM at canonical batch_R.")
+    lines.append("- `targeted_rerun_audit.csv` records the old memory-risk state and the new explicit CPU-completed/A100-OOM state.")
     lines.append("")
     lines.append("## Correctness")
     lines.append(f"- Correctness check rows: {len(correct)}.")
@@ -718,8 +828,8 @@ def write_readme(out_dir: Path) -> None:
         if path.exists():
             df = pd.read_csv(path)
             bad_cols = [c for c in ["winner", "cpu_timeout_status", "a100_status", "correctness_status"] if c in df]
-            bad = df[df[bad_cols].astype(str).apply(lambda s: s.str.contains("timeout|skipped|memory-risk|fail", case=False, regex=True)).any(axis=1)] if bad_cols else pd.DataFrame()
-            lines.append(f"- `{name}`: {len(bad)} timeout/skipped/memory-risk/fail rows.")
+            bad = df[df[bad_cols].astype(str).apply(lambda s: s.str.contains("timeout|skipped|memory-risk|unavailable|oom|fail", case=False, regex=True)).any(axis=1)] if bad_cols else pd.DataFrame()
+            lines.append(f"- `{name}`: {len(bad)} timeout/skipped/memory-risk/unavailable/OOM/fail rows.")
     (out_dir / "README.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 

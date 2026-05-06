@@ -776,8 +776,8 @@ t_null = W @ X</pre>
       <div class="note-card" style="padding:13px 14px;"><strong>A100 can win when</strong><span>R x p is large, batch_R fits memory, streamed reduction avoids collecting R x p, and work stays on device.</span></div>
     </div>
   </div>
-  <div class="callout" style="margin-top:10px; padding:12px 18px;"><p style="font-size:21px;">Shape beats logo: GPU is a formulation decision, not a flag.</p></div>
-  <aside class="notes">This is the practical GPU question. The old matched slice at n=5,000, p=50,000, batch_R=512 was negative: the CPU matrix path was faster. The follow-up did not change the statistic; it changed the pipeline to streamed reduction, larger batch_R, and a broader shape sweep. The point is not whether A100 is good or bad. The point is whether this statistical computation has the right shape for A100. If the full pipeline is dominated by permutation generation, W construction, transfer, or collection, CPU can win even when the matrix multiply itself is fast. GPU becomes useful only in measured regions where the expensive work is large, batched, and stays on device long enough to amortize overhead. In this measured run, A100 becomes faster at n=5,000, p=10,000, R=5,000, batch_R=8,192, with the largest measured speedup of 8.54x at n=5,000, p=500,000, R=5,000. Kernel-only timing is deliberately excluded from the decision map.</aside>
+  <div class="bottom-takeaway" style="font-size:20px;">Measured boundary: A100 first wins at n=5,000, p=10,000, R=5,000, batch_R=8,192; use CPU when overhead dominates.</div>
+  <aside class="notes">This is the practical GPU question. The old matched slice at n=5,000, p=50,000, batch_R=512 was negative: the CPU matrix path was faster. The follow-up did not change the statistic; it changed the pipeline to streamed reduction, larger batch_R, and a broader shape sweep. The point is not whether A100 is good or bad. The point is whether this statistical computation has the right shape for A100. If the full pipeline is dominated by permutation generation, W construction, transfer, or collection, CPU can win even when the matrix multiply itself is fast. GPU becomes useful only in measured regions where the expensive work is large, batched, and stays on device long enough to amortize overhead. In this measured run, A100 becomes faster at n=5,000, p=10,000, R=5,000, batch_R=8,192, with the largest measured speedup of 8.54x at n=5,000, p=500,000, R=5,000. Kernel-only timing is deliberately excluded from the decision map. Two high-R cells at p=500,000 were rerun on May 6, 2026 with the CPU timeout raised to 14,400 seconds per cell. The CPU baselines completed, but the canonical A100 streamed end-to-end run at batch_R=8,192 still failed during JAX autotune/OOM, even with TF_GPU_ALLOCATOR=cuda_malloc_async. Those cells are labeled A100 OOM/unavailable in the evidence CSVs and should not be interpreted as CPU wins or hidden speedup estimates.</aside>
 </section>
 
 <section class="deck-slide">
@@ -787,42 +787,22 @@ t_null = W @ X</pre>
   <div class="figure-box" style="height:468px; margin-top:10px; padding:4px;">
     <img src="../experiments/results/presentation_figures/a100_pipeline_decomposition_representative.png" alt="A100 permutation pipeline decomposition representative shapes" />
   </div>
-  <p class="caption" style="font-size:15px;">Full scenario timing; streamed reduction; batch_R=8,192; residual labeled as other overhead.</p>
-  <div class="callout" style="margin-top:10px; padding:12px 18px;"><p style="font-size:21px;">A fast kernel is not enough; the full statistical pipeline decides.</p></div>
-  <aside class="notes">This slide decomposes the A100 path. The key point is not simply that the GPU is slow or fast; it is where the time goes. If W @ X is a small fraction, then the statistical algebra found a GPU-friendly kernel, but the surrounding pipeline - permutation generation, W construction, transfer, or collection - is the real bottleneck. That is why the next optimization target is the pipeline, not changing the statistic. The figure is full scenario timing, compile excluded, transfer included. The named stages are reconciled to the recorded total with an explicit other-overhead segment.</aside>
+  <div class="bottom-takeaway" style="font-size:21px;">A fast kernel is not enough; the full pipeline decides.</div>
+  <aside class="notes">This slide decomposes the A100 streamed path across four representative shapes from the canonical break-even grid. The point is not simply that the GPU is slow or fast; it is where the full scenario time goes. Read the timing semantics precisely: compile excluded, transfer included, streamed reduction, no kernel-only comparison. The named stages are reconciled to the recorded total with an explicit other-overhead segment, and each row reports total time plus the W @ X share.</aside>
 </section>
 
 <section class="deck-slide">
   <div class="kicker">Parallelism</div>
-  <h2>CPU parallelism is also a tuning problem</h2>
-  <p class="subtitle">More workers is not a moral victory.</p>
-  <div class="parallel-panels">
-    <div class="parallel-panel">
-      <h3>Runtime improves, then turns</h3>
-      <p>Measured server CPU sweeps; lower is better.</p>
-      <div class="bar-rows">
-        <div class="bar-row"><div class="bar-row-label">k-means<br />1 thread</div><div class="bar-track"><span class="bar-fill" style="width:100%;"></span></div><div class="bar-row-value">38.6 s</div></div>
-        <div class="bar-row"><div class="bar-row-label">k-means<br />32 threads</div><div class="bar-track"><span class="bar-fill best" style="width:23%;"></span></div><div class="bar-row-value">8.7 s</div></div>
-        <div class="bar-row"><div class="bar-row-label">k-means<br />128 threads</div><div class="bar-track"><span class="bar-fill" style="width:41%;"></span></div><div class="bar-row-value">15.8 s</div></div>
-        <div class="bar-row"><div class="bar-row-label">perm<br />1 worker</div><div class="bar-track"><span class="bar-fill" style="width:100%;"></span></div><div class="bar-row-value">14.0 s</div></div>
-        <div class="bar-row"><div class="bar-row-label">perm<br />8 workers</div><div class="bar-track"><span class="bar-fill best" style="width:7%;"></span></div><div class="bar-row-value">0.94 s</div></div>
-        <div class="bar-row"><div class="bar-row-label">perm<br />128 workers</div><div class="bar-track"><span class="bar-fill" style="width:18%;"></span></div><div class="bar-row-value">2.58 s</div></div>
-      </div>
-    </div>
-    <div class="parallel-panel">
-      <h3>Memory keeps a budget attached</h3>
-      <p>Peak host memory from the same sweeps.</p>
-      <div class="bar-rows">
-        <div class="bar-row"><div class="bar-row-label">k-means<br />1 thread</div><div class="bar-track"><span class="bar-fill memory" style="width:77%;"></span></div><div class="bar-row-value">1.69 GB</div></div>
-        <div class="bar-row"><div class="bar-row-label">k-means<br />32 threads</div><div class="bar-track"><span class="bar-fill memory" style="width:100%;"></span></div><div class="bar-row-value">2.18 GB</div></div>
-        <div class="bar-row"><div class="bar-row-label">k-means<br />128 threads</div><div class="bar-track"><span class="bar-fill memory" style="width:100%;"></span></div><div class="bar-row-value">2.18 GB</div></div>
-        <div class="bar-row"><div class="bar-row-label">perm<br />1 worker</div><div class="bar-track"><span class="bar-fill memory" style="width:31%;"></span></div><div class="bar-row-value">612 MB</div></div>
-        <div class="bar-row"><div class="bar-row-label">perm<br />8 workers</div><div class="bar-track"><span class="bar-fill memory" style="width:58%;"></span></div><div class="bar-row-value">1.12 GB</div></div>
-        <div class="bar-row"><div class="bar-row-label">perm<br />32 workers</div><div class="bar-track"><span class="bar-fill memory" style="width:100%;"></span></div><div class="bar-row-value">1.96 GB</div></div>
-      </div>
-    </div>
+  <h2>CPU parallelism must be measured under resource constraints</h2>
+  <p class="subtitle" style="font-size:20px; margin-top:8px; max-width:1120px;">Linux server CPU, controlled 1/4/16/64/128 sweep; high counts are shared-server evidence.</p>
+  <div class="cards-3" style="grid-template-columns: repeat(3, minmax(0, 1fr)); gap:12px; margin-top:10px;">
+    <div class="note-card" style="padding:11px 14px;"><strong>k-means</strong><span>Numba kept improving through 128 in this shared-server run.</span></div>
+    <div class="note-card" style="padding:11px 14px;"><strong>permutation</strong><span>Best runtime was at 16; memory rose to about 58 GiB at 128.</span></div>
+    <div class="note-card" style="padding:11px 14px;"><strong>128 caveat</strong><span>Affinity: 512 CPUs; no exclusive allocation.</span></div>
   </div>
-  <div class="parallel-callout">GPU is not the only scaling knob; CPU parallelism also needs tuning. Measure thread counts, worker counts, CPU affinity, and memory pressure.</div>
+  <div class="figure-box" style="height:340px; margin-top:12px; padding:3px;"><img src="../experiments/results/presentation_figures/server_cpu_parallelism_expanded.png" alt="Linux server CPU expanded parallelism sweep" /></div>
+  <div class="bottom-takeaway">High worker counts on a shared server are hard to interpret without CPU affinity and load checks.</div>
+  <aside class="notes">This is Linux server CPU evidence, not MacBook evidence. The 128-worker point is only interpretable if the process had access to 128 CPUs and the server was not heavily loaded. Here affinity exposed 512 CPUs, but there was no exclusive scheduler allocation, so high-count rows are shared-server evidence. They may reflect shared-server contention, NUMA placement, memory bandwidth, scheduler effects, or nested thread conflicts.</aside>
 </section>
 
 <section class="deck-slide">

@@ -211,21 +211,25 @@ If the full pipeline is dominated by permutation generation, W construction, tra
 
 In this measured run, A100 becomes faster at n=5,000, p=10,000, R=5,000, batch_R=8,192, and the largest measured speedup is 8.54x at n=5,000, p=500,000, R=5,000. This is a shape and pipeline result, not a logo result. Kernel-only timing is deliberately excluded from the decision map.
 
+Two high-R cells at p=500,000 were rerun on May 6, 2026 with the CPU timeout raised to 14,400 seconds per cell. The CPU baselines completed, but the canonical A100 streamed end-to-end run at batch_R=8,192 still failed during JAX autotune/OOM, even with `TF_GPU_ALLOCATOR=cuda_malloc_async`. Those cells are labeled A100 OOM/unavailable in the evidence CSVs and should not be interpreted as CPU wins or hidden speedup estimates.
+
 ## Slide 22 - A100 pipeline decomposition
 
 This slide decomposes the A100 path. The key point is not simply that the GPU is slow or fast; it is where the time goes.
 
-If W @ X is a small fraction, then the statistical algebra found a GPU-friendly kernel, but the surrounding pipeline - permutation generation, W construction, transfer, or collection - is the real bottleneck. That is why the next optimization target is the pipeline, not changing the statistic.
+A fast kernel is not enough; the full pipeline decides. The four rows are representative shapes from the canonical break-even grid: CPU-faster, near break-even, A100-faster, and largest/highest-speedup measured.
 
-Say the timing semantics precisely: this is full scenario timing, compile excluded, transfer included. The named stages are reconciled to the recorded total with an explicit other-overhead segment.
+Say the timing semantics precisely: this is full scenario timing, compile excluded, transfer included, streamed reduction, and no kernel-only comparison. The named stages are reconciled to the recorded total with an explicit other-overhead segment, and each row reports total time plus the W @ X share.
 
-## Slide 23 - Parallelism
+## Slide 23 - CPU parallelism
 
-Main message: more workers is not automatically better.
+Main message: CPU parallelism must be measured under resource constraints.
 
-GPU is not the only scaling knob; CPU parallelism also needs tuning.
+This is Linux server CPU evidence, not MacBook evidence. The expanded sweep shows 1, 4, 16, 64, and 128 workers or threads.
 
-For k-means, Numba improves up to the middle of the thread sweep, but maximum thread count is not best. For permutation, workers add overhead and memory after speed saturates.
+For k-means, Numba kept improving through 128 in this shared-server run. For permutation, runtime improved through 16 workers, then got worse at 64 and 128 while memory climbed to about 58 GiB at 128 workers.
+
+The 128-worker point is only cleanly interpretable if the process had access to 128 CPUs and the server was not heavily loaded. Here affinity exposed 512 CPUs, but there was no exclusive scheduler allocation, so the high-count rows are marked shared-server evidence. They may reflect shared-server contention, NUMA placement, memory bandwidth, scheduler effects, or nested thread conflicts.
 
 Connect to Python 3.14: free-threaded Python may help thread-friendly code, but the actual stack must be measured and logged.
 
