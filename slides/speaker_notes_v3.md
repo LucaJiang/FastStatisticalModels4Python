@@ -6,8 +6,8 @@ Target: 30 minutes. Main path is slides 1-27. Slides 28-32 are backup. This keep
 
 - 0:00-1:00 - Title and thesis
 - 1:00-8:00 - Simulation-driven statistical computing
-- 8:00-16:00 - k-means: iterative simulation pressure
-- 16:00-24:00 - permutation testing: resampling pressure, GPU map/decomposition, and parallelism
+- 8:00-16:00 - k-means: iterative model-fitting pressure
+- 16:00-24:00 - permutation testing: resampling inference pressure, GPU map/decomposition, and parallelism
 - 24:00-27:30 - tool roles and AI/Codex
 - 27:30-30:00 - decision guide and close
 
@@ -21,7 +21,7 @@ Say that you are speaking as a biostatistician who uses Python to move from math
 
 Do not spend time on the names of every tool yet. Say that Python 3.14, Numba, and JAX will appear as answers to different bottlenecks, not as a universal ranking.
 
-## Slide 2 - From a statistician's point of view, speed is only useful after trust
+## Slide 2 - For statisticians, speed is useful only after trust
 
 This slide directly answers why the talk starts from the statistician's point of view.
 
@@ -31,7 +31,7 @@ Explain that readable Python or NumPy is not merely a slow first draft. It is th
 
 Say the rule clearly: a faster implementation that changes the statistic is a different method.
 
-## Slide 3 - Simulation creates the answer key
+## Slide 3 - Simulation creates an answer key
 
 Use this slide to explain why simulation is not fake data or toy data. It creates an answer key when real data cannot.
 
@@ -41,7 +41,7 @@ Examples:
 - For permutation tests, the simulated answer key is the expected behavior under the null, especially p-value calibration.
 - For systems behavior, the simulation grid tells us which rows are memory-risk skips rather than failures.
 
-The four-step workflow is the short version of the whole talk: reference, scenarios, validate, optimize.
+The five-step workflow is the short version of the whole talk: target, reference, scenarios, validation, optimization.
 
 ## Slide 4 - Statistical CI
 
@@ -60,7 +60,7 @@ This is where the abstract and the deck connect.
 
 The message is: Python remains the scientific interface. We keep code close enough to the math to inspect, then move hotspots into the appropriate engine.
 
-Use the table to show the tool roles:
+Use the visual map to show the tool roles:
 
 - Python/NumPy reference defines the statistic.
 - NumPy/BLAS handles vectorized algebra when the arrays have the right shape.
@@ -285,10 +285,10 @@ Use only if someone asks more about K and d in k-means.
 
 Use only if someone wants more statistical validation beyond null calibration.
 
-## Slide 31 - Local permutation runtime
+## Slide 31 - MacBook-only permutation runtime
 
 Use only if someone asks about MacBook-only permutation performance.
 
-## Slide 32 - What the agent changed
+## Slide 32 - What the coding agent automated
 
 Use only if someone asks about the repository or Codex workflow.

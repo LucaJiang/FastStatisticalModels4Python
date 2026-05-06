@@ -124,6 +124,66 @@
     .flow .card:nth-child(4) { border-top-color: var(--green); }
     .step-num { color: var(--muted); font-size: 15px; font-weight: 850; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 7px; }
 
+    .pipeline-5 { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin-top: 34px; align-items: stretch; }
+    .pipeline-step { position: relative; background: #fffdf8; border: 1px solid var(--line); border-top: 7px solid var(--blue); border-radius: 14px; padding: 18px 16px; box-shadow: var(--shadow); min-height: 150px; }
+    .pipeline-step:nth-child(2) { border-top-color: var(--gold); }
+    .pipeline-step:nth-child(3) { border-top-color: var(--teal); }
+    .pipeline-step:nth-child(4) { border-top-color: var(--green); }
+    .pipeline-step:nth-child(5) { border-top-color: var(--berry); }
+    .pipeline-step:not(:last-child)::after { content: "->"; position: absolute; right: -18px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 26px; font-weight: 900; z-index: 2; }
+    .pipeline-step strong { display: block; color: var(--ink); font-size: 22px; line-height: 1.1; margin-bottom: 9px; }
+    .pipeline-step span { display: block; color: var(--muted); font-size: 17px; line-height: 1.25; }
+
+    .mapping-2 { display: grid; grid-template-columns: 0.42fr 0.58fr; margin-top: 28px; border: 1px solid var(--line); border-radius: 16px; overflow: hidden; box-shadow: var(--shadow); }
+    .mapping-2 div { padding: 18px 22px; border-bottom: 1px solid var(--line); background: rgba(255,253,248,0.96); font-size: 20px; line-height: 1.22; }
+    .mapping-2 div:nth-child(odd) { color: var(--blue); font-weight: 900; background: #fff7e9; }
+    .mapping-2 div:nth-last-child(-n+2) { border-bottom: 0; }
+
+    .tool-flow { display: grid; grid-template-columns: 1fr 42px 1fr 42px 1fr; gap: 12px; align-items: center; margin-top: 30px; }
+    .tool-node { background: #fffdf8; border: 1px solid var(--line); border-radius: 14px; padding: 20px; box-shadow: var(--shadow); min-height: 158px; }
+    .tool-node strong { display: block; color: var(--blue); font-size: 25px; line-height: 1.08; margin-bottom: 8px; }
+    .tool-node span { display: block; color: var(--muted); font-size: 18px; line-height: 1.25; }
+    .engine-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-top: 18px; }
+    .engine-card { border: 1px solid var(--line); border-top: 7px solid var(--blue); border-radius: 14px; padding: 18px 16px; background: #fffdf8; min-height: 142px; box-shadow: var(--shadow); }
+    .engine-card:nth-child(2) { border-top-color: var(--gold); }
+    .engine-card:nth-child(3) { border-top-color: var(--green); }
+    .engine-card:nth-child(4) { border-top-color: var(--berry); }
+    .engine-card strong { display: block; font-size: 21px; line-height: 1.1; color: var(--ink); margin-bottom: 8px; }
+    .engine-card span { display: block; font-size: 16px; line-height: 1.22; color: var(--muted); }
+
+    .rule-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-top: 28px; }
+    .rule-card { background: #fffdf8; border: 1px solid var(--line); border-left: 8px solid var(--blue); border-radius: 14px; padding: 20px 18px; box-shadow: var(--shadow); min-height: 180px; }
+    .rule-card:nth-child(2) { border-left-color: var(--gold); }
+    .rule-card:nth-child(3) { border-left-color: var(--green); }
+    .rule-card:nth-child(4) { border-left-color: var(--berry); }
+    .rule-card strong { display: block; color: var(--ink); font-size: 22px; line-height: 1.12; margin-bottom: 10px; }
+    .rule-card span { display: block; color: var(--muted); font-size: 17px; line-height: 1.25; }
+    .mini-tool-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 24px; }
+    .mini-tool-row span { display: inline-block; border: 1px solid var(--line); border-radius: 999px; padding: 10px 15px; background: #fff7e9; color: var(--ink); font-size: 18px; font-weight: 850; }
+
+    .kpi-dashboard { display: grid; grid-template-columns: 0.75fr 1.25fr; gap: 24px; margin-top: 24px; align-items: stretch; }
+    .big-pass { background: #fffdf8; border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); padding: 28px; display: flex; flex-direction: column; justify-content: center; }
+    .big-pass strong { color: var(--green); font-size: 64px; line-height: 0.95; font-weight: 950; letter-spacing: 0.03em; }
+    .big-pass span { display: block; color: var(--muted); font-size: 21px; line-height: 1.25; margin-top: 18px; font-weight: 750; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .kpi { background: #fffdf8; border: 1px solid var(--line); border-radius: 14px; padding: 19px 20px; box-shadow: var(--shadow); min-height: 118px; }
+    .kpi strong { display: block; color: var(--blue); font-size: 34px; line-height: 1.05; font-weight: 950; }
+    .kpi span { display: block; color: var(--muted); font-size: 17px; line-height: 1.2; margin-top: 8px; }
+    .kpi.warn strong { color: var(--gold); }
+    .kpi.good strong { color: var(--green); }
+
+    .decision-tree { margin-top: 24px; display: grid; grid-template-columns: 1fr; gap: 14px; }
+    .tree-root { justify-self: center; width: 390px; background: var(--ink); color: #fff; border-radius: 16px; padding: 18px 24px; text-align: center; font-size: 27px; line-height: 1.12; font-weight: 900; box-shadow: var(--shadow); }
+    .tree-branches { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; margin-top: 10px; }
+    .tree-leaf { background: #fffdf8; border: 1px solid var(--line); border-top: 7px solid var(--blue); border-radius: 14px; padding: 16px 14px; min-height: 145px; box-shadow: var(--shadow); }
+    .tree-leaf:nth-child(2) { border-top-color: var(--gold); }
+    .tree-leaf:nth-child(3) { border-top-color: var(--green); }
+    .tree-leaf:nth-child(4) { border-top-color: var(--berry); }
+    .tree-leaf:nth-child(5) { border-top-color: var(--teal); }
+    .tree-leaf:nth-child(6) { border-top-color: var(--purple); }
+    .tree-leaf strong { display: block; color: var(--ink); font-size: 20px; line-height: 1.1; margin-bottom: 8px; }
+    .tree-leaf span { display: block; color: var(--muted); font-size: 15px; line-height: 1.18; }
+
     .ladder { display: grid; grid-template-columns: 1fr 38px 1fr 38px 1fr; gap: 14px; align-items: stretch; margin-top: 30px; }
     .arrow { display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 34px; font-weight: 900; }
 
@@ -159,11 +219,11 @@
     .figure-box img { display: block; width: 100%; height: 100%; object-fit: contain; border-radius: 10px; }
     .figure-only { margin-top: 22px; height: 510px; }
     .method-layout { display: grid; grid-template-columns: minmax(0, 0.76fr) minmax(230px, 0.24fr); gap: 24px; margin-top: 20px; align-items: stretch; }
-    .method-video-box { height: 455px; padding: 8px; display: flex; align-items: center; justify-content: center; background: rgba(255,253,248,0.95); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); }
+    .method-video-box { height: 505px; padding: 8px; display: flex; align-items: center; justify-content: center; background: rgba(255,253,248,0.95); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); }
     .method-video,
     .video-poster-fallback { display: block; width: 100%; height: 100%; object-fit: contain; border-radius: 10px; background: var(--paper); }
     .video-poster-fallback { display: none; }
-    .method-caption { min-height: 455px; padding: 22px; background: #fffdf8; border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); }
+    .method-caption { min-height: 505px; padding: 22px; background: #fffdf8; border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); }
     .method-caption h3 { color: var(--ink); font-size: 22px; margin-bottom: 12px; }
     .method-caption ol { margin: 10px 0 0 22px; padding: 0; }
     .method-caption li { font-size: 18px; line-height: 1.26; margin-top: 12px; }
@@ -341,9 +401,9 @@
       <p class="small" style="margin-top:20px;">Wenxin Jiang and Jian Yin - Department of Biostatistics, City University of Hong Kong</p>
     </div>
     <div class="hero-card">
-      <div class="metric"><strong>Not a speed contest</strong><span>The question is not which logo wins. The question is which implementation preserves the statistic and removes the bottleneck.</span></div>
-      <div class="metric"><strong>Simulation first</strong><span>When real data has no answer key, simulation gives us one.</span></div>
-      <div class="metric"><strong>Clear -> fast -> scalable</strong><span>Reference code, stress cases, then Python acceleration tools.</span></div>
+      <div class="metric"><strong>Trust -> speed -> scale</strong><span>Prove the statistic, accelerate the bottleneck, then test scale.</span></div>
+      <div class="metric"><strong>Simulation contract</strong><span>Controlled truth before runtime charts.</span></div>
+      <div class="metric"><strong>Python interface</strong><span>Numba and JAX move the hotspot, not the scientific contract.</span></div>
     </div>
   </div>
   <aside class="notes">Introduce the talk as a statistician's workflow, not a library benchmark.</aside>
@@ -351,29 +411,26 @@
 
 <section class="deck-slide">
   <div class="kicker">Why this talk</div>
-  <h2>From a statistician's point of view, speed is only useful after trust</h2>
-  <p class="subtitle">We use Python to move through the whole scientific loop: write the model, test the behavior, find hard cases, then accelerate the expensive pattern.</p>
+  <h2>For statisticians, speed is useful only after trust</h2>
+  <p class="subtitle">Optimization enters after reference behavior is defined, stressed, and checked.</p>
   <div class="cards-3">
-    <div class="card"><h3>1. The method is still being learned</h3><p>In practice, the exact statistical specification often becomes clearer through simulation: which assumptions matter, which cases fail, which outputs should be stable.</p></div>
-    <div class="card"><h3>2. The reference is part of the science</h3><p>Readable Python or NumPy code is not throwaway. It is the executable definition that optimized kernels must match.</p></div>
-    <div class="card"><h3>3. Acceleration must preserve meaning</h3><p>Numba, JAX, threads, and GPUs are useful only when they compute the same statistic on the same controlled scenarios.</p></div>
+    <div class="card"><h3>Statistical specification evolves</h3><p>Simulation exposes assumptions, hard cases, and stable outputs.</p></div>
+    <div class="card"><h3>Reference code is scientific specification</h3><p>Readable Python or NumPy is the executable contract.</p></div>
+    <div class="card"><h3>Acceleration is conditional</h3><p>Faster paths must compute the same statistic on controlled scenarios.</p></div>
   </div>
-  <div class="callout"><p><strong>Rule for the talk:</strong> a faster implementation that changes the statistic is not an optimization. It is a different method.</p></div>
+  <div class="callout"><p>A faster implementation that changes the statistic is a different method.</p></div>
 </section>
 
 <section class="deck-slide">
   <div class="kicker">Simulation as testing</div>
-  <h2>Simulation creates the answer key that real data does not give us</h2>
-  <div class="cards-3">
-    <div class="card"><h3>Known target</h3><p>True clusters, null behavior, effect size, invariants, expected calibration, or exact reference output.</p></div>
-    <div class="card"><h3>Known stress cases</h3><p>Low separation, imbalance, outliers, high dimension, bad seeds, memory pressure, and worker overhead.</p></div>
-    <div class="card"><h3>Known decision rule</h3><p>Only variants that pass the statistical contract enter the runtime comparison.</p></div>
-  </div>
-  <div class="flow">
-    <div class="card"><div class="step-num">Step 1</div><h3>Reference</h3><p>Write code close to the math, even if it is slow.</p></div>
-    <div class="card"><div class="step-num">Step 2</div><h3>Scenarios</h3><p>Generate easy, null, alternative, and pathological cases.</p></div>
-    <div class="card"><div class="step-num">Step 3</div><h3>Validate</h3><p>Check recovery, calibration, equivalence, and numerical stability.</p></div>
-    <div class="card"><div class="step-num">Step 4</div><h3>Optimize</h3><p>Choose the smallest tool that removes the proven bottleneck.</p></div>
+  <h2>Simulation creates an answer key</h2>
+  <p class="subtitle">Real data rarely tells us the truth; simulation lets us control part of it.</p>
+  <div class="pipeline-5">
+    <div class="pipeline-step"><strong>Target</strong><span>Truth, null behavior, effect size, or invariant.</span></div>
+    <div class="pipeline-step"><strong>Reference</strong><span>Readable implementation close to the statistic.</span></div>
+    <div class="pipeline-step"><strong>Scenarios</strong><span>Easy, null, alternative, and pathological cases.</span></div>
+    <div class="pipeline-step"><strong>Validation</strong><span>Recovery, calibration, equivalence, tolerance.</span></div>
+    <div class="pipeline-step"><strong>Optimization</strong><span>Only after the contract is stable.</span></div>
   </div>
 </section>
 
@@ -381,74 +438,77 @@
   <div class="kicker">Programmer bridge</div>
   <h2>Simulation-driven statistical computing is statistical CI</h2>
   <p class="subtitle">The testing instinct is familiar; the oracle is statistical behavior rather than one expected scalar.</p>
-  <div class="tool-map" style="grid-template-columns:0.75fr 1.25fr;">
-    <div class="head">Software testing term</div><div class="head">Statistical simulation equivalent</div>
-    <div>Unit tests</div><div>Fixed-seed reference equivalence</div>
-    <div>Property tests</div><div>Null-model invariants, symmetry, monotonicity, calibration</div>
-    <div>Fuzz/stress tests</div><div>Imbalance, outliers, bad seeds, high dimension, memory risk</div>
-    <div>Load tests</div><div>Scale N, d, K, p, R, seeds, workers, and batch sizes</div>
-    <div>Regression tests</div><div>Optimized paths preserve the same statistic after code changes</div>
+  <div class="mapping-2">
+    <div>Unit tests</div><div>Fixed-seed equivalence to the reference statistic.</div>
+    <div>Property tests</div><div>Null invariants, symmetry, monotonicity, calibration.</div>
+    <div>Stress tests</div><div>Imbalance, outliers, bad seeds, high dimension.</div>
+    <div>Load tests</div><div>Scale N, d, K, p, R, workers, and batch sizes.</div>
+    <div>Regression tests</div><div>Optimized paths keep preserving the same statistic.</div>
   </div>
 </section>
 
 <section class="deck-slide">
   <div class="kicker">Why Python</div>
   <h2>Python is the control plane; the hotspot can move to the right engine</h2>
-  <p class="subtitle">The point is not to make every line of Python magically fast. The point is to keep the model readable while moving the expensive computational pattern into NumPy, Numba, threads, or JAX when the simulation contract allows it.</p>
-  <div class="tool-map">
-    <div class="head">Tool</div><div class="head">Best role in this workflow</div><div class="head">What to watch</div>
-    <div>Python / NumPy reference</div><div>Executable statistical definition; easiest to inspect and debug</div><div>Loops and large temporaries become bottlenecks</div>
-    <div>NumPy / BLAS</div><div>Algebraic rewrite, vectorized arrays, matrix identities</div><div>Broadcasting can create giant O(N*K*d) or O(R*n) arrays</div>
-    <div>Numba</div><div>Compile scalar numerical loops on CPU while keeping array logic explicit</div><div>Compiler restrictions and parallel RNG/correctness details</div>
-    <div>Threads / Python 3.14</div><div>Repeated work over shared arrays; avoid process copies when thread-friendly</div><div>Actual GIL state and extension-module behavior must be logged</div>
-    <div>JAX / A100</div><div>Large batched array programs after reformulation, especially matrix-shaped work</div><div>Compilation, transfer, device sync, and dtype/device labels</div>
+  <p class="subtitle">Keep the model readable, then move the measured hotspot into the smallest engine that preserves the simulation contract.</p>
+  <div class="tool-flow">
+    <div class="tool-node"><strong>Python / NumPy reference</strong><span>Executable statistical definition.</span></div>
+    <div class="arrow">-></div>
+    <div class="tool-node"><strong>Simulation contract</strong><span>Recovery, calibration, equivalence, and tolerance gates.</span></div>
+    <div class="arrow">-></div>
+    <div class="tool-node"><strong>Hotspot shape</strong><span>Loops, dense algebra, repetition, or batched arrays.</span></div>
+  </div>
+  <div class="engine-grid">
+    <div class="engine-card"><strong>NumPy / BLAS</strong><span>Dense algebra and matrix identities.</span></div>
+    <div class="engine-card"><strong>Numba</strong><span>CPU numerical loops without giant temporaries.</span></div>
+    <div class="engine-card"><strong>Threads / Python 3.14</strong><span>Repeated work over shared arrays.</span></div>
+    <div class="engine-card"><strong>JAX / A100</strong><span>Batched array programs after reformulation.</span></div>
   </div>
 </section>
 
 <section class="deck-slide">
   <div class="kicker">Why these two examples</div>
-  <h2>k-means and permutation tests are two canonical statistical computing shapes</h2>
+  <h2>Two workloads, two statistical computing shapes</h2>
   <div class="compare">
     <div class="card">
       <span class="tag">Iterative model fitting</span>
       <h3>k-means</h3>
-      <p><strong>Statistical question:</strong> do we recover known clusters as geometry gets harder?</p>
-      <p style="margin-top:12px;"><strong>Compute pressure:</strong> assignment/update loops, distance computation, repeated iterations, temporary arrays.</p>
-      <p style="margin-top:12px;"><strong>Tool link:</strong> Numba for CPU loops; NumPy matmul for distance algebra; JAX/A100 only when the loop becomes large and regular enough.</p>
+      <p>Assignment -> update -> repeat.</p>
+      <p style="margin-top:12px;">Pressure: loops, distances, temporary arrays, iteration dependence.</p>
     </div>
     <div class="card">
       <span class="tag green">Resampling inference</span>
       <h3>Permutation test</h3>
-      <p><strong>Statistical question:</strong> does the null distribution stay calibrated across many features?</p>
-      <p style="margin-top:12px;"><strong>Compute pressure:</strong> thousands of independent label shuffles across a samples-by-features matrix.</p>
-      <p style="margin-top:12px;"><strong>Tool link:</strong> threads/processes for repetition; Numba for CPU kernels; JAX/A100 after rewriting the statistic as <code>W @ X</code>.</p>
+      <p>Shuffle -> statistic -> repeat.</p>
+      <p style="margin-top:12px;">Pressure: random generation, batching, memory layout, independent draws.</p>
     </div>
   </div>
-  <div class="callout"><p>These are not chosen because they are exotic. They are chosen because many statistical workloads look like either iterative dependence or repeated simulation.</p></div>
+  <div class="callout"><p>They stand for two common shapes: iterative dependence and repeated simulation.</p></div>
 </section>
 
 <section class="deck-slide">
   <div class="kicker">Evidence ladder</div>
-  <h2>Different machines answer different questions</h2>
+  <h2>Evidence ladder: trust, scale, acceleration</h2>
   <div class="ladder">
-    <div class="card"><h3 class="accent-blue">MacBook Air</h3><p>Small, controlled simulation. Debugging. Reference equivalence. Developer experience.</p></div>
+    <div class="card"><h3 class="accent-blue">MacBook Air</h3><p>Trust tier: controlled simulation and reference equivalence.</p></div>
     <div class="arrow">-></div>
-    <div class="card"><h3 class="accent-green">Linux server CPU</h3><p>Large shape. Parallelism. Threads/processes. Memory accounting and worker sweeps.</p></div>
+    <div class="card"><h3 class="accent-green">Linux server CPU</h3><p>Scale tier: larger shapes, parallelism, and memory accounting.</p></div>
     <div class="arrow">-></div>
-    <div class="card"><h3 class="accent-berry">A100 GPU</h3><p>Only after the computation becomes batched, array-shaped, and device-resident enough to matter.</p></div>
+    <div class="card"><h3 class="accent-berry">A100 GPU</h3><p>Accelerator tier: only when the pipeline is batched and device-resident.</p></div>
   </div>
-  <div class="cards-2" style="margin-top:30px;">
-    <div class="card"><h3>Benchmark contract</h3><ul><li>Correctness status before runtime.</li><li>Cold first call and warm median.</li><li>Memory, including child RSS for processes.</li><li>Explicit unavailable rows for GPU/JIT/free-threaded tests.</li></ul></div>
-    <div class="card"><h3>JAX / GPU timing contract</h3><ul><li>Always synchronize device work before timing.</li><li>Label dtype and device.</li><li>Separate end-to-end pipeline from kernel-only hypotheses.</li><li>Do not report hoped-for speedups as measured results.</li></ul></div>
+  <div class="cards-3" style="margin-top:30px;">
+    <div class="card"><h3>Correctness before runtime</h3><p>Every timing row carries a validation status.</p></div>
+    <div class="card"><h3>Warm timing plus memory</h3><p>Cold calls, warm medians, and RSS are logged separately.</p></div>
+    <div class="card"><h3>Unavailable is data</h3><p>JIT, GPU sync, and interpreter state are explicitly labeled.</p></div>
   </div>
 </section>
 
 <section class="deck-slide">
   <div class="section-title">
     <div class="kicker">Workload 1</div>
-    <h1>k-means as iterative simulation pressure</h1>
+    <h1>k-means as iterative model-fitting pressure</h1>
     <div class="bar"></div>
-    <p class="subtitle">Same simulated data, same initialization, same statistic. Then vary separation, dimension, imbalance, outliers, K, N, and seeds.</p>
+    <p class="subtitle">Same data and initialization; vary geometry and scale.</p>
   </div>
 </section>
 
@@ -481,49 +541,53 @@
 
 <section class="deck-slide">
   <div class="kicker">Why k-means works here</div>
-  <h2>A simple algorithm exposes the loop patterns in many statistical methods</h2>
+  <h2>A simple algorithm exposes common iterative pressure</h2>
   <div class="cards-3">
-    <div class="card"><h3>Statistical target</h3><p>Recover known clusters and preserve fixed-initialization inertia across implementations.</p></div>
-    <div class="card"><h3>Failure modes</h3><p>Low separation, high dimension, imbalanced clusters, outliers, bad initialization, empty clusters.</p></div>
-    <div class="card"><h3>Python pressure</h3><p>Interpreter loops, O(N*K*d) broadcast temporaries, BLAS-friendly distance identities, compiled loop kernels.</p></div>
+    <div class="card"><h3>Statistical contract</h3><p>Recover known clusters and preserve fixed-initialization inertia.</p></div>
+    <div class="card"><h3>Failure modes</h3><p>Low separation, imbalance, outliers, bad starts, empty clusters.</p></div>
+    <div class="card"><h3>Compute pressure</h3><p>Assignment/update loops, distances, temporaries, repeated iterations.</p></div>
   </div>
-  <table class="matrix">
-    <thead><tr><th>Implementation idea</th><th>Why it is relevant</th><th>What simulation checks</th></tr></thead>
-    <tbody>
-      <tr><td>Readable NumPy</td><td>Closest to the math; easiest to debug</td><td>Reference inertia and recovery</td></tr>
-      <tr><td>Numba loop</td><td>Compile assignment/update loops without giant temporary arrays</td><td>Same fixed-init result, faster CPU loop</td></tr>
-      <tr><td>NumPy matmul</td><td>Use distance algebra to move work into BLAS</td><td>Same statistic, better shape for large d/K</td></tr>
-      <tr><td>JAX/A100</td><td>Large regular loops can become accelerator work</td><td>Device result matches reference before speed claims</td></tr>
-    </tbody>
-  </table>
+  <div class="mini-tool-row">
+    <span>Numba loops</span>
+    <span>NumPy matmul distance algebra</span>
+    <span>JAX/A100 large regular loops</span>
+  </div>
 </section>
 
 <section class="deck-slide">
   <div class="kicker">Simulation result before speed result</div>
-  <h2>Recovery surfaces tell us which runtimes are meaningful</h2>
-  <div class="figure-box"><img src="../experiments/results/macbook_air_long/latest/figures/kmeans_recovery_difficulty_map.png" alt="k-means ARI recovery difficulty heatmap" /></div>
-  <p class="caption">MacBook validation tier: cells show median ARI from existing measured rows; white rings mark high run-to-run variability.</p>
+  <h2>Recovery comes before runtime</h2>
+  <div class="figure-box" style="height:535px;"><img src="../experiments/results/macbook_air_long/latest/figures/kmeans_recovery_difficulty_map.png" alt="k-means ARI recovery difficulty heatmap" /></div>
+  <p class="caption">ARI = 1 means perfect recovery; hard geometry makes runtime-only comparisons misleading.</p>
 </section>
 
 <section class="deck-slide">
   <div class="kicker">Reference gate</div>
   <h2>Optimized paths must preserve the reference statistic</h2>
-  <div class="figure-box"><img src="../experiments/results/macbook_air_long/latest/figures/kmeans_equivalence_tolerance.png" alt="k-means optimized-vs-reference tolerance plot" /></div>
-  <p class="caption">Same initialization and same reference solution; optimized rows are counted only after the tolerance check passes.</p>
+  <p class="subtitle">Same initialization, same reference solution, and explicit tolerance before timing.</p>
+  <div class="kpi-dashboard">
+    <div class="big-pass"><strong>PASS</strong><span>Memory-risk skips are expected safeguards, not optimized failures.</span></div>
+    <div class="kpi-grid">
+      <div class="kpi good"><strong>3,840</strong><span>checked implementation rows</span></div>
+      <div class="kpi good"><strong>0</strong><span>optimized failures</span></div>
+      <div class="kpi warn"><strong>480</strong><span>expected memory-risk skips</span></div>
+      <div class="kpi"><strong>3.1e-14</strong><span>max relative difference; tolerance 1e-8</span></div>
+    </div>
+  </div>
 </section>
 
 <section class="deck-slide">
   <div class="kicker">Scale tier</div>
-  <h2>On the server, the winner depends on computational shape</h2>
+  <h2>Server k-means: acceleration is shape-dependent</h2>
   <div class="figure-layout">
     <div class="figure-notes">
-      <div class="note-card"><strong>Numba wins many CPU loop shapes</strong><span>Especially when scalar assignment/update loops dominate.</span></div>
-      <div class="note-card"><strong>BLAS helps different shapes</strong><span>Matmul can be attractive when distance algebra matches dense linear algebra.</span></div>
-      <div class="note-card"><strong>A100 is conditional</strong><span>It wins only when enough regular work exists to amortize compilation, transfer, and device overhead.</span></div>
+      <div class="note-card"><strong>Speedup definition</strong><span>Best matched CPU baseline / A100 warm runtime.</span></div>
+      <div class="note-card"><strong>Shape matters</strong><span>Numba, BLAS, and A100 win in different regions.</span></div>
+      <div class="note-card"><strong>Caution</strong><span>High dimension can narrow A100 advantage.</span></div>
     </div>
     <div>
       <div class="figure-box"><img src="../experiments/results/presentation_figures/server_kmeans_a100_breakeven.png" alt="server k-means A100 break-even speedup plot" /></div>
-      <p class="caption">Measured server rows only: best warm CPU baseline versus A100, k=20 and separation=2.0; max matched A100 edge 5.8x.</p>
+      <p class="caption">Measured server rows only: k=20 and separation=2.0; max matched A100 edge 5.8x.</p>
     </div>
   </div>
 </section>
@@ -531,23 +595,19 @@
 <section class="deck-slide">
   <div class="kicker">k-means takeaway</div>
   <h2>The tool choice follows the simulation signal</h2>
-  <table class="matrix">
-    <thead><tr><th>Signal from the experiment</th><th>Likely tool</th><th>Reason</th></tr></thead>
-    <tbody>
-      <tr><td>Reference behavior not stable</td><td>Do not optimize yet</td><td>The statistical contract is not ready.</td></tr>
-      <tr><td>Small K/d, scalar loops dominate</td><td>Numba</td><td>Fuses explicit loops with low extra memory.</td></tr>
-      <tr><td>Large K/d and dense distance work</td><td>NumPy matmul / BLAS</td><td>Algebraic rewrite can remove expensive broadcast temporaries.</td></tr>
-      <tr><td>Huge N and regular array program</td><td>JAX/A100</td><td>Potential accelerator win after enough work exists.</td></tr>
-      <tr><td>Poor ARI under simulated truth</td><td>Revise method or scenario</td><td>Runtime is not the first question.</td></tr>
-    </tbody>
-  </table>
+  <div class="rule-grid">
+    <div class="rule-card"><strong>Unstable recovery</strong><span>Do not optimize yet; the statistical contract is not ready.</span></div>
+    <div class="rule-card"><strong>Scalar loops</strong><span>Use Numba to compile explicit CPU kernels.</span></div>
+    <div class="rule-card"><strong>Dense distance algebra</strong><span>Use NumPy/BLAS when the rewrite removes large temporaries.</span></div>
+    <div class="rule-card"><strong>Huge regular work</strong><span>Use JAX/A100 only after enough batched work exists.</span></div>
+  </div>
   <div class="callout"><p>k-means stands in for a large class of iterative statistical algorithms: EM, coordinate descent, optimization loops, and simulation-based estimators.</p></div>
 </section>
 
 <section class="deck-slide">
   <div class="section-title">
     <div class="kicker">Workload 2</div>
-    <h1>Permutation tests as resampling pressure</h1>
+    <h1>Permutation tests as resampling inference pressure</h1>
     <div class="bar"></div>
     <p class="subtitle">A simple inference procedure becomes expensive when we need thousands of null draws across a high-dimensional features matrix.</p>
   </div>
@@ -573,7 +633,7 @@
         <li>recompute the statistic</li>
         <li>repeat many times to form the null distribution</li>
       </ol>
-      <p class="takeaway">The repetitions are independent, but memory, random generation, and batching decide performance.</p>
+      <p class="takeaway">The repetitions are independent; the pipeline is not free.</p>
       <p class="tool-note">This is why permutation tests connect to threads/processes, Numba kernels, and JAX/A100 matrix formulations.</p>
     </div>
   </div>
@@ -582,34 +642,31 @@
 
 <section class="deck-slide">
   <div class="kicker">Why permutation tests work here</div>
-  <h2>They expose the other common shape: independent statistical repetition</h2>
+  <h2>X = samples x features is the visual anchor</h2>
   <div class="cards-3">
-    <div class="card"><h3>Biostatistics context</h3><p>Feature-wise testing appears in gene expression, imaging, biomarkers, and other high-dimensional settings.</p></div>
-    <div class="card"><h3>Statistical contract</h3><p>Under the null, p-values should be calibrated; optimized p-values must match the reference using the same permutations.</p></div>
-    <div class="card"><h3>Python pressure</h3><p>Repeated random index work, shared arrays, process copies, thread ceilings, matrix batching, and GPU transfer overhead.</p></div>
+    <div class="card"><h3>Data shape</h3><p>Samples by features: genes, biomarkers, voxels, or other high-dimensional measurements.</p></div>
+    <div class="card"><h3>Statistical contract</h3><p>Null p-values stay calibrated; optimized p-values match the reference under the same permutations.</p></div>
+    <div class="card"><h3>Compute pressure</h3><p>Random labels, shared arrays, batching, memory layout, and transfer overhead.</p></div>
   </div>
-  <div class="callout"><p>For programmers: this is the workload where "embarrassingly parallel" still has hard engineering details.</p></div>
+  <div class="callout"><p>Independent repetitions still have a pipeline cost.</p></div>
 </section>
 
 <section class="deck-slide">
   <div class="kicker">Code shape</div>
-  <h2>Same statistic, different computational formulation</h2>
+  <h2>Statistical algebra changes the kernel, not the statistic</h2>
   <div class="code-compare">
     <div class="code-box">
       <h3>Readable reference loop</h3>
-      <pre>perms = make_permutations(labels, R)
-
-for r in range(R):
-    stat[r] = diff_mean(X, perms[r])</pre>
+      <pre>for perm in permutations:
+    t_null.append(statistic(X, perm))</pre>
     </div>
     <div class="code-box">
       <h3>Matrix formulation</h3>
-      <pre>perms = make_permutations(labels, R)
-W = contrast_matrix(perms)
-stat = W @ X</pre>
+      <pre>W = contrasts(permutations)
+t_null = W @ X</pre>
     </div>
   </div>
-  <div class="callout"><p>The rewrite is allowed only because both paths are checked against the same permutations. Otherwise differences may be random-number differences, not implementation differences.</p></div>
+  <div class="callout"><p>Only valid after same-permutation equivalence checks.</p></div>
 </section>
 
 <section class="deck-slide">
@@ -625,7 +682,7 @@ stat = W @ X</pre>
     <div class="validation-dashboard">
       <div class="pass-row">
         <div class="pass-badge">PASS</div>
-        <div class="pass-context">18 workloads × 5 seeds<br />same permutation stream<br />JAX tier: CPU/x64, not A100</div>
+        <div class="pass-context">18 workloads × 5 seeds<br />same permutation stream<br />JAX tier: CPU/x64</div>
       </div>
       <div class="gate-stats">
         <div class="gate-stat pass"><strong>450</strong><span>pass rows admitted to comparison</span></div>
@@ -656,23 +713,23 @@ stat = W @ X</pre>
     </div>
   </div>
   <div class="bottom-takeaway">Same statistic, different computational shape.</div>
-  <aside class="notes">This slide is a gate. Before timing the matrix formulation, we check it against the readable reference loop using the same permutation stream. The p-values match exactly in the recorded results, and the test-statistic differences are around 1e-15, far below the 1e-6 tolerance. That is why the matrix path is allowed into the benchmark. In this correctness tier, the JAX rows are CPU/x64; A100 appears later as scale evidence.</aside>
+  <aside class="notes">This slide is a gate. Before timing the matrix formulation, we check it against the readable reference loop using the same permutation stream. The p-values match exactly in the recorded results, and the test-statistic differences are around 1e-15, far below the 1e-6 tolerance. That is why the matrix path is allowed into the benchmark. In this correctness tier, the JAX rows are CPU/x64.</aside>
 </section>
 
 <section class="deck-slide">
   <div class="kicker">Correctness gate 2</div>
-  <h2>Then check null calibration</h2>
-  <p class="subtitle">Under the null, the rejection rate should stay close to alpha = 0.05.</p>
+  <h2>Null calibration gate: type-I error stays near alpha</h2>
+  <p class="subtitle">Under the null, the type-I error should stay close to nominal alpha = 0.05.</p>
   <div class="calibration-gate">
     <div class="calibration-cards">
       <div class="calibration-card"><strong>Why calibration matters</strong><span>Equivalence checks implementation. Calibration checks statistical behavior.</span></div>
-      <div class="calibration-card"><strong>Observed check</strong><span>At alpha = 0.05, observed type-I rate = 0.051.</span></div>
+      <div class="calibration-card"><strong>Observed check</strong><span>Observed type-I error = 0.051 at nominal alpha 0.050.</span></div>
       <div class="calibration-card"><strong>What this unlocks</strong><span>Now runtime comparisons become meaningful.</span></div>
     </div>
     <div class="calibration-dashboard">
       <div class="calibration-top">
         <div class="calibration-pass">PASS</div>
-        <div class="calibration-rate"><strong>0.051</strong><span>mean replicate-level proportion with p <= 0.05</span></div>
+        <div class="calibration-rate"><strong>0.051</strong><span>observed type-I error estimate</span></div>
       </div>
       <div class="calibration-metrics">
         <div class="calibration-metric"><strong>0.050</strong><span>nominal alpha</span></div>
@@ -711,12 +768,12 @@ stat = W @ X</pre>
       <div class="figure-box" style="height:400px; padding:4px;">
         <img src="../experiments/results/presentation_figures/cpu_vs_a100_break_even_map.png" alt="CPU vs A100 permutation break-even map" />
       </div>
-      <p class="caption" style="font-size:15px;">Speedup = matched CPU matrix baseline / A100 streamed full end-to-end; compile excluded, transfer included, kernel-only excluded.</p>
+      <p class="caption" style="font-size:15px;">speedup = matched CPU matrix baseline / A100 streamed full end-to-end.</p>
     </div>
     <div class="figure-notes" style="gap:12px;">
+      <div class="note-card" style="padding:13px 14px;"><strong>Timing scope</strong><span>Compile excluded; transfer included; kernel-only excluded.</span></div>
       <div class="note-card" style="padding:13px 14px;"><strong>CPU wins when</strong><span>p and R are small or random generation, W construction, transfer, collection, or too-small batch_R dominates.</span></div>
       <div class="note-card" style="padding:13px 14px;"><strong>A100 can win when</strong><span>R x p is large, batch_R fits memory, streamed reduction avoids collecting R x p, and work stays on device.</span></div>
-      <div class="note-card" style="padding:13px 14px;"><strong>Measured scope</strong><span>n=5,000 map; batch_R=8,192. First measured win at p=10,000, R=5,000; largest measured speedup 8.54x.</span></div>
     </div>
   </div>
   <div class="callout" style="margin-top:10px; padding:12px 18px;"><p style="font-size:21px;">Shape beats logo: GPU is a formulation decision, not a flag.</p></div>
@@ -726,18 +783,19 @@ stat = W @ X</pre>
 <section class="deck-slide">
   <div class="kicker">Pipeline decomposition</div>
   <h2>Where does A100 time go?</h2>
-  <p class="subtitle" style="font-size:20px; margin-top:8px; max-width:1080px;">A fast matrix multiply is not enough; the full statistical pipeline decides CPU vs GPU.</p>
+  <p class="subtitle" style="font-size:20px; margin-top:8px; max-width:1080px;">Full-scenario streamed path; compile excluded, transfer included.</p>
   <div class="figure-box" style="height:468px; margin-top:10px; padding:4px;">
     <img src="../experiments/results/presentation_figures/a100_pipeline_decomposition_representative.png" alt="A100 permutation pipeline decomposition representative shapes" />
   </div>
-  <p class="caption" style="font-size:15px;">Full scenario timing; compile excluded, transfer included; streamed reduction; batch_R=8,192; n_batches shown per scenario; residual labeled as other overhead.</p>
+  <p class="caption" style="font-size:15px;">Full scenario timing; streamed reduction; batch_R=8,192; residual labeled as other overhead.</p>
+  <div class="callout" style="margin-top:10px; padding:12px 18px;"><p style="font-size:21px;">A fast kernel is not enough; the full statistical pipeline decides.</p></div>
   <aside class="notes">This slide decomposes the A100 path. The key point is not simply that the GPU is slow or fast; it is where the time goes. If W @ X is a small fraction, then the statistical algebra found a GPU-friendly kernel, but the surrounding pipeline - permutation generation, W construction, transfer, or collection - is the real bottleneck. That is why the next optimization target is the pipeline, not changing the statistic. The figure is full scenario timing, compile excluded, transfer included. The named stages are reconciled to the recorded total with an explicit other-overhead segment.</aside>
 </section>
 
 <section class="deck-slide">
   <div class="kicker">Parallelism</div>
-  <h2>More workers is not a moral victory</h2>
-  <p class="subtitle">Best speed is not max workers; memory can keep growing after runtime saturates.</p>
+  <h2>CPU parallelism is also a tuning problem</h2>
+  <p class="subtitle">More workers is not a moral victory.</p>
   <div class="parallel-panels">
     <div class="parallel-panel">
       <h3>Runtime improves, then turns</h3>
@@ -771,43 +829,43 @@ stat = W @ X</pre>
   <div class="kicker">Connecting the tools</div>
   <h2>Python 3.14, Numba, and JAX solve different parts of the workflow</h2>
   <div class="cards-3">
-    <div class="card"><h3 class="accent-teal">Python 3.14</h3><p>Changes interpreter/runtime ceilings: free-threaded builds can help thread-friendly workloads; experimental JIT rows must be reported only when actually available and enabled.</p></div>
-    <div class="card"><h3 class="accent-green">Numba</h3><p>Best fit when simulation identifies explicit numerical loops over arrays as the hotspot, especially CPU kernels where avoiding temporaries matters.</p></div>
-    <div class="card"><h3 class="accent-berry">JAX / A100</h3><p>Best fit when the statistic has been reformulated as a large batched array program and device execution can dominate transfer and compilation overhead.</p></div>
+    <div class="card"><h3 class="accent-teal">Python 3.14 = runtime ceiling</h3><p>Threads and free-threaded builds can change repeated-work ceilings; measure availability.</p></div>
+    <div class="card"><h3 class="accent-green">Numba = CPU loop kernel</h3><p>Compile explicit numerical loops when temporaries or interpreter overhead dominate.</p></div>
+    <div class="card"><h3 class="accent-berry">JAX/A100 = batched array program</h3><p>Use after reformulation makes device-resident work dominate the pipeline.</p></div>
   </div>
-  <div class="callout"><p>The decision is not Python versus compiled languages. It is: keep Python as the scientific interface, then accelerate the pattern that simulation proves is expensive.</p></div>
+  <div class="callout"><p>Choose runtime after simulation identifies the bottleneck.</p></div>
 </section>
 
 <section class="deck-slide">
   <div class="kicker">AI coding tools</div>
   <h2>Codex can generate variants; the statistician owns the contract</h2>
   <div class="compare">
-    <div class="card"><h3>Good Codex work</h3><ul><li>Generate implementation variants.</li><li>Build scenario-grid runners.</li><li>Record environment metadata.</li><li>Regenerate plots from CSVs.</li><li>Keep result paths and READMEs consistent.</li></ul></div>
-    <div class="card"><h3>Human-owned decisions</h3><ul><li>Define the statistic and null model.</li><li>Choose scenario grids and failure criteria.</li><li>Decide whether skips are honest.</li><li>Interpret calibration, recovery, and negative speed evidence.</li></ul></div>
+    <div class="card"><h3>Automation layer</h3><ul><li>Generate implementation variants.</li><li>Run scenario grids.</li><li>Record environment metadata.</li><li>Regenerate plots from CSVs.</li></ul></div>
+    <div class="card"><h3>Statistical contract</h3><ul><li>Define the statistic and null model.</li><li>Choose failure criteria.</li><li>Interpret calibration and recovery.</li><li>Decide what evidence is enough.</li></ul></div>
   </div>
-  <div class="callout"><p>AI is a copilot for code generation and experiment hygiene, not an oracle for statistical truth.</p></div>
+  <div class="callout"><p>AI accelerates experiment hygiene; it does not define statistical truth.</p></div>
 </section>
 
 <section class="deck-slide">
   <div class="kicker">Decision guide</div>
   <h2>Choose the smallest tool that preserves the statistic</h2>
-  <table class="matrix">
-    <thead><tr><th>If the bottleneck is...</th><th>Prefer...</th><th>Why</th></tr></thead>
-    <tbody>
-      <tr><td>Understanding or correctness</td><td>Python / NumPy reference</td><td>Debuggable, inspectable, close to the math.</td></tr>
-      <tr><td>Scalar CPU loops</td><td>Numba</td><td>High return without changing the algorithmic shape.</td></tr>
-      <tr><td>Repeated work over shared arrays</td><td>Threads / free-threaded Python / Numba</td><td>Avoid process copies; measure the actual runtime ceiling.</td></tr>
-      <tr><td>Process-isolated jobs</td><td>multiprocessing</td><td>Robust, but memory and startup cost need budgeting.</td></tr>
-      <tr><td>Large batched array programs</td><td>JAX / GPU</td><td>Accelerator-friendly only after reformulation.</td></tr>
-      <tr><td>Giant temporaries</td><td>Algebraic rewrite</td><td>Often safer than switching libraries blindly.</td></tr>
-    </tbody>
-  </table>
+  <div class="decision-tree">
+    <div class="tree-root">Can I trust the result?</div>
+    <div class="tree-branches">
+      <div class="tree-leaf"><strong>Python/NumPy reference</strong><span>No: make the statistic testable first.</span></div>
+      <div class="tree-leaf"><strong>Numba</strong><span>Scalar numerical loops on CPU.</span></div>
+      <div class="tree-leaf"><strong>Threads / free-threaded Python</strong><span>Repeated work over shared arrays.</span></div>
+      <div class="tree-leaf"><strong>JAX/GPU</strong><span>Large batched array program.</span></div>
+      <div class="tree-leaf"><strong>Algebraic rewrite</strong><span>Giant temporaries or better kernel shape.</span></div>
+      <div class="tree-leaf"><strong>multiprocessing</strong><span>Process-isolated jobs with memory budget.</span></div>
+    </div>
+  </div>
 </section>
 
 <section class="deck-slide">
   <div class="section-title">
     <div class="kicker">Close</div>
-    <h1>Make the statistic testable, then make the bottleneck fast.</h1>
+    <h1>Make the statistic testable.<br />Then make the bottleneck fast.</h1>
     <div class="bar"></div>
     <p class="subtitle">Clear enough to trust. Fast enough to scale.</p>
     <p class="small" style="margin-top:16px;"><code>github.com/lucajiang/FastStatisticalModels4Python</code></p>
@@ -839,21 +897,21 @@ stat = W @ X</pre>
 
 <section class="deck-slide">
   <div class="backup-label">Backup</div>
-  <h2>Permutation power rises with effect size</h2>
+  <h2>Power increases with effect size</h2>
   <div class="figure-only figure-box"><img src="../experiments/results/macbook_air_long/latest/figures/permutation_power_extended.png" alt="permutation power curve" /></div>
   <p class="caption">Backup statistical sanity check: weak effects need denser evidence; larger effects reach high power in this local curve.</p>
 </section>
 
 <section class="deck-slide">
   <div class="backup-label">Backup</div>
-  <h2>Local permutation runtime follows computational shape</h2>
+  <h2>MacBook-only permutation runtime follows computational shape</h2>
   <div class="figure-only figure-box"><img src="../experiments/results/macbook_air_long/latest/figures/permutation_runtime_scaling_extended.png" alt="permutation runtime scaling" /></div>
   <p class="caption">MacBook CPU only: useful for local validation, not a server or GPU leaderboard.</p>
 </section>
 
 <section class="deck-slide">
   <div class="backup-label">Backup</div>
-  <h2>What the agent actually changed</h2>
+  <h2>What the coding agent automated</h2>
   <div class="cards-3">
     <div class="card"><h3>Experiment surface</h3><p>Replaced quick outputs with resumable MacBook evidence, server long-safe CSVs, and result READMEs.</p></div>
     <div class="card"><h3>Visualization surface</h3><p>Regenerated figures from CSVs and removed charts that looked precise but were unreadable.</p></div>

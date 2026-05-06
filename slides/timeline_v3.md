@@ -12,38 +12,38 @@ Purpose: establish the thesis. Simulation is how statisticians write tests; a fa
 
 ## 1:00-8:00 - Simulation-driven statistical computing
 
-Slide 2: From a statistician's point of view, speed is only useful after trust  
-Slide 3: Simulation creates the answer key  
+Slide 2: For statisticians, speed is useful only after trust  
+Slide 3: Simulation creates an answer key  
 Slide 4: Statistical CI  
 Slide 5: Python stays the scientific interface  
-Slide 6: Why these two examples  
+Slide 6: Two workloads, two statistical computing shapes  
 Slide 7: Evidence ladder
 
 Purpose: build the PyCon/programmer bridge, explain why Python remains the interface, and define the trust-before-speed measurement contract.
 
 ## 8:00-16:00 - Workload 1: k-means
 
-Slide 8: Workload 1 - k-means as iterative simulation pressure  
+Slide 8: Workload 1 - k-means as iterative model-fitting pressure  
 Slide 9: How k-means moves  
 Slide 10: Why k-means works here  
-Slide 11: Recovery surfaces  
+Slide 11: Recovery comes before runtime  
 Slide 12: First prove optimized paths preserve the reference  
-Slide 13: Server k-means: A100 wins only after enough work exists  
+Slide 13: Server k-means: acceleration is shape-dependent  
 Slide 14: k-means takeaway
 
 Purpose: show iterative model-fitting pressure: assignment/update dependence, recovery before runtime, reference equivalence before optimization, and conditional CPU/GPU scale behavior.
 
 ## 16:00-24:00 - Workload 2: permutation tests
 
-Slide 15: Workload 2 - permutation tests as resampling pressure  
+Slide 15: Workload 2 - permutation tests as resampling inference pressure  
 Slide 16: How a permutation test scales  
 Slide 17: Why permutation tests work here  
-Slide 18: Same statistic, different formulation  
+Slide 18: Statistical algebra changes the kernel, not the statistic  
 Slide 19: First, prove the matrix path matches the reference  
-Slide 20: Then check null calibration  
+Slide 20: Null calibration gate: type-I error stays near alpha  
 Slide 21: When does GPU help for permutation tests?  
 Slide 22: Where does A100 time go?  
-Slide 23: More workers is not a moral victory
+Slide 23: CPU parallelism is also a tuning problem
 
 Purpose: move from loop reference to matrix formulation, then through two correctness gates before runtime. The A100 story is now explicitly reconciled: the old matched slice was negative, and the follow-up changed the pipeline with streamed reduction, larger `batch_R`, and a broader shape sweep while preserving the statistic.
 
@@ -57,7 +57,7 @@ Purpose: explain that Python 3.14, Numba, threads/processes, JAX, and A100 solve
 ## 27:30-30:00 - Decision guide and close
 
 Slide 26: Choose the smallest tool that preserves the statistic  
-Slide 27: Make the statistic testable, then make the bottleneck fast
+Slide 27: Make the statistic testable. Then make the bottleneck fast.
 
 Purpose: leave the audience with a practical tool-selection rule: preserve the statistic first, then accelerate the proven bottleneck.
 
@@ -65,6 +65,6 @@ Purpose: leave the audience with a practical tool-selection rule: preserve the s
 
 Slide 28: Evidence map: keep tiers separate  
 Slide 29: Shape stress: K and d become the bottleneck  
-Slide 30: Permutation power rises with effect size  
-Slide 31: Local permutation runtime follows computational shape  
-Slide 32: What the agent actually changed
+Slide 30: Power increases with effect size  
+Slide 31: MacBook-only permutation runtime follows computational shape  
+Slide 32: What the coding agent automated
