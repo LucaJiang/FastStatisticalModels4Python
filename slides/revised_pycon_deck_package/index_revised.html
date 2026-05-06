@@ -372,7 +372,7 @@
   <table class="matrix">
     <thead><tr><th>Signal from the experiment</th><th>Likely tool</th><th>Reason</th></tr></thead>
     <tbody>
-      <tr><td>Reference behavior not stable</td><td>Do not optimize yet</td><td>The statistical contract is not ready.</td></tr>
+      <tr><td>Reference behavior not stable</td><td>Do not optimize yet</td><td>The validation target is not ready.</td></tr>
       <tr><td>Small K/d, scalar loops dominate</td><td>Numba</td><td>Fuses explicit loops with low extra memory.</td></tr>
       <tr><td>Large K/d and dense distance work</td><td>NumPy matmul / BLAS</td><td>Algebraic rewrite can remove expensive broadcast temporaries.</td></tr>
       <tr><td>Huge N and regular array program</td><td>JAX/A100</td><td>Potential accelerator win after enough work exists.</td></tr>

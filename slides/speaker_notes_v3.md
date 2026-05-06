@@ -1,227 +1,119 @@
 # Speaker Notes - Revised Main Deck
 
-Target: 30 minutes. Main path is slides 1-27. Slides 28-32 are backup. This keeps a 27-slide main path because slides 9 and 16 are short method-transition video slides, not full content blocks.
+Target: 30 minutes. Main path is slides 1-29. Slides 30-33 are backup. Slides 9 and 16 are short method-transition video slides.
 
 ## Timing overview
 
 - 0:00-1:00 - Title and thesis
 - 1:00-8:00 - Simulation-driven statistical computing
 - 8:00-16:00 - k-means: iterative model-fitting pressure
-- 16:00-24:00 - permutation testing: resampling inference pressure, GPU map/decomposition, and parallelism
+- 16:00-24:00 - permutation testing: resampling inference pressure, local validation scale, GPU map/decomposition, and parallelism
 - 24:00-27:30 - tool roles and AI/Codex
-- 27:30-30:00 - decision guide and close
+- 27:30-30:00 - decision guide, close, and questions
 
 ---
 
 ## Slide 1 - Breaking the Speed Limit
 
-Open with the key framing: this is not a speed contest and not a tool ranking. The phrase to establish immediately is: clear enough to trust, fast enough to scale.
-
-Say that you are speaking as a biostatistician who uses Python to move from mathematical/statistical ideas to executable experiments. You care about performance, but only after you know what computation you are trying to preserve.
-
-Do not spend time on the names of every tool yet. Say that Python 3.14, Numba, and JAX will appear as answers to different bottlenecks, not as a universal ranking.
+Open as a statistician's workflow, not a library benchmark. Establish: simulation first, validation before speed, Python as the scientific interface, and different tools for different bottlenecks.
 
 ## Slide 2 - For statisticians, speed is useful only after trust
 
-This slide directly answers why the talk starts from the statistician's point of view.
-
-Emphasize that in statistical work, the method is often still being understood while the code is being written. Simulation helps reveal which assumptions matter, which scenarios fail, and which outputs should be stable.
-
-Explain that readable Python or NumPy is not merely a slow first draft. It is the executable statistical definition. Optimized kernels are allowed into the benchmark only after they match that definition.
-
-Say the rule clearly: a faster implementation that changes the statistic is a different method.
+Use the rule on the slide exactly: a speedup only counts if the optimized code answers the same statistical question. Add verbally that same data, same statistic, same stopping rule, and same result within tolerance are what make a benchmark claim meaningful.
 
 ## Slide 3 - Simulation creates an answer key
 
-Use this slide to explain why simulation is not fake data or toy data. It creates an answer key when real data cannot.
-
-Examples:
-
-- For k-means, the simulated answer key is the true cluster assignment.
-- For permutation tests, the simulated answer key is the expected behavior under the null, especially p-value calibration.
-- For systems behavior, the simulation grid tells us which rows are memory-risk skips rather than failures.
-
-The five-step workflow is the short version of the whole talk: target, reference, scenarios, validation, optimization.
+Explain that real biomedical ground truth is often unavailable. The target behavior is what should be recovered, estimated, or calibrated; the scenario grid then turns that into validation checks and bottleneck discovery.
 
 ## Slide 4 - Statistical CI
 
-Translate the workflow into language familiar to PyCon programmers.
-
-Do not read every row. Pick two examples:
-
-- Unit tests become fixed-seed reference equivalence.
-- Load tests become increasing N, d, K, p, R, workers, and batch sizes.
-
-Then say the important difference: the oracle is not always one exact scalar. Sometimes the oracle is calibration, recovery, invariance, or a tolerance bound.
+Do not read every row. Use two examples: fixed-seed equivalence behaves like a unit test, while calibration or recovery behaves like a property test with statistical acceptance criteria.
 
 ## Slide 5 - Why Python
 
-This is where the abstract and the deck connect.
-
-The message is: Python remains the scientific interface. We keep code close enough to the math to inspect, then move hotspots into the appropriate engine.
-
-Use the visual map to show the tool roles:
-
-- Python/NumPy reference defines the statistic.
-- NumPy/BLAS handles vectorized algebra when the arrays have the right shape.
-- Numba handles explicit scalar CPU loops.
-- Threads and free-threaded Python matter for repeated work over shared arrays.
-- JAX/A100 matters after a statistic has become a large batched array program.
-
-This slide should prevent the audience from thinking you are saying one library is always best.
+Python remains the control plane. NumPy, Numba, Python 3.14 threads, and JAX/A100 are ways to move a measured hotspot while preserving the validation target.
 
 ## Slide 6 - Why these two examples
 
-This slide is the main content fix.
-
-Say: I chose k-means and permutation tests not because they are the most advanced statistical methods, but because they represent two common computational shapes.
-
-k-means represents iterative model fitting. Each iteration depends on the previous centroids. That pattern appears in many algorithms: EM, coordinate descent, iterative optimization, simulation-based estimators.
-
-Permutation testing represents resampling inference. The basic statistic is simple, but we repeat it many times, often across many features. That pattern appears in high-dimensional biostatistics, genomics, imaging, and biomarker analysis.
-
-Then connect explicitly to tools:
-
-- k-means gives us Numba loops, NumPy distance algebra, and JAX/A100 only after enough regular work exists.
-- permutation tests give us threads/processes, Numba CPU kernels, and the JAX/A100 matrix formulation `W @ X`.
+k-means represents iterative model fitting: assign, update centroids, repeat. Permutation tests represent resampling inference: shuffle labels, compute a statistic, repeat across many features.
 
 ## Slide 7 - Evidence ladder
 
-Explain that MacBook, server CPU, and A100 are not a hardware leaderboard. They answer different questions.
-
-Laptop: what can we trust? Server CPU: what scales? A100: did we find an accelerator-shaped computation?
-
-State the measurement contract briefly. The most important points are:
-
-- correctness before runtime,
-- warm median plus cold first call,
-- memory including child RSS,
-- unavailable rows are explicit,
-- JAX/GPU timings must be synchronized.
+MacBook answers "can I trust it?", server CPU answers "what scales?", and A100 answers "did we find an accelerator-shaped pipeline?" Mention synchronized GPU timing, warm medians, memory, and explicit unavailable rows.
 
 ## Slide 8 - k-means section title
 
-Transition: now that the workflow is clear, use k-means as the first concrete case.
-
-Say that k-means is deliberately simple: assignment, update, repeat. That simplicity makes it a good demonstration because failures and performance changes are easy to inspect.
+Transition to the first concrete workload. k-means is simple enough that both statistical recovery and performance pressure are visible.
 
 ## Slide 9 - How k-means moves
 
-This animation shows why k-means is an iterative workload. The assignment step depends on the current centroids, and the next centroids depend on the assignments. That dependency is why this example is useful for discussing loops, temporary arrays, and compiled kernels.
+We use petal length and petal width from Iris only as a visual method example. The species labels help the audience understand that there are three biological groups, but k-means only sees the two numerical measurements. Setosa separates easily; Versicolor and Virginica overlap, which makes the iteration more interesting than three clean synthetic blobs.
 
-Use the three bullets on the slide as the verbal structure: assign, update, repeat. Keep it short; the next slide returns to why this workload is useful for the tool comparison.
+Use the animation to emphasize the dependency: assign each flower to the nearest centroid, update centroids from assigned flowers, then repeat until assignments stabilize. Iteration t+1 depends on centroids from iteration t. Keep the tool explanation verbal here: that dependency is why explicit loops, temporary arrays, and distance computation connect naturally to Numba, NumPy matmul, and JAX/A100 later in the talk.
 
-## Slide 10 - Why k-means works here
+## Slide 10 - Why k-means is a useful test case
 
-Make the k-means-to-tools connection explicit.
-
-Statistical target: recover known clusters and preserve fixed-init inertia.
-
-Failure modes: imbalance, outliers, low separation, high dimension, initialization, empty clusters.
-
-Python pressure: loops, temporaries, distance algebra, compiled kernels.
-
-Do not read the whole table. Use one row as an example: the readable NumPy implementation defines the target, and Numba or matmul variants must match it before they can be compared on speed.
+k-means is not the most advanced model, but it stands in for iterative algorithms such as EM, coordinate descent, and simulation-based estimators. The point is to separate statistical behavior from implementation performance: hold the data, initial centroids, stopping rule, and final inertia comparison steady before asking which Python implementation is faster.
 
 ## Slide 11 - Recovery surfaces
 
-Define ARI: adjusted Rand index; 1 means perfect recovery, around 0 means random-like recovery.
+Define ARI: 1 is perfect recovery; near 0 is random-like. The takeaway is not that k-means is bad, but that speed is not meaningful where recovery is poor.
 
-State the pattern: balanced clusters recover well when separation and dimension are favorable; imbalanced clusters are much harder.
+## Slide 12 - Before timing: compare against the reference
 
-The message is not that k-means is bad. The message is that a runtime chart alone would hide the statistical difficulty.
-
-## Slide 12 - Reference gate
-
-Explain why same initialization matters. k-means can legitimately produce different results if initialization changes, so fixed initialization is part of the contract.
-
-Explain the memory-risk skips. The reference broadcast implementation is readable but can create an unsafe O(N*K*d) temporary. Skipping those rows is honest; forcing them to run would turn validation into a memory stress test.
+Explain why same initialization matters: k-means can legitimately differ when initialization changes. The validation logic is same data, same initial centroids, same stopping rule, then compare final inertia against the readable reference before timing optimized versions. If needed, mention the bookkeeping verbally: 3,840 checked rows, 480 expected memory-risk skips, and 0 optimized failures. Memory-risk skips are expected skips from unsafe reference-broadcast rows, not hidden failures.
 
 ## Slide 13 - Server k-means
 
-This is the scale result.
+This is a representative-shape comparison, not a universal ranking. Numba, BLAS, and A100 each match different implementation shapes. A100 is not automatically faster, and high dimension alone does not make a GPU win.
 
-The laptop established trust; the server asks what happens at larger N and different shapes.
-
-State the observed pattern rather than reading the chart: Numba wins many CPU loop shapes; BLAS helps a different shape; A100 wins only when enough regular work exists.
-
-Mention that GPU advantage is conditional. Do not imply high dimension automatically means GPU wins.
+Explain the tool relationship: Numba helps when explicit loops dominate. BLAS helps when the distance computation can be rewritten as dense matrix algebra. A100 helps only when the work is large, regular, and device-friendly. These are representative measured rows; high dimension can increase memory traffic and reduce apparent GPU advantage.
 
 ## Slide 14 - k-means takeaway
 
-Use this as a short decision guide for iterative algorithms.
-
-If the reference is unstable, stop and validate. If scalar loops dominate, try Numba. If the distance computation becomes dense algebra, try NumPy matmul. If the workload is huge and regular, try JAX/A100. If recovery is poor, the method or scenario needs attention before runtime.
-
-Close the k-means section by saying it stands in for many iterative statistical algorithms.
+Use this as a decision guide for iterative algorithms: fix untrustworthy results, compile scalar loops with Numba, rewrite dense distance algebra for BLAS, and use A100 only after large regular work exists.
 
 ## Slide 15 - Permutation section title
 
 Transition from iterative dependence to repeated simulation.
 
-Say: the second workload is different on purpose. The statistic is simple, but resampling makes the workload large.
-
 ## Slide 16 - How a permutation test scales
 
-This animation shows why permutation tests are a resampling workload. The statistic is simple, but we repeat it many times under shuffled labels. At small scale the loop is easy to understand; at high dimension the cost becomes random generation, memory layout, batching, and matrix execution.
+Walk through the animation in order: observed X matrix, group labels, one shuffled label vector, feature-wise group differences, repeated null-statistic vectors, then the later implementation view W @ X. The ordinary resampling loop comes first. Threads/processes help distribute independent repetitions, Numba can compile CPU kernels, and JAX/A100 matters only when the repeated work becomes large, batched, and device-friendly.
 
-Use the three bullets on the slide as the verbal structure: shuffle labels, recompute the statistic, repeat to form the null distribution. Keep the focus on computational shape, not full algebra.
+## Slide 17 - High-dimensional testing
 
-## Slide 17 - Why permutation tests work here
+Use this slide to make the computational size explicit: the input is n samples by p features, then R shuffled label vectors create R by p potential null statistics. In practice the optimized path can stream this down to p exceedance counts, but the work still scales with the repetition. Examples: samples are patients, features are genes, biomarkers, or voxels, and R is the number of null draws.
 
-This slide should make the biostatistics connection clear.
+## Slide 18 - Same permutation stream
 
-Use a concrete mental model: X is samples by features. Each feature could be a gene, biomarker, voxel, or measurement. We test group differences and use label permutations to approximate the null distribution.
+The optimized path does not change the statistical question. It avoids materializing the full R × p null matrix by streaming exceedance counts.
 
-The programming challenge is not just parallelism. It includes random index generation, shared arrays, process copies, calibration, batching, dtype, device transfer, and memory.
+## Slide 19 - Equivalence check
 
-## Slide 18 - Same statistic, different formulation
-
-Use this as the key code slide.
-
-The reference loop is readable and close to the definition: make permutations, compute one statistic per permutation.
-
-The matrix formulation uses the same permutations but encodes them as contrast rows in W, so the null statistics are computed as `W @ X`.
-
-Say clearly: same permutations matter. Otherwise differences could be random-number differences rather than implementation differences.
-
-## Slide 19 - Equivalence gate
-
-This slide is a gate. Before timing the matrix formulation, we check it against the readable reference loop using the same permutation stream.
-
-The p-values match exactly in the recorded results, and the test-statistic differences are around 1e-15, far below the 1e-6 tolerance. That is why the matrix path is allowed into the benchmark.
-
-In this correctness tier, the JAX rows are CPU/x64; A100 appears later as scale evidence.
+Same simulated data, same permutation stream, same p-value definition. The recorded max p-value difference is 0.0, max statistic difference is 9.4e-16, with 45 expected memory-risk skips and 0 failed rows.
 
 ## Slide 20 - Null calibration
 
-This slide is the second correctness gate. The previous gate checked that the matrix path matched the reference implementation using the same permutations.
+Equivalence checks implementation; calibration checks statistical behavior. Under the null, type-I error should stay near alpha = 0.05. The observed estimate is 0.051.
 
-This gate checks statistical behavior under the null. For a valid permutation test, the rejection rate at alpha 0.05 should be close to 0.05.
+## Slide 21 - Local validation scale
 
-In this run, the mean replicate-level estimate is 0.051, so the optimized path passes the calibration check. I am showing this before timing because a fast permutation test with broken null behavior would be scientifically useless.
+This is the moved MacBook validation-scale result. NumPy matrix, batched NumPy matrix, and JAX CPU are close enough that readability and correctness should dominate until a real bottleneck appears.
 
-## Slide 21 - GPU decision map
+## Slide 22 - GPU decision map
 
-This is the practical GPU question. The old matched slice at n=5,000, p=50,000, batch_R=512 was negative: the CPU matrix path was faster. The follow-up did not change the statistic; it changed the pipeline to streamed reduction, larger batch_R, and a broader shape sweep.
-
-The point is not whether A100 is good or bad. The point is whether this statistical computation has the right shape for A100.
-
-If the full pipeline is dominated by permutation generation, W construction, transfer, or collection, CPU can win even when the matrix multiply itself is fast. GPU becomes useful when the expensive work is large, batched, and stays on device long enough to amortize overhead. That is why we show a break-even map rather than a single speedup number.
-
-In this measured run, A100 becomes faster at n=5,000, p=10,000, R=5,000, batch_R=8,192, and the largest measured speedup is 8.54x at n=5,000, p=500,000, R=5,000. This is a shape and pipeline result, not a logo result. Kernel-only timing is deliberately excluded from the decision map.
+Explain that A100 helps only when the permutation pipeline becomes large, batched, and device-resident enough. Compile is excluded, transfer included, and kernel-only timing is not used for the decision map.
 
 Two high-R cells at p=500,000 were rerun on May 6, 2026 with the CPU timeout raised to 14,400 seconds per cell. The CPU baselines completed, but the canonical A100 streamed end-to-end run at batch_R=8,192 still failed during JAX autotune/OOM, even with `TF_GPU_ALLOCATOR=cuda_malloc_async`. Those cells are labeled A100 OOM/unavailable in the evidence CSVs and should not be interpreted as CPU wins or hidden speedup estimates.
 
-## Slide 22 - A100 pipeline decomposition
+## Slide 23 - A100 pipeline decomposition
 
-This slide decomposes the A100 path. The key point is not simply that the GPU is slow or fast; it is where the time goes.
-
-A fast kernel is not enough; the full pipeline decides. The four rows are representative shapes from the canonical break-even grid: CPU-faster, near break-even, A100-faster, and largest/highest-speedup measured.
+Show where full-scenario A100 time goes. A fast kernel is not enough; the full pipeline decides. The four rows are representative shapes from the canonical break-even grid: CPU-faster, near break-even, A100-faster, and largest/highest-speedup measured.
 
 Say the timing semantics precisely: this is full scenario timing, compile excluded, transfer included, streamed reduction, and no kernel-only comparison. The named stages are reconciled to the recorded total with an explicit other-overhead segment, and each row reports total time plus the W @ X share.
 
-## Slide 23 - CPU parallelism
+## Slide 24 - CPU parallelism
 
 Main message: CPU parallelism must be measured under resource constraints.
 
@@ -231,68 +123,42 @@ For k-means, Numba kept improving through 128 in this shared-server run. For per
 
 The 128-worker point is only cleanly interpretable if the process had access to 128 CPUs and the server was not heavily loaded. Here affinity exposed 512 CPUs, but there was no exclusive scheduler allocation, so the high-count rows are marked shared-server evidence. They may reflect shared-server contention, NUMA placement, memory bandwidth, scheduler effects, or nested thread conflicts.
 
-Connect to Python 3.14: free-threaded Python may help thread-friendly code, but the actual stack must be measured and logged.
+## Slide 25 - Tool roles
 
-## Slide 24 - Connecting the tools
+Use concrete examples: Numba for k-means assignment/update loops, NumPy/BLAS for distance algebra, threads/Python 3.14 for repeated work over shared arrays, and JAX/A100 for streamed W @ X after validation.
 
-This slide connects directly to the talk title and abstract.
+## Slide 26 - AI/Codex
 
-Python 3.14, Numba, and JAX do not solve the same problem.
+Codex can automate implementation variants, scenario-grid runners, environment metadata, plot regeneration, and result manifests. The statistician owns the statistical target, null model, validation criteria, interpretation, and scientific claims.
 
-- Python 3.14 changes interpreter and threading ceilings.
-- Numba compiles explicit numerical CPU loops.
-- JAX/A100 is for batched array programs after reformulation.
+## Slide 27 - Decision guide
 
-Say: Python is not competing with compiled languages here. Python is the scientific interface; the hotspot moves to the appropriate engine.
+Tie each branch back to simulation evidence: untrustworthy result, hot scalar loop, dense matrix identity, repeated shared-array work, large device-resident batch, or giant temporary.
 
-## Slide 25 - AI/Codex
+## Slide 28 - Close
 
-Keep this short and practical.
+Close with: make the statistic testable, then make the bottleneck fast. Repeat: clear enough to trust, fast enough to scale.
 
-Codex can write variants, runners, metadata logging, plots, and READMEs. That is valuable because simulation work is repetitive and detail-heavy.
+## Slide 29 - Thank you
 
-But the statistician owns the contract: statistic, null model, calibration, scenario grid, and interpretation of negative evidence.
-
-## Slide 26 - Decision guide
-
-Use the table as the practical takeaway. Do not read every row.
-
-Pick three examples:
-
-- Understanding/correctness -> reference implementation.
-- Scalar CPU loops -> Numba.
-- Large batched arrays -> JAX/GPU after reformulation.
-
-Then add: if the problem is giant temporaries, algebraic rewrite may be better than switching libraries.
-
-## Slide 27 - Close
-
-Close with one sentence: make the statistic testable, then make the bottleneck fast.
-
-Repeat: clear enough to trust, fast enough to scale.
-
-End by inviting questions.
+Leave the repo link visible and invite questions.
 
 ---
 
 # Backup Slides
 
-## Slide 28 - Evidence map
+## Slide 30 - Evidence map
 
-Use only if someone asks how much validation was run or how the tiers are separated.
+Use if someone asks how the validation, scale, and accelerator tiers differ.
 
-## Slide 29 - Shape stress
+## Slide 31 - Shape stress
 
-Use only if someone asks more about K and d in k-means.
+Use if someone asks for definitions of N, d, or K, or for backup evidence about k-means shape pressure.
 
-## Slide 30 - Power curve
+## Slide 32 - Power curve
 
-Use only if someone wants more statistical validation beyond null calibration.
+Use if someone wants statistical validation beyond null calibration.
 
-## Slide 31 - MacBook-only permutation runtime
+## Slide 33 - What the coding agent automated
 
-Use only if someone asks about MacBook-only permutation performance.
-
-## Slide 32 - What the coding agent automated
-
-Use only if someone asks about the repository or Codex workflow.
+Use if someone asks about the repository or Codex workflow.

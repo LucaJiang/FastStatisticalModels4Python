@@ -170,6 +170,91 @@ def plot_kmeans(cpu_dir: Path, a100_dir: Path, out_dir: Path) -> None:
     plt.close(fig)
 
 
+def plot_kmeans_representative_shapes(cpu_dir: Path, a100_dir: Path, out_dir: Path) -> None:
+    cpu = _clean(pd.read_csv(cpu_dir / "kmeans_cpu_scaling.csv"))
+    gpu = _clean(pd.read_csv(a100_dir / "kmeans_jax_gpu.csv"))
+    cpu = cpu[cpu["separation"] == 2.0].copy()
+
+    shapes = [
+        ("loop-dominated\nN=100k, d=10, K=5", 100_000, 10, 5),
+        ("dense-distance / BLAS-friendly\nN=1M, d=256, K=50", 1_000_000, 256, 50),
+        ("large regular / A100-friendly\nN=5M, d=64, K=20", 5_000_000, 64, 20),
+    ]
+    rows: list[dict[str, object]] = []
+    for label, n, d, k in shapes:
+        cpu_shape = cpu[(cpu["n"] == n) & (cpu["d"] == d) & (cpu["k"] == k)]
+        for impl, method_label in [
+            ("numba", "Numba: explicit CPU loops"),
+            ("numpy_matmul", "BLAS: distance algebra"),
+        ]:
+            sub = cpu_shape[cpu_shape["implementation"] == impl]
+            if not sub.empty:
+                rows.append({"shape": label, "method": method_label, "runtime": float(sub["warm_median_s"].median())})
+        gpu_shape = gpu[(gpu["n"] == n) & (gpu["d"] == d) & (gpu["k"] == k)]
+        if not gpu_shape.empty:
+            rows.append({"shape": label, "method": "A100: large regular array work", "runtime": float(gpu_shape["warm_median_s"].median())})
+
+    data = pd.DataFrame(rows)
+    if data.empty:
+        return
+
+    methods = ["Numba: explicit CPU loops", "BLAS: distance algebra", "A100: large regular array work"]
+    method_colors = {
+        "Numba: explicit CPU loops": COLORS["numba"],
+        "BLAS: distance algebra": COLORS["numpy_matmul"],
+        "A100: large regular array work": COLORS["a100"],
+    }
+    fig, ax = plt.subplots(figsize=SLIDE_FIGSIZE)
+    fig.patch.set_facecolor("#FBF7EF")
+    ax.set_facecolor("#FFFFFF")
+    x = np.arange(len(shapes))
+    width = 0.24
+    for offset, method in zip([-width, 0, width], methods):
+        vals = []
+        for label, _, _, _ in shapes:
+            match = data[(data["shape"] == label) & (data["method"] == method)]
+            vals.append(float(match["runtime"].iloc[0]) if not match.empty else np.nan)
+        bars = ax.bar(x + offset, vals, width=width, color=method_colors[method], label=method)
+        for bar, value in zip(bars, vals):
+            if np.isfinite(value):
+                ax.text(bar.get_x() + bar.get_width() / 2, value * 1.08, f"{value:.2g}s", ha="center", va="bottom", fontsize=12, fontweight="bold", color="#17202A")
+
+    ax.set_yscale("log")
+    ax.set_ylabel("Warm median runtime (seconds)")
+    ax.set_xticks(x, [label for label, _, _, _ in shapes])
+    ax.tick_params(axis="x", labelsize=12)
+    ax.grid(True, axis="y", which="major", alpha=0.28)
+    ax.grid(True, axis="y", which="minor", alpha=0.12)
+    _style_axis(ax)
+    ax.legend(frameon=False, loc="upper left", ncol=1)
+    fig.text(0.06, 0.93, "Representative k-means shapes", ha="left", va="top", fontsize=29, fontweight="bold", color="#17202A")
+    fig.text(
+        0.06,
+        0.85,
+        "Validated server rows; separation=2.0 for CPU rows, fixed seeds, same initialization policy within each row.",
+        ha="left",
+        va="bottom",
+        fontsize=15,
+        color="#5F6B74",
+    )
+    fig.text(
+        0.07,
+        0.06,
+        "A100 is not universally faster; shape and implementation decide.",
+        ha="left",
+        va="center",
+        fontsize=18,
+        color="#17202A",
+        fontweight="bold",
+        bbox=dict(facecolor="#F7E7D8", edgecolor="none", boxstyle="round,pad=0.36"),
+    )
+    fig.subplots_adjust(left=0.10, right=0.96, top=0.74, bottom=0.23)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    fig.savefig(out_dir / "server_kmeans_representative_shapes.png", dpi=DPI)
+    fig.savefig(out_dir / "server_kmeans_representative_shapes.svg", format="svg")
+    plt.close(fig)
+
+
 def plot_permutation(cpu_dir: Path, a100_dir: Path, out_dir: Path) -> None:
     cpu_raw = pd.read_csv(cpu_dir / "permutation_cpu_scaling.csv")
     gpu = _clean(pd.read_csv(a100_dir / "permutation_matrix_gpu.csv"))
@@ -418,6 +503,7 @@ def main() -> None:
 
     _apply_style()
     plot_kmeans(args.cpu_dir, args.a100_dir, args.out_dir)
+    plot_kmeans_representative_shapes(args.cpu_dir, args.a100_dir, args.out_dir)
     plot_permutation(args.cpu_dir, args.a100_dir, args.out_dir)
     plot_parallelism(args.cpu_dir, args.out_dir)
 

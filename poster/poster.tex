@@ -13,6 +13,8 @@
 \usepackage{tikz}
 \usepackage{xcolor}
 
+\usetikzlibrary{arrows.meta,positioning}
+
 \definecolor{paper}{HTML}{FFF8F2}
 \definecolor{ink}{HTML}{17202A}
 \definecolor{muted}{HTML}{5F6B74}
@@ -35,9 +37,12 @@
 \setbeamercolor{block body}{fg=ink,bg=white}
 \setbeamercolor{block alerted title}{fg=cityured,bg=cityuorange!15}
 \setbeamercolor{block alerted body}{fg=ink,bg=cityuorange!7}
-\setbeamercolor{heading}{fg=cityumaroon}
+\setbeamercolor{headline title}{fg=cityumaroon}
+\setbeamercolor{headline}{fg=ink,bg=paper}
+\setbeamercolor{headline rule}{bg=cityured}
 \setbeamerfont{block title}{size=\Large,series=\bfseries}
-\setbeamerfont{headline title}{size=\huge,series=\bfseries}
+\setbeamerfont{block body}{size=\large}
+\setbeamerfont{headline title}{size=\Huge,series=\bfseries}
 
 \newlength{\sepwidth}
 \newlength{\colwidth}
@@ -47,245 +52,225 @@
 
 \hyphenpenalty=10000
 \exhyphenpenalty=10000
+\setlength{\parindent}{0pt}
 
 \title{Breaking the Speed Limit}
 \subtitle{Fast statistical models with Python 3.14, Numba, and JAX}
-\author{Wenxin Jiang \and Jian Yin}
-\institute[shortinst]{Department of Biostatistics, City University of Hong Kong \samelineand PyCon US 2026}
+\author{Wenxin Jiang \textperiodcentered{} Jian Yin}
+\institute[shortinst]{Department of Biostatistics, City University of Hong Kong \textperiodcentered{} PyCon US 2026}
 
 \setbeamertemplate{headline}{
   \begin{beamercolorbox}{headline}
     \begin{columns}[c,totalwidth=\paperwidth]
-      \begin{column}{0.17\paperwidth}
+      \begin{column}{0.15\paperwidth}
         \centering
         \includegraphics[width=0.78\linewidth]{cityu_logo.pdf}
       \end{column}
-      \begin{column}{0.63\paperwidth}
-        \vskip0.4ex
+      \begin{column}{0.66\paperwidth}
+        \vskip0.35ex
         {\usebeamerfont{headline title}\usebeamercolor[fg]{headline title}\inserttitle\par}
-        \vspace{0.2ex}
+        \vspace{0.25ex}
         {\Large\bfseries\color{ink}\insertsubtitle\par}
         \vspace{0.35ex}
-        {\Large\color{ink}Simulation is how statisticians write tests when real data has no answer key.\par}
-        {\Large\bfseries\color{cityumaroon}Clear enough to trust. Fast enough to scale.\par}
-        \vspace{0.25ex}
+        {\normalsize\bfseries\color{ink}Simulation is how statisticians test statistical code when real data has no ground truth.\par}
+        \vspace{0.20ex}
         {\large\color{cityumaroon}\insertauthor\par}
         {\normalsize\color{cityured}\insertinstitute\par}
       \end{column}
-      \begin{column}{0.16\paperwidth}
+      \begin{column}{0.15\paperwidth}
         \centering
-        \includegraphics[width=0.42\linewidth]{assets/repo_qr.png}\\[-0.2ex]
-        {\small\bfseries\color{ink}Slides, code, and evidence pack}
+        \includegraphics[width=0.46\linewidth]{assets/repo_qr.png}\\[-0.1ex]
+        {\small\bfseries\color{ink}github.com/LucaJiang/\par FastStatisticalModels4Python}
       \end{column}
     \end{columns}
-    \vspace{0.9ex}
-    \begin{beamercolorbox}[wd=\paperwidth,colsep=0.5ex]{headline rule}\end{beamercolorbox}
+    \vspace{0.75ex}
+    \begin{beamercolorbox}[wd=\paperwidth,colsep=0.45ex]{headline rule}\end{beamercolorbox}
   \end{beamercolorbox}
 }
 
-\newcommand{\rowcard}[3]{%
-  \noindent\fcolorbox{#1!35}{white}{%
-    \begin{minipage}{0.94\linewidth}
-      \vspace{0.12em}
-      {\normalsize\bfseries\color{#1} #2}\par
-      {\normalsize\color{muted} #3}
-      \vspace{0.12em}
+\newcommand{\smalllabel}[2]{%
+  {\normalsize\bfseries\color{#1}#2}\par%
+}
+
+\newcommand{\badge}[3]{%
+  \noindent\fcolorbox{#1!35}{#1!8}{%
+    \begin{minipage}{0.285\linewidth}
+      \vspace{0.25em}
+      {\normalsize\bfseries\color{#1}#2}\par
+      {\small\color{ink}#3}
+      \vspace{0.25em}
     \end{minipage}}%
-  \par\vspace{0.30em}
 }
 
-\newcommand{\tiercard}[4]{%
-  \noindent\fcolorbox{#1!35}{#2}{%
+\newcommand{\evidencebox}[3]{%
+  \noindent\fcolorbox{#1!38}{#2}{%
     \begin{minipage}{0.94\linewidth}
-      \vspace{0.12em}
-      {\normalsize\bfseries\color{#1} #3}\par
-      {\normalsize\color{ink} #4}
-      \vspace{0.12em}
+      \vspace{0.35em}
+      #3
+      \vspace{0.35em}
     \end{minipage}}%
-  \par\vspace{0.30em}
 }
 
-\newcommand{\statbadge}[3]{%
-  \begin{minipage}[t]{0.23\linewidth}
-    {\Large\bfseries\color{#1} #2}\\[-0.18em]
-    {\scriptsize\color{muted} #3}
-  \end{minipage}
-}
-
-\newcommand{\chip}[2]{%
+\newcommand{\toolchip}[2]{%
   \begingroup
-  \setlength{\fboxsep}{0.35em}
-  \colorbox{#1!13}{\large\bfseries\color{#1} #2}%
+  \setlength{\fboxsep}{0.32em}
+  \colorbox{#1!12}{\normalsize\bfseries\color{#1}#2}%
   \endgroup
 }
 
-\newcommand{\posterfig}[2]{%
-  \vspace{-0.25em}
-  \begin{center}
-    \includegraphics[width=#1\linewidth]{#2}
-  \end{center}
-  \vspace{-0.85em}
+\newcommand{\workflowstep}[2]{%
+  \node[
+    draw=#1!55,
+    fill=#1!9,
+    rounded corners=7pt,
+    line width=1.5pt,
+    minimum width=0.88\linewidth,
+    minimum height=1.25cm,
+    align=center,
+    font=\Large\bfseries,
+    text=ink
+  ] (#2) {#2};
 }
 
-\newcommand{\captiontext}[1]{%
-  {\footnotesize\color{muted} #1}
-}
-
-\newcommand{\decisionrule}[2]{%
-  {\normalsize\bfseries\color{cityumaroon} #1}\par
-  {\normalsize\color{ink} #2}\par\vspace{0.18em}
+\newcommand{\practicalstep}[3]{%
+  \begin{minipage}[c]{0.205\linewidth}
+    \centering
+    {\Large\bfseries\color{#1}#2}\par
+    {\large\bfseries\color{ink}#3}
+  \end{minipage}
 }
 
 \begin{document}
 \begin{frame}[t]
-\begin{columns}[t]
+\vspace{0.45cm}
+\begin{columns}[t,totalwidth=0.94\paperwidth]
 \separatorcolumn
 
 \begin{column}{\colwidth}
-  \begin{block}{Simulation makes statistical code testable}
-    \rowcard{cityured}{Define the statistic}{What must be preserved?}
-    \rowcard{threadteal}{Write a reference}{Readable Python as oracle.}
-    \rowcard{cityuorange}{Stress the scenarios}{Null, alternative, imbalance, outliers.}
-    \rowcard{numba}{Optimize after validation}{Equivalence, calibration, recovery.}
-
+  \begin{block}{Simulation-driven statistical computing}
     \vspace{0.35em}
-    {\large\bfseries\color{ink}Failure modes to catch}\par
-    \vspace{0.35em}
-    \begin{tabular}{@{}p{0.29\linewidth}p{0.63\linewidth}@{}}
-      \toprule
-      \textbf{Implementation} & optimized path changes statistic \\
-      \textbf{Statistical} & null calibration fails \\
-      \textbf{Systems} & runtime improves while memory grows \\
-      \bottomrule
-    \end{tabular}
-  \end{block}
-
-  \begin{block}{Evidence ladder}
-    \tiercard{cityured}{softblue}{MacBook Air - trust tier}{reference, debugging, scenario coverage}
-    \tiercard{threadteal}{softgreen}{Linux server CPU - scale tier}{parallelism, memory, worker sweeps}
-    \tiercard{jaxberry}{softberry}{A100 - accelerator tier}{only after batched device-resident reformulation}
-
-    \vspace{0.3em}
-    \statbadge{cityured}{3,840}{k-means local validation rows}
-    \hfill
-    \statbadge{threadteal}{450}{permutation equivalence rows}
-    \hfill
-    \statbadge{numba}{540}{CPU k-means scale rows}
-    \hfill
-    \statbadge{jaxberry}{135}{A100 k-means rows}
-  \end{block}
-
-\end{column}
-
-\separatorcolumn
-
-\begin{column}{\colwidth}
-  \begin{block}{Workload 1: iterative model fitting}
-    {\Large k-means represents stateful algorithms: \textbf{assign -> update -> repeat}.}
-
-    \posterfig{0.74}{../experiments/results/presentation_figures/poster_kmeans_recovery.png}
-    \captiontext{Recovery comes before runtime: hard geometry makes speed less meaningful.}
-
-    \vspace{0.75em}
-    \noindent\fcolorbox{numba!35}{softgreen}{%
-      \begin{minipage}{0.94\linewidth}
-        \vspace{0.35em}
-        {\normalsize\bfseries optimized paths preserve fixed-init inertia}\par
-        {\normalsize 0 optimized failures; memory-risk skips are explicit.}
-        \vspace{0.35em}
-      \end{minipage}}
-
-    \vspace{0.75em}
-    \chip{numba}{Numba: CPU loops}
-    \quad
-    \chip{cityured}{NumPy/BLAS: distance algebra}
-    \quad
-    \chip{jaxberry}{JAX/A100: regular loops}
-  \end{block}
-
-  \begin{block}{k-means scale evidence}
-    \posterfig{0.74}{../experiments/results/presentation_figures/poster_kmeans_a100_speedup.png}
-    \captiontext{Server rows: speedup is shape-dependent; high dimension can narrow A100 advantage.}
-  \end{block}
-\end{column}
-
-\separatorcolumn
-
-\begin{column}{\colwidth}
-  \begin{block}{Workload 2: resampling inference}
-    {\Large A simple statistic becomes expensive across many null draws and many features.}
+    \begin{center}
+    \begin{tikzpicture}[
+      node distance=0.78cm,
+      flowarrow/.style={-{Stealth[length=8pt,width=9pt]}, line width=2.1pt, color=muted}
+    ]
+      \node[draw=cityured!55, fill=cityured!8, rounded corners=7pt, line width=1.5pt,
+        minimum width=0.88\linewidth, minimum height=1.20cm, align=center,
+        font=\Large\bfseries, text=ink] (real) {Real data has no ground truth};
+      \node[draw=threadteal!55, fill=threadteal!8, rounded corners=7pt, line width=1.5pt,
+        minimum width=0.88\linewidth, minimum height=1.20cm, align=center,
+        font=\Large\bfseries, text=ink, below=of real] (simulate) {Simulate known behavior};
+      \node[draw=cityuorange!55, fill=cityuorange!8, rounded corners=7pt, line width=1.5pt,
+        minimum width=0.88\linewidth, minimum height=1.20cm, align=center,
+        font=\Large\bfseries, text=ink, below=of simulate] (reference) {Write readable reference};
+      \node[draw=numba!55, fill=numba!8, rounded corners=7pt, line width=1.5pt,
+        minimum width=0.88\linewidth, minimum height=1.20cm, align=center,
+        font=\Large\bfseries, text=ink, below=of reference] (checks) {Check recovery / calibration / equivalence};
+      \node[draw=jaxberry!55, fill=jaxberry!8, rounded corners=7pt, line width=1.5pt,
+        minimum width=0.88\linewidth, minimum height=1.20cm, align=center,
+        font=\Large\bfseries, text=ink, below=of checks] (optimize) {Optimize the bottleneck};
+      \draw[flowarrow] (real) -- (simulate);
+      \draw[flowarrow] (simulate) -- (reference);
+      \draw[flowarrow] (reference) -- (checks);
+      \draw[flowarrow] (checks) -- (optimize);
+    \end{tikzpicture}
+    \end{center}
 
     \vspace{0.65em}
-    \rowcard{threadteal}{Loop reference}{shuffle labels -> compute statistic -> repeat}
-    \rowcard{jaxberry}{Matrix / streamed formulation}{W @ X + on-device exceedance counts}
+    \badge{cityured}{Reference}{implementation defines the target}
+    \hfill
+    \badge{threadteal}{Grid}{simulation exposes hard cases}
+    \hfill
+    \badge{jaxberry}{Gate}{optimize only after validation}
 
-    \posterfig{0.80}{../experiments/results/presentation_figures/poster_permutation_gpu_breakeven.png}
-    \captiontext{GPU wins only after the validated pipeline becomes large, batched, and device-resident.}
+    \vspace{0.85em}
+    \evidencebox{cityuorange}{softgold}{%
+      \smalllabel{cityumaroon}{What must stay true}
+      validation target \quad | \quad validation checks \quad | \quad acceptance criteria
+    }
+  \end{block}
+\end{column}
+
+\separatorcolumn
+
+\begin{column}{\colwidth}
+  \begin{block}{Workload 1: k-means}
+    \smalllabel{threadteal}{Iterative model fitting: assign -> update -> repeat}
+    \vspace{0.35em}
+    \begin{center}
+      \includegraphics[width=0.96\linewidth]{assets/poster_kmeans_diagram.png}
+    \end{center}
+    \vspace{-0.35em}
+
+    \evidencebox{numba}{softgreen}{%
+      \smalllabel{cityumaroon}{validation target}
+      same data, same initialization, same stopping rule\par
+      \smalllabel{cityumaroon}{checked}
+      final inertia / recovery\par
+      \smalllabel{cityumaroon}{message}
+      speed is meaningful only after recovery is acceptable
+    }
+
+    \vspace{0.65em}
+    \toolchip{numba}{Numba = loops}
+    \hfill
+    \toolchip{cityured}{NumPy/BLAS = distance algebra}
+    \hfill
+    \toolchip{jaxberry}{JAX/A100 = large regular array work}
+  \end{block}
+\end{column}
+
+\separatorcolumn
+
+\begin{column}{\colwidth}
+  \begin{block}{Workload 2: permutation test}
+    \smalllabel{threadteal}{Resampling inference: shuffle labels -> recompute statistic -> repeat}
+    \vspace{0.35em}
+    \begin{center}
+      \includegraphics[width=0.98\linewidth]{assets/poster_permutation_diagram.png}
+    \end{center}
+    \vspace{-0.30em}
+
+    \evidencebox{jaxberry}{softberry}{%
+      \smalllabel{cityumaroon}{checked}
+      same permutation stream; same p-value definition; null calibration checked\par
+      \smalllabel{cityumaroon}{GPU rule}
+      only after streamed, device-resident formulation
+    }
 
     \vspace{0.55em}
-    \begin{minipage}[t]{0.48\linewidth}
-      \raggedright
-      {\large\bfseries\color{cityuorange}CPU is better when}\par
-      {\large overhead dominates or batches are small}
-    \end{minipage}
-    \hfill
-    \begin{minipage}[t]{0.48\linewidth}
-      \raggedright
-      {\large\bfseries\color{jaxberry}A100 can win when}\par
-      {\large R x p is large; streamed reduction stays on device}
-    \end{minipage}
+    \evidencebox{cityuorange}{softgold}{%
+      \textbf{\color{cityumaroon}A100 evidence update.}
+      Initial matched A100 slice was negative. After streamed reduction and batch-size/shape sweep,
+      A100 has a measured break-even region.
+      \vspace{0.18em}\par
+      \textbf{\color{jaxberry}GPU helps when $R \times p$ is large and the pipeline stays on device.}
+      \quad
+      \textbf{\color{cityuorange}CPU is better when overhead dominates.}
+    }
   \end{block}
-
-  \begin{alertblock}{Decision guide}
-    \begin{tabular}{@{}p{0.43\linewidth}p{0.49\linewidth}@{}}
-      \textbf{\color{cityumaroon}Clearest reference} & scientific contract \\
-      \textbf{\color{numba}Numba} & hot scalar CPU loops \\
-      \textbf{\color{cityured}Algebra first} & avoid giant temporaries \\
-      \textbf{\color{jaxberry}GPU-shaped pipeline} & batched, device-resident work \\
-    \end{tabular}
-
-    \vspace{0.2em}
-    {\large\bfseries\color{ink}Choose the smallest tool that preserves the statistic and removes the proven bottleneck.}
-    \vspace{0.35em}
-
-    {\normalsize\color{muted} Parallelism must be tuned: best speed was not at maximum workers, and memory can grow after runtime stops improving.}
-  \end{alertblock}
 \end{column}
 
 \separatorcolumn
 \end{columns}
 
-\vspace{0.05cm}
+\vfill
 \begin{center}
-\fcolorbox{cityuorange!30}{cityuorange!7}{%
-  \begin{minipage}{0.94\paperwidth}
-    \vspace{0.25em}
-    {\large\bfseries\color{cityured}Talk spine}\par
-    \vspace{0.15em}
-    \begin{minipage}[t]{0.235\linewidth}
-      {\Large\bfseries\color{cityured}Simulate truth}
-    \end{minipage}
-    \hfill
-    \begin{minipage}[t]{0.235\linewidth}
-      {\Large\bfseries\color{threadteal}Preserve statistic}
-    \end{minipage}
-    \hfill
-    \begin{minipage}[t]{0.235\linewidth}
-      {\Large\bfseries\color{cityuorange}Identify bottleneck}
-    \end{minipage}
-    \hfill
-    \begin{minipage}[t]{0.235\linewidth}
-      {\Large\bfseries\color{jaxberry}Choose smallest tool}
-    \end{minipage}
-    \vspace{0.35em}
+\begin{alertblock}{Practical rule}
+  \centering
+  \practicalstep{cityured}{1}{Simulate known behavior}
+  \hfill
+  \practicalstep{threadteal}{2}{Preserve the validated result}
+  \hfill
+  \practicalstep{cityuorange}{3}{Identify the bottleneck}
+  \hfill
+  \practicalstep{jaxberry}{4}{Choose the smallest tool}
+  \vspace{0.45em}
 
-    {\normalsize\color{ink}\textbf{Findings:} validate before optimizing \quad | \quad computational shape beats library logo \quad | \quad break-even evidence is useful}\par
-    {\scriptsize\color{muted}
-    Evidence pack: \texttt{macbook\_air\_long/latest} \quad
-    \texttt{linux\_server\_cpu/long\_safe\_20260503\_190133} \quad
-    \texttt{linux\_server\_a100/permutation\_break\_even}}
-    \vspace{0.25em}
-  \end{minipage}}
+  {\Large\bfseries\color{cityumaroon}Clear enough to trust. Fast enough to scale.}\par
+  \vspace{0.25em}
+  {\normalsize\bfseries\color{ink}github.com/LucaJiang/FastStatisticalModels4Python}
+\end{alertblock}
 \end{center}
 \end{frame}
 \end{document}

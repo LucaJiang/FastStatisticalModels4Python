@@ -7,7 +7,7 @@
 - [`speaker_notes_v3.md`](speaker_notes_v3.md) is retained for compatibility and should match `speaker_notes.md`.
 - [`timeline_v3.md`](timeline_v3.md) is the 30-minute talk timeline.
 
-Current structure: 32 slides total, with slides 1-27 on the main path and slides 28-32 as backup. The main path stays at 27 because slides 9 and 16 are short method-transition video slides, not full content blocks.
+Current structure: 33 slides total, with slides 1-29 on the main path and slides 30-33 as backup. Slides 9 and 16 are short method-transition video slides.
 
 ## View locally
 
@@ -30,7 +30,7 @@ Print/PDF mode:
 http://localhost:8000/slides/index.html?print-pdf
 ```
 
-PDF export should show 32 non-blank pages. Video slides use MP4/WebM in browser mode and poster PNG fallbacks in print/PDF mode.
+PDF export should show 33 non-blank pages. Video slides use MP4/WebM in browser mode and poster PNG fallbacks in print/PDF mode.
 
 ## Current figure sources
 
@@ -53,6 +53,8 @@ Regenerate server CPU and k-means/A100 presentation figures:
 ```bash
 python -m experiments.visualization.plot_server_talk_evidence
 ```
+
+This also creates the representative k-means shape comparison used on slide 13.
 
 Regenerate the current A100 permutation break-even figures from existing break-even CSVs when those CSVs are present on the experiment server:
 

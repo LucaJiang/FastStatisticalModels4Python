@@ -155,13 +155,6 @@ def plot_kmeans_recovery(root: Path, fig_dir: Path, manifest: list[dict[str, str
     for spine in ax.spines.values():
         spine.set_visible(False)
 
-    for row in range(median.shape[0]):
-        for col in range(median.shape[1]):
-            if np.isnan(median[row, col]):
-                continue
-            if iqr[row, col] >= 0.18:
-                ax.scatter(col, row, s=90, facecolors="none", edgecolors="#FFFFFF", linewidths=2.2)
-
     ax.text(
         1.0,
         1.0,
@@ -210,15 +203,6 @@ def plot_kmeans_recovery(root: Path, fig_dir: Path, manifest: list[dict[str, str
         fontweight="bold",
         color=INK,
         bbox={"boxstyle": "round,pad=0.55,rounding_size=0.15", "facecolor": "#F7E6D9", "edgecolor": "none"},
-    )
-    fig.text(
-        0.86,
-        0.24,
-        "White ring = high\nrun-to-run variability",
-        ha="left",
-        va="top",
-        fontsize=12,
-        color=MUTED,
     )
     fig.savefig(fig_dir / "kmeans_recovery_difficulty_map.png", dpi=DPI)
     fig.savefig(fig_dir / "kmeans_recovery_difficulty_map.svg", format="svg")
@@ -717,33 +701,71 @@ def plot_permutation_runtime(root: Path, fig_dir: Path, manifest: list[dict[str,
     df = df[df[_status_column(df)] == "pass"].copy()
     if df.empty:
         return
-    fig, axes = plt.subplots(1, 3, figsize=SLIDE_FIGSIZE, sharey=True)
-    for ax, p in zip(axes, [100, 1_000, 3_000]):
-        sub = df[df["p"] == p]
-        if sub.empty:
-            ax.set_axis_off()
-            continue
-        for impl, impl_df in sub.groupby("implementation"):
-            agg = impl_df.groupby("r")["warm_median_s"].median().reset_index().sort_values("r")
-            ax.plot(agg["r"], agg["warm_median_s"], marker="o", linewidth=2.8, markersize=7, color=COLORS.get(impl, PY_GOLD), label=impl)
-        ax.set_xscale("log")
-        ax.set_yscale("log")
-        ax.set_title(f"p={int(p):,}")
-        ax.set_xlabel("permutations R")
-        ax.grid(True, axis="both")
-        strip_spines(ax)
-    axes[0].set_ylabel("median warm runtime (s)")
-    handles, labels = axes[0].get_legend_handles_labels()
-    if handles:
-        fig.legend(handles, labels, loc="upper center", ncol=len(labels), frameon=False, bbox_to_anchor=(0.5, 0.91))
-    fig.suptitle("Permutation runtime scales with R and p; full matrices hit local limits", y=0.99)
-    fig.subplots_adjust(left=0.08, right=0.98, top=0.72, bottom=0.16, wspace=0.18)
+    scenario = df[(df["n"] == 500) & (df["p"] == 1000) & (df["r"] == 1000)].copy()
+    if scenario.empty:
+        scenario = df[(df["p"] == 1000) & (df["r"] == 1000)].copy()
+    order = ["numpy_matrix", "numpy_matrix_batched", "jax_matrix_cpu"]
+    summary = (
+        scenario.groupby("implementation", as_index=False)["warm_median_s"]
+        .median()
+        .set_index("implementation")
+        .reindex([name for name in order if name in scenario["implementation"].unique()])
+        .dropna()
+        .reset_index()
+    )
+    if summary.empty:
+        return
+
+    labels = {
+        "numpy_matrix": "NumPy matrix",
+        "numpy_matrix_batched": "Batched NumPy matrix",
+        "jax_matrix_cpu": "JAX CPU",
+    }
+    colors = [COLORS.get(name, PY_GOLD) for name in summary["implementation"]]
+    fig, ax = plt.subplots(figsize=SLIDE_FIGSIZE)
+    fig.patch.set_facecolor("#FBF7EF")
+    ax.set_facecolor("#FFFFFF")
+    x = np.arange(len(summary))
+    bars = ax.bar(x, summary["warm_median_s"], color=colors, width=0.58)
+    ax.set_xticks(x, [labels.get(name, name) for name in summary["implementation"]])
+    ax.set_ylabel("warm median runtime (seconds)")
+    ax.set_ylim(0, max(summary["warm_median_s"]) * 1.45)
+    ax.grid(True, axis="y", alpha=0.28)
+    strip_spines(ax)
+    for bar, value in zip(bars, summary["warm_median_s"]):
+        ax.text(bar.get_x() + bar.get_width() / 2, value * 1.04, f"{value:.3f}s", ha="center", va="bottom", fontsize=18, fontweight="bold", color=INK)
+
+    n_val = int(scenario["n"].dropna().iloc[0])
+    p_val = int(scenario["p"].dropna().iloc[0])
+    r_val = int(scenario["r"].dropna().iloc[0])
+    fig.text(0.07, 0.93, "Local validation scale: methods are close enough", ha="left", va="top", fontsize=30, fontweight="bold", color=INK)
+    fig.text(
+        0.07,
+        0.85,
+        f"MacBook CPU validation tier; n={n_val:,}, p={p_val:,}, R={r_val:,}; same validated p-values.",
+        ha="left",
+        va="bottom",
+        fontsize=18,
+        color=MUTED,
+    )
+    fig.text(
+        0.07,
+        0.07,
+        "Choose the clearest correct implementation until the bottleneck is real.",
+        ha="left",
+        va="center",
+        fontsize=20,
+        color=INK,
+        fontweight="bold",
+        bbox=dict(facecolor="#F7E7D8", edgecolor="none", boxstyle="round,pad=0.36"),
+    )
+    fig.subplots_adjust(left=0.13, right=0.96, top=0.75, bottom=0.22)
     _save(
         fig,
         fig_dir / "permutation_runtime_scaling_extended.png",
         manifest,
         "permutation_runtime_scaling_extended.csv",
-        "Runtime scaling by feature count, permutation count, and implementation.",
+        "Single validation-scale runtime comparison for matrix, batched matrix, and JAX CPU implementations.",
         tight=False,
     )
 
