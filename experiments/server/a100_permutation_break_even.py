@@ -774,8 +774,9 @@ def write_readme(out_dir: Path) -> None:
     else:
         first = winners.sort_values(["p", "R"]).iloc[0]
         best = winners.sort_values("speedup", ascending=False).iloc[0]
-        lines.append(f"- A100 becomes faster at n={int(first.n)}, p={int(first.p)}, R={int(first.R)}, batch_R={int(first.batch_R)}.")
-        lines.append(f"- Largest measured speedup: {float(best.speedup):.2f}x at n={int(best.n)}, p={int(best.p)}, R={int(best.R)}.")
+        lines.append(f"- A100 becomes faster in the streamed-reduction grid at n={int(first.n):,}, p={int(first.p):,}, R={int(first.R):,}, batch_R={int(first.batch_R):,}.")
+        lines.append(f"- Largest slide-level measured speedup: {float(best.speedup):.2f}x at n={int(best.n):,}, p={int(best.p):,}, R={int(best.R):,}.")
+    lines.append("- Speedups in lightweight summary CSVs are slide-level summaries where raw CPU/A100 timing pairs are not committed unless the CSV says otherwise in `timing_note`.")
     lines.append("")
     lines.append("## Streamed reduction")
     lines.append("- `a100_streamed_reduction` computes `T_null_batch = W_batch @ X_device`, accumulates exceedance counts on device, and collects final p-values/counts only.")
@@ -790,7 +791,10 @@ def write_readme(out_dir: Path) -> None:
         decomp = pd.read_csv(decomp_path)
         lines.append("## Representative A100 decomposition")
         lines.append(f"- Representative rows recorded: {len(decomp)}.")
-        lines.append("- Rows cover CPU-faster, near break-even, A100-faster, and largest/highest-speedup regions from the canonical break-even grid.")
+        if len(decomp) >= 4:
+            lines.append("- Rows cover CPU-faster, near break-even, A100-faster, and largest/highest-speedup regions from the canonical break-even grid.")
+        else:
+            lines.append("- Fewer than four representative rows are available; do not claim all four representative categories from this output.")
         lines.append("- `decomposition_representative_shapes_summary.csv` includes explicit other overhead and stage-sum reconciliation.")
         lines.append("")
     lines.append("## Timing semantics")
@@ -821,6 +825,7 @@ def write_readme(out_dir: Path) -> None:
         lines.append(f"- Max recorded `max_abs_stat_diff`: {float(stat_diff.max()):.6g}.")
     lines.append("- Accepted rows use the explicit status vocabulary `pass_exact`, `pass_gpu_tolerance`, `manual_check`, and `fail`.")
     lines.append("- Historical `check` rows remain readable for backward compatibility, but newly generated accepted GPU rows are emitted as `pass_gpu_tolerance` unless they meet the stricter `pass_exact` rule.")
+    lines.append("- Rows with A100 OOM/unavailable are not CPU wins and not hidden speedups.")
     lines.append("")
     lines.append("## OOM / memory-risk / timeout")
     for name in ["batch_R_sweep.csv", "break_even_shape_sweep.csv", "n_sensitivity_sweep.csv", "cpu_matched_baselines.csv"]:

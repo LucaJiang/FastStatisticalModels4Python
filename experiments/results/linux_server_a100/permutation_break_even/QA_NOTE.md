@@ -10,5 +10,5 @@ Generated: 2026-05-05
 - Kernel-only rows: labeled separately as `kernel-only hypothesis, not end-to-end permutation test` and excluded from speedup decisions.
 - Correctness: accepted GPU-tolerance rows use `pass_gpu_tolerance`; older bounded-check rows may show `check`; no speedup plot uses failed rows.
 - Targeted rerun: on 2026-05-06, the two previously memory-risk Stage 2 cells (`n=5000`, `p=500000`, `R=10000/50000`, `batch_R=8192`) were rerun with CPU timeout 14,400 seconds. CPU completed; canonical A100 streamed full end-to-end still failed during JAX autotune/OOM and is labeled `A100 OOM` on the decision map.
-- Representative decomposition: updated to four rows from the canonical break-even grid: CPU-faster, near break-even, A100-faster, and largest/highest-speedup. The summary CSV records `other_overhead_s`, `stage_sum_s`, `stage_sum_delta_s`, and `wx_share`.
+- Representative decomposition: the committed lightweight summary has 2 rows, not four committed categories. It covers one CPU-faster row and the largest/highest-speedup row; the raw four-row representative decomposition CSV is not committed in this repository snapshot.
 - Visual check: updated decision and decomposition slides were exported to PDF and screenshotted at 1280x720.

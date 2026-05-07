@@ -24,7 +24,8 @@ clean:
 
 # main targets
 
-poster.pdf: poster.tex poster.bib $(DEPS)
+poster.pdf: poster_v5.tex poster.bib $(DEPS)
 	$(eval SRC_$@ = $(patsubst %.tex, %, $<))
 	$(LATEX) $(SRC_$@)
 	$(LATEX) $(SRC_$@)
+	cp poster_v5.pdf poster.pdf

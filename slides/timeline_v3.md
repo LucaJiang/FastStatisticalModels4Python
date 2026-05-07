@@ -1,6 +1,6 @@
 # Timeline v3 - 30 minute talk
 
-This timeline matches `slides/index.html`: 33 total slides, 29 main-path slides, and 4 backup slides. The k-means and permutation video slides are short method-transition slides.
+This timeline matches `slides/index.html`: 33 total slides, 29 main-path slides, and 4 backup slides. Video slides: slides 9 and 16 are short method-transition slides.
 
 The narrative is an evidence ladder, not a hardware leaderboard: laptop simulation defines trust, server CPU tests scale and parallelism, and A100 is useful only when the validated computation has an accelerator-shaped pipeline.
 

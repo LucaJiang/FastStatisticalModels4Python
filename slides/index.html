@@ -671,8 +671,8 @@
   <div class="kicker">Simulation result before speed result</div>
   <h2>First ask: did k-means recover the simulated clusters?</h2>
   <div class="figure-box" style="height:535px;"><img src="../experiments/results/macbook_air_long/latest/figures/kmeans_recovery_difficulty_map.png" alt="k-means ARI recovery difficulty heatmap" /></div>
-  <p class="caption">ARI = 1 is perfect recovery; near 0 is random-like.</p>
-  <div class="bottom-takeaway">Do not celebrate speed on scenarios where recovery is poor.</div>
+  <p class="caption">ARI = 1 is perfect recovery; near 0 is random-like. Low ARI means the method did not recover the simulated truth in that scenario.</p>
+  <div class="bottom-takeaway">Do not use speed as a success claim where statistical recovery is poor.</div>
 </section>
 
 <section class="deck-slide">
@@ -881,9 +881,7 @@
   <div class="kpi-strip">
     <div class="kpi good"><strong>0.0</strong><span>max |p diff|</span></div>
     <div class="kpi"><strong>9.4e-16</strong><span>max |stat diff|</span></div>
-    <div class="kpi warn"><strong>45</strong><span>expected memory-risk skips</span></div>
-    <div class="kpi good"><strong>0</strong><span>failed rows</span></div>
-    <div class="kpi good"><strong>450</strong><span>admitted rows</span></div>
+    <div class="kpi good"><strong>1e-6</strong><span>validation tolerance</span></div>
   </div>
   <div class="bottom-takeaway">Admitted to runtime comparison.</div>
   <aside class="notes">This slide is a gate. Before timing the matrix formulation, we check it against the readable reference loop using the same permutation stream. The p-values match exactly in the recorded results, and the test-statistic differences are around 1e-15, far below the 1e-6 tolerance. That is why the matrix path is allowed into the benchmark. In this correctness tier, the JAX rows are CPU/x64.</aside>
@@ -917,19 +915,19 @@
           <div class="calibration-track"></div>
           <div class="nominal-line"></div>
           <div class="mean-dot"></div>
-          <div class="calibration-band-label">expected Monte Carlo band 0.036-0.064</div>
+          <div class="calibration-band-label">feature-level binomial band 0.036-0.064</div>
           <div class="calibration-axis"><span>0.025</span><span>0.035</span><span>0.045</span><span>0.055</span><span>0.065</span><span>0.075</span></div>
         </div>
         <div class="calibration-legend">
           <span><strong>Dashed:</strong> nominal 0.05</span>
           <span><strong>Dot:</strong> observed mean 0.051</span>
         </div>
-        <p class="gate-note">Expected band: 0.05 +/- 1.96 * sqrt(0.05 * 0.95 / 1000).</p>
+        <p class="gate-note">Band is feature-level binomial variation: 0.05 +/- 1.96 * sqrt(0.05 * 0.95 / 1000).</p>
       </div>
     </div>
   </div>
   <div class="bottom-takeaway">Fast code is useful only if null calibration remains correct.</div>
-  <aside class="notes">This slide is the second correctness gate. The previous gate checked that the matrix path matched the reference implementation using the same permutations. This gate checks statistical behavior under the null. For a valid permutation test, the rejection rate at alpha 0.05 should be close to 0.05. In this run, the mean replicate-level estimate is 0.051, so the optimized path passes the calibration check. I am showing this before timing because a fast permutation test with broken null behavior would be scientifically useless.</aside>
+  <aside class="notes">This slide is the second correctness gate. The previous gate checked that the matrix path matched the reference implementation using the same permutations. This gate checks statistical behavior under the null. For a valid permutation test, the rejection rate at alpha 0.05 should be close to 0.05. In this run, the mean replicate-level estimate is 0.051, so the optimized path passes the calibration check. The 0.036-0.064 band is based on feature-level binomial variation per null replicate, not a confidence interval for the mean across replicates. I am showing this before timing because a fast permutation test with broken null behavior would be scientifically useless.</aside>
 </section>
 
 <section class="deck-slide">
@@ -962,12 +960,12 @@
     </div>
     <div class="figure-notes" style="gap:12px;">
       <div class="note-card" style="padding:13px 14px;"><strong>Timing scope</strong><span>Compile excluded; transfer included; kernel-only excluded.</span></div>
-      <div class="note-card" style="padding:13px 14px;"><strong>CPU wins when</strong><span>p and R are small or random generation, W construction, transfer, collection, or too-small batch_R dominates.</span></div>
+      <div class="note-card" style="padding:13px 14px;"><strong>Largest win</strong><span>Largest slide-level measured speedup: 8.54x at n=5,000, p=500,000, R=5,000.</span></div>
       <div class="note-card" style="padding:13px 14px;"><strong>A100 can win when</strong><span>R x p is large, batch_R fits memory, streamed reduction avoids collecting R x p, and work stays on device.</span></div>
     </div>
   </div>
-  <div class="bottom-takeaway" style="font-size:20px;">Measured boundary: A100 first wins at n=5,000, p=10,000, R=5,000, batch_R=8,192; use CPU when overhead dominates.</div>
-  <aside class="notes">This is the practical GPU question. The old matched slice at n=5,000, p=50,000, batch_R=512 was negative: the CPU matrix path was faster. The follow-up did not change the statistic; it changed the pipeline to streamed reduction, larger batch_R, and a broader shape sweep. The point is not whether A100 is good or bad. The point is whether this statistical computation has the right shape for A100. If the full pipeline is dominated by permutation generation, W construction, transfer, or collection, CPU can win even when the matrix multiply itself is fast. GPU becomes useful only in measured regions where the expensive work is large, batched, and stays on device long enough to amortize overhead. In this measured run, A100 becomes faster at n=5,000, p=10,000, R=5,000, batch_R=8,192, with the largest measured speedup of 8.54x at n=5,000, p=500,000, R=5,000. Kernel-only timing is deliberately excluded from the decision map. Two high-R cells at p=500,000 were rerun on May 6, 2026 with the CPU timeout raised to 14,400 seconds per cell. The CPU baselines completed, but the canonical A100 streamed end-to-end run at batch_R=8,192 still failed during JAX autotune/OOM, even with TF_GPU_ALLOCATOR=cuda_malloc_async. Those cells are labeled A100 OOM/unavailable in the evidence CSVs and should not be interpreted as CPU wins or hidden speedup estimates.</aside>
+  <div class="bottom-takeaway" style="font-size:19px;">A100 becomes faster in the streamed-reduction grid at n=5,000, p=10,000, R=5,000, batch_R=8,192.</div>
+  <aside class="notes">This is the practical GPU question. The old matched slice at n=5,000, p=50,000, batch_R=512 was negative: the CPU matrix path was faster. The follow-up did not change the statistic; it changed the pipeline to streamed reduction, larger batch_R, and a broader shape sweep. The point is not whether A100 is good or bad. The point is whether this statistical computation has the right shape for A100. CPU/A100 speedup is scoped as matched CPU matrix baseline / A100 streamed full end-to-end; compile is excluded, transfer is included, and kernel-only timing is deliberately excluded from the decision map. A100 becomes faster in the streamed-reduction grid at n=5,000, p=10,000, R=5,000, batch_R=8,192. Largest slide-level measured speedup: 8.54x at n=5,000, p=500,000, R=5,000. Two high-R p=500,000 cells are A100 OOM/unavailable, not CPU wins.</aside>
 </section>
 
 <section class="deck-slide">
@@ -978,7 +976,7 @@
     <img src="../experiments/results/presentation_figures/a100_pipeline_decomposition_representative.png" alt="A100 permutation pipeline decomposition representative shapes" />
   </div>
   <div class="bottom-takeaway" style="font-size:21px;">A fast kernel is not enough; the full pipeline decides.</div>
-  <aside class="notes">This slide decomposes the A100 streamed path across four representative shapes from the canonical break-even grid. The point is not simply that the GPU is slow or fast; it is where the full scenario time goes. Read the timing semantics precisely: compile excluded, transfer included, streamed reduction, no kernel-only comparison. The named stages are reconciled to the recorded total with an explicit other-overhead segment, and each row reports total time plus the W @ X share.</aside>
+  <aside class="notes">This slide decomposes the A100 streamed path for the two representative rows committed in decomposition_representative_shapes_summary.csv. The raw four-row representative decomposition CSV is not committed in this repository snapshot, so do not claim four categories from the committed evidence. The point is not simply that the GPU is slow or fast; it is where the full scenario time goes. Read the timing semantics precisely: compile excluded, transfer included, streamed reduction, no kernel-only comparison. The named stages are reconciled to the recorded total with an explicit other-overhead segment, and each row reports total time plus the W @ X share.</aside>
 </section>
 
 <section class="deck-slide">
@@ -1062,12 +1060,7 @@
     <div class="card"><h3 class="accent-green">Server CPU = scale and parallelism</h3><p>k-means shape scaling, Numba thread sweep, permutation R/p scaling, worker and memory sweeps.</p></div>
     <div class="card"><h3 class="accent-berry">A100 = accelerator-shaped pipeline</h3><p>JAX k-means break-even and streamed W @ X permutation follow-up.</p></div>
   </div>
-  <div class="cards-4">
-    <div class="card"><h3>3,840</h3><p>k-means local pass rows</p></div>
-    <div class="card"><h3>450</h3><p>permutation equivalence pass rows</p></div>
-    <div class="card"><h3>540</h3><p>server CPU k-means pass rows</p></div>
-    <div class="card"><h3>135</h3><p>A100 k-means pass rows</p></div>
-  </div>
+  <div class="callout"><p>Detailed row counts, skips, and status bookkeeping live in the result READMEs and speaker notes.</p></div>
 </section>
 
 <section class="deck-slide">

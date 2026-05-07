@@ -30,7 +30,7 @@ PDF/print mode:
 http://localhost:8000/slides/index.html?print-pdf
 ```
 
-The canonical deck is [`slides/index.html`](slides/index.html). Current structure is 32 slides total: 27 main-path slides and 5 backup slides.
+The canonical deck is [`slides/index.html`](slides/index.html). Current structure is 33 slides total: 29 main-path slides and 4 backup slides. Slides 9 and 16 are video method-transition slides.
 
 ## Results layout
 

@@ -196,7 +196,7 @@ def plot_kmeans_recovery(root: Path, fig_dir: Path, manifest: list[dict[str, str
     fig.text(
         0.09,
         0.06,
-        "Recovery depends on data geometry;\nruntime matters only after recovery is visible.",
+        "Low ARI is a statistical recovery result;\nspeed is not a success claim there.",
         ha="left",
         va="bottom",
         fontsize=16,
@@ -319,13 +319,12 @@ def plot_kmeans_shape_runtime(root: Path, fig_dir: Path, manifest: list[dict[str
 
     card_ax = fig.add_subplot(gs[1, 2])
     card_ax.axis("off")
-    pass_rows = len(df)
     max_n = int(df["n"].max())
     best = wide.loc[wide["numba_speedup"].idxmax()] if not wide.empty and "numba_speedup" in wide else None
     card_text = (
-        f"{pass_rows:,} pass rows\n"
         f"max local N {max_n:,}\n"
         f"d=100 stress slice\n"
+        "shape controls bottleneck\n"
     )
     if best is not None:
         card_text += f"largest Numba edge {best['numba_speedup']:.1f}x"
@@ -359,7 +358,6 @@ def plot_kmeans_equivalence(root: Path, fig_dir: Path, manifest: list[dict[str, 
     fig_dir.mkdir(parents=True, exist_ok=True)
     df = _numeric(df, ["inertia_rel_diff", "ari_vs_reference", "n"])
     status = _status_column(df)
-    all_rows = df.copy()
     df = df[(df[status] == "pass") & (df["implementation"] != "reference") & df["inertia_rel_diff"].notna()].copy()
     if df.empty:
         return
@@ -443,9 +441,6 @@ def plot_kmeans_equivalence(root: Path, fig_dir: Path, manifest: list[dict[str, 
         color=NUMBA_GREEN,
     )
 
-    counts = all_rows[status].value_counts()
-    pass_rows = int(counts.get("pass", 0))
-    skips = int(counts.get("skipped_memory_risk", 0))
     max_rel = df["inertia_rel_diff"].max()
     fig.suptitle("K-means equivalence to reference", x=0.12, y=0.92, ha="left", fontsize=23, fontweight="bold", color=INK)
     fig.text(
@@ -468,7 +463,15 @@ def plot_kmeans_equivalence(root: Path, fig_dir: Path, manifest: list[dict[str, 
         color=INK,
         bbox={"boxstyle": "round,pad=0.55,rounding_size=0.15", "facecolor": "#F7E6D9", "edgecolor": "none"},
     )
-    fig.text(0.12, 0.16, f"{pass_rows:,} pass rows; {skips:,} expected memory-risk skips; no failed optimized rows.", ha="left", va="bottom", fontsize=14, color=MUTED)
+    fig.text(
+        0.12,
+        0.16,
+        "Expected memory-risk rows are documented in the result README.",
+        ha="left",
+        va="bottom",
+        fontsize=14,
+        color=MUTED,
+    )
     fig.savefig(fig_dir / "kmeans_reference_equivalence.png", dpi=DPI)
     fig.savefig(fig_dir / "kmeans_reference_equivalence.svg", format="svg")
     fig.savefig(fig_dir / "kmeans_equivalence_tolerance.png", dpi=DPI)
@@ -645,7 +648,7 @@ def plot_permutation_calibration(root: Path, fig_dir: Path, manifest: list[dict[
     ax.text(
         band_high - 0.001,
         values.size - 6,
-        "expected band",
+        "feature-level binomial band",
         va="center",
         ha="right",
         fontsize=16,
@@ -664,7 +667,8 @@ def plot_permutation_calibration(root: Path, fig_dir: Path, manifest: list[dict[
     fig.text(
         0.06,
         0.85,
-        f"Optimized NumPy batched matrix path under the null; {values.size} seeds, n=500, p={n_features:,}, R=1,000.",
+        f"Optimized NumPy batched matrix path under the null; observed mean {mean_value:.3f}. "
+        f"Band uses feature-level binomial variation for p={n_features:,}.",
         ha="left",
         va="bottom",
         fontsize=18,
@@ -776,11 +780,9 @@ def plot_permutation_equivalence(root: Path, fig_dir: Path, manifest: list[dict[
         return
     df = _numeric(df, ["max_abs_p_diff", "max_abs_stat_diff", "p", "r"])
     status = _status_column(df)
-    all_rows = df.copy()
     df = df[(df[status] == "pass") & df["max_abs_p_diff"].notna()].copy()
     if df.empty:
         return
-    counts = all_rows[status].value_counts()
     summary = (
         df.groupby("implementation", as_index=False)
         .agg(

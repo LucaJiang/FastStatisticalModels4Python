@@ -8,8 +8,9 @@ Generated/updated: 2026-05-06T17:40:37+0800
 - CPU rows recorded: 29.
 
 ## Break-even
-- A100 becomes faster at n=5000, p=10000, R=5000, batch_R=8192.
-- Largest measured speedup: 8.54x at n=5000, p=500000, R=5000.
+- A100 becomes faster in the streamed-reduction grid at n=5,000, p=10,000, R=5,000, batch_R=8,192.
+- Largest slide-level measured speedup: 8.54x at n=5,000, p=500,000, R=5,000.
+- Speedups in `break_even_shape_sweep_summary.csv` are lightweight slide-level summaries where raw CPU/A100 timing pairs are not committed unless the CSV says otherwise in `timing_note`.
 
 ## Streamed reduction
 - `a100_streamed_reduction` computes `T_null_batch = W_batch @ X_device`, accumulates exceedance counts on device, and collects final p-values/counts only.
@@ -20,9 +21,9 @@ Generated/updated: 2026-05-06T17:40:37+0800
 - Kernel-only rows are labeled as not full permutation tests and are not used for CPU/A100 speedup decisions.
 
 ## Representative A100 decomposition
-- Representative rows recorded: 4.
-- Rows cover CPU-faster, near break-even, A100-faster, and largest/highest-speedup regions from the canonical break-even grid.
-- `decomposition_representative_shapes_summary.csv` includes explicit other overhead and stage-sum reconciliation.
+- Representative summary rows committed: 2.
+- The committed lightweight summary covers one CPU-faster row and the largest/highest-speedup row. The raw 4-row representative decomposition CSV is not committed in this repository snapshot, so do not claim four representative categories from the committed evidence.
+- `decomposition_representative_shapes_summary.csv` includes explicit other overhead and stage-sum reconciliation for the two committed summary rows.
 
 ## Timing semantics
 - CPU/A100 comparisons are full scenario end-to-end, warm timing, compile excluded, transfer included for A100.
@@ -40,10 +41,9 @@ Generated/updated: 2026-05-06T17:40:37+0800
 - `targeted_rerun_audit.csv` records the old memory-risk state and the new explicit CPU-completed/A100-OOM state.
 
 ## Correctness
-- Correctness check rows represented in the current evidence: 101.
-  - accepted bounded/GPU-tolerance rows: 99
-  - oom: 2
-  - fail: 0
+- Correctness rows represented in the committed lightweight correctness summary: 97 accepted bounded/GPU-tolerance rows.
+- Two high-R p=500,000 cells are A100 OOM/unavailable in the break-even shape summary after the targeted rerun; they are not CPU wins and not hidden speedups.
+- No committed lightweight summary row records a correctness failure.
 - Accepted rows use the explicit status vocabulary `pass_exact`, `pass_gpu_tolerance`, `manual_check`, and `fail`.
 - Older generated raw rows may show `check`; treat that as a historical accepted bounded-check status, not an exact pass.
 - Lightweight summary CSVs with slide-level rows are committed in this directory.

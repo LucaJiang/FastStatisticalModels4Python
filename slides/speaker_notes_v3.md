@@ -1,6 +1,6 @@
 # Speaker Notes - Revised Main Deck
 
-Target: 30 minutes. Main path is slides 1-29. Slides 30-33 are backup. Slides 9 and 16 are short method-transition video slides.
+Target: 30 minutes. Current structure is 33 slides total: main path is slides 1-29, slides 30-33 are the 4 backup slides, and slides 9 and 16 are short method-transition video slides.
 
 ## Timing overview
 
@@ -103,13 +103,15 @@ This is the moved MacBook validation-scale result. NumPy matrix, batched NumPy m
 
 ## Slide 22 - GPU decision map
 
-Explain that A100 helps only when the permutation pipeline becomes large, batched, and device-resident enough. Compile is excluded, transfer included, and kernel-only timing is not used for the decision map.
+Explain that A100 helps only when the permutation pipeline becomes large, batched, and device-resident enough. CPU/A100 speedup is always scoped as matched CPU matrix baseline / A100 streamed full end-to-end. Compile is excluded, transfer is included, and kernel-only timing is not used for the decision map.
 
-Two high-R cells at p=500,000 were rerun on May 6, 2026 with the CPU timeout raised to 14,400 seconds per cell. The CPU baselines completed, but the canonical A100 streamed end-to-end run at batch_R=8,192 still failed during JAX autotune/OOM, even with `TF_GPU_ALLOCATOR=cuda_malloc_async`. Those cells are labeled A100 OOM/unavailable in the evidence CSVs and should not be interpreted as CPU wins or hidden speedup estimates.
+A100 becomes faster in the streamed-reduction grid at n=5,000, p=10,000, R=5,000, batch_R=8,192. Largest slide-level measured speedup: 8.54x at n=5,000, p=500,000, R=5,000.
+
+Two high-R p=500,000 cells are A100 OOM/unavailable, not CPU wins. They were rerun on May 6, 2026 with the CPU timeout raised to 14,400 seconds per cell. The CPU baselines completed, but the canonical A100 streamed end-to-end run at batch_R=8,192 still failed during JAX autotune/OOM, even with `TF_GPU_ALLOCATOR=cuda_malloc_async`. Those cells should not be interpreted as CPU wins or hidden speedups.
 
 ## Slide 23 - A100 pipeline decomposition
 
-Show where full-scenario A100 time goes. A fast kernel is not enough; the full pipeline decides. The four rows are representative shapes from the canonical break-even grid: CPU-faster, near break-even, A100-faster, and largest/highest-speedup measured.
+Show where full-scenario A100 time goes. A fast kernel is not enough; the full pipeline decides. The committed lightweight decomposition summary has 2 representative rows: one CPU-faster row and the largest/highest-speedup row. The raw 4-row representative decomposition CSV is not committed in this repository snapshot, so avoid claiming four representative categories.
 
 Say the timing semantics precisely: this is full scenario timing, compile excluded, transfer included, streamed reduction, and no kernel-only comparison. The named stages are reconciled to the recorded total with an explicit other-overhead segment, and each row reports total time plus the W @ X share.
 
