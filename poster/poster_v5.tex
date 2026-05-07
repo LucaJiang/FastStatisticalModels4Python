@@ -78,7 +78,7 @@
         \vspace{0.25ex}
         {\Large\bfseries\color{ink}\insertsubtitle\par}
         \vspace{0.35ex}
-        {\normalsize\bfseries\color{ink}Simulation creates a validation target; speed only counts after the statistic is preserved.\par}
+        {\normalsize\bfseries\color{ink}Validate the statistical result first. Then accelerate the bottleneck.\par}
         \vspace{0.20ex}
         {\large\color{cityumaroon}\insertauthor\par}
         {\normalsize\color{cityured}\insertinstitute\par}
@@ -149,11 +149,12 @@
 
 \begin{column}{\colwidth}
   \begin{block}{1. Why simulation is the statistical test harness}
-    Real biomedical data rarely tells us the true clustering, the exact null distribution, or whether a numerical shortcut changed the estimand.  Simulation supplies an answer key that ordinary benchmark timing cannot provide.
+    Real biomedical data rarely comes with ground truth.
+    Simulation lets us know what should be recovered, calibrated, or preserved.
 
     \vspace{0.45em}
     \workflowrow{cityured}{Define target}{what should be recovered, calibrated, or estimated}
-    \workflowrow{threadteal}{Generate scenarios}{vary signal, dimension, sample size, repeats, and hard cases}
+    \workflowrow{threadteal}{Generate scenarios}{vary signal, dimension, sample size, and hard cases}
     \workflowrow{cityuorange}{Reference first}{write the readable implementation before optimizing}
     \workflowrow{numba}{Validate}{equivalence, recovery, null calibration, tolerance}
     \workflowrow{jaxberry}{Scale}{only then measure bottlenecks and choose an engine}
@@ -161,7 +162,7 @@
     \vspace{0.50em}
     \evidencebox{cityured}{softgold}{%
       \smalllabel{cityumaroon}{Governing rule}
-      A faster implementation that changes the statistic is a different method, not a speedup.
+      Same question. Same result. Then faster code.
     }
   \end{block}
 
@@ -170,11 +171,11 @@
       \toprule
       \textbf{Question} & \textbf{Decision before timing} \\
       \midrule
-      Scientific target & estimator, statistic, null model, stopping rule \\
-      Ground truth & simulated labels, known effect, or nominal type-I rate \\
-      Acceptance & exact match, tolerance, calibration band, recovery threshold \\
-      Failure meaning & wrong implementation, weak method, or systems limit \\
-      Scale stress & which dimensions make the computation expensive \\
+      Scientific target & estimator, statistic, null, stopping rule \\
+      Ground truth & labels, known effect, or nominal type-I rate \\
+      Acceptance criteria & exact match, tolerance, calibration, recovery \\
+      Failure meaning & implementation, method, or systems limit \\
+      Scale stress & dimensions that make work expensive \\
       \bottomrule
     \end{tabular}
 
@@ -191,7 +192,7 @@
 
 \begin{column}{\colwidth}
   \begin{block}{3. Two workloads, two pressure shapes}
-    These examples are not here to teach algorithms. They stand for two common ways simulations stress statistical code.
+    These workloads stand for two common pressure shapes in statistical simulations.
 
     \vspace{0.45em}
     \begin{columns}[t,totalwidth=\linewidth]
@@ -200,7 +201,7 @@
         Iterative fitting: each update depends on the previous state.
         \vspace{0.25em}
         \begin{center}
-          \includegraphics[width=0.95\linewidth]{assets/poster_v4_kmeans_iris.png}
+          \includegraphics[width=0.99\linewidth]{assets/poster_v4_kmeans_iris.png}
         \end{center}
       \end{column}
       \begin{column}{0.49\linewidth}
@@ -208,16 +209,16 @@
         Resampling inference: repeated null draws across many features.
         \vspace{0.25em}
         \begin{center}
-          \includegraphics[width=0.95\linewidth]{assets/poster_v4_permutation_workflow.png}
+          \includegraphics[width=0.99\linewidth]{assets/poster_v4_permutation_workflow.png}
         \end{center}
       \end{column}
     \end{columns}
 
     \vspace{0.30em}
     \evidencebox{numba}{softgreen}{%
-      \smalllabel{cityumaroon}{Validation contracts}
-      \textbf{k-means:} same data, initialization, stopping rule; compare final inertia and recovery.\par
-      \textbf{permutation:} same permutation stream and p-value definition; check null calibration before runtime.
+      \smalllabel{cityumaroon}{Validation checks}
+      \textbf{k-means:} same data, initialization, stopping rule; compare inertia and recovery.\par
+      \textbf{permutation:} same permutation stream and p-value definition; check calibration before runtime.
     }
   \end{block}
 
@@ -227,7 +228,7 @@
       \textbf{Claim type} & \textbf{Committed evidence used in the talk} \\
       \midrule
       k-means equivalence & max relative inertia difference $3.1\times10^{-14}$; tolerance $10^{-8}$ \\
-      permutation equivalence & max p-value difference 0.0; max statistic difference $9.4\times10^{-16}$ \\
+      permutation equivalence & max p-value diff 0.0; max statistic diff $9.4\times10^{-16}$ \\
       null behavior & MacBook null calibration mean $p\le0.05$ was 0.051 \\
       A100 boundary & first streamed-reduction win at $n=5{,}000$, $p=10{,}000$, $R=5{,}000$, batch $R=8{,}192$ \\
       A100 scope & largest slide-level measured speedup 8.54x at $p=500{,}000$, $R=5{,}000$ \\
@@ -250,13 +251,13 @@
       \toprule
       \textbf{Simulation signal} & \textbf{Conservative tool choice} \\
       \midrule
-      result does not recover target & fix statistic / model before optimizing \\
+      target not recovered & fix statistic / model first \\
       hot scalar CPU loop & Numba \\
       dense distance algebra & NumPy / BLAS \\
-      repeated shared-array work & threads / free-threaded context \\
+      shared-array repeats & threads / free-threaded context \\
       large device-resident batch & JAX / A100 \\
-      giant temporary array & rewrite or stream the computation \\
-      non-monotone parallel sweep & tune under resource constraints \\
+      giant temporary & rewrite or stream \\
+      non-monotone sweep & tune under constraints \\
       \bottomrule
     \end{tabular}
 
@@ -272,10 +273,10 @@
 
   \begin{block}{6. What to report with every speed claim}
     \begin{itemize}
-      \item validation target and acceptance tolerance;
-      \item environment tier: local validation, server CPU, or A100;
-      \item cold vs warm timing and whether compile is excluded;
-      \item whether transfer, allocation, and collection are included;
+      \item validation target and acceptance criteria;
+      \item tier: local validation, server CPU, or A100;
+      \item cold/warm timing and compile treatment;
+      \item transfer, allocation, and collection treatment;
       \item unavailable/OOM cells as unavailable, not as CPU wins;
       \item the smallest tool that preserves the statistical result.
     \end{itemize}

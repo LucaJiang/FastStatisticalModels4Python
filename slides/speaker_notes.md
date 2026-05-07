@@ -47,7 +47,7 @@ Transition to the first concrete workload. k-means is simple enough that both st
 
 ## Slide 9 - How k-means moves
 
-We use petal length and petal width from Iris only as a visual method example. The species labels help the audience understand that there are three biological groups, but k-means only sees the two numerical measurements. Setosa separates easily; Versicolor and Virginica overlap, which makes the iteration more interesting than three clean synthetic blobs.
+We use petal length and petal width from Iris only as a visual method example. The species labels help the audience understand that there are three biological groups, but k-means only sees the two numerical measurements. Setosa separates easily; Versicolor and Virginica overlap, which makes the iteration more interesting than three clean toy groups.
 
 Use the animation to emphasize the dependency: assign each flower to the nearest centroid, update centroids from assigned flowers, then repeat until assignments stabilize. Iteration t+1 depends on centroids from iteration t. Keep the tool explanation verbal here: that dependency is why explicit loops, temporary arrays, and distance computation connect naturally to Numba, NumPy matmul, and JAX/A100 later in the talk.
 

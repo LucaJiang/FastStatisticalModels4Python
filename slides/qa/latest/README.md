@@ -1,6 +1,6 @@
 # Reveal.js Deck QA - Latest
 
-Generated: 2026-05-06
+Generated: 2026-05-07
 
 ## Summary
 
@@ -23,8 +23,17 @@ Generated: 2026-05-06
 - Lightweight break-even summary CSVs are committed: `break_even_shape_sweep_summary.csv`, `decomposition_representative_shapes_summary.csv`, `cpu_matched_baselines_summary.csv`, and `correctness_checks_summary.csv`.
 - Decision-map colorbar wording is scoped correctly: `speedup = matched CPU matrix baseline / A100 streamed full end-to-end`.
 - Current deck structure remains 33 slides: slides 1-29 main path, slides 30-33 backup.
+- Slide 9 k-means video uses Iris petal length and petal width, K=3.
+- Species labels are context only; k-means sees only the two measurements.
+- Slide 13 is a representative-shape comparison, not a universal ranking.
+- Slide 16 explains ordinary permutation logic before W @ X.
+- Slide 22 scopes speedup as matched CPU matrix baseline / A100 streamed full end-to-end; compile excluded, transfer included, kernel-only excluded.
+- Slide 23 committed lightweight decomposition summary has 2 representative rows.
 - Slide 24 uses the expanded Linux server CPU sweep at 1/4/16/64/128 workers or threads.
 - Slide 24 marks high-count rows as shared-server evidence because affinity exposed 512 CPUs but no exclusive scheduler allocation was detected.
+- Slide 24 high-count CPU parallelism is shared-server evidence, not a claim that 128 workers are intrinsically bad.
+- No canonical slide/notes/QA/poster source uses the banned contract phrasing.
+- No canonical source says the Slide 9 video uses four synthetic groups.
 
 ## Broken URLs / Console
 
@@ -51,7 +60,7 @@ Result: browser mode plays the videos, and print/PDF mode hides videos and shows
 
 - Slide 1 now uses the talk framing `Trust -> speed -> scale`.
 - Slides 2-7 reduce text density and use pipeline/tool-map/evidence-ladder layouts instead of dense explanatory cards.
-- Slide 9 k-means animation was regenerated with K=4, overlapping and imbalanced clusters, poor initialization, 10 Lloyd iterations, centroid paths, MP4/WebM output, and a poster PNG.
+- Slide 9 k-means animation uses Iris petal length and petal width with K=3; species labels are context only, and k-means sees only the two measurements.
 - Slides 10, 14, 24, 25, and 26 replace dense tables or long prose with cards, rules, and a decision tree.
 - Slides 19 and 20 remain validation dashboards with no log-zero p-value plot and no sorted-replicate S-curve.
 - Slide 24 now shows the expanded Linux server CPU parallelism evidence.
