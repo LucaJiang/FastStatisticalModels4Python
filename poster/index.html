@@ -831,7 +831,7 @@
           <h1>Breaking the Speed Limit</h1>
           <p class="subtitle">Fast statistical models with Python 3.14, Numba, and JAX</p>
           <p class="tagline">From a statistician's workflow: validate first, then accelerate the bottleneck.</p>
-          <p class="control-plane">Python stays the control plane; only the validated computational hotspot is accelerated.</p>
+          <p class="control-plane">Keep the statistical workflow readable in Python; accelerate only the proven bottlenecks.</p>
           <p class="authors">Wenxin Jiang &nbsp;&middot;&nbsp; Jian Yin</p>
           <p class="institute">Department of Biostatistics, City University of Hong Kong &nbsp;&middot;&nbsp; PyCon US 2026</p>
         </div>
@@ -846,7 +846,7 @@
       <section class="thesis" aria-label="Main poster rule">
         <p class="thesis-main">
           <strong>Make the statistical task testable; then accelerate the measured bottleneck.</strong>
-          <span>Define the target, check agreement, then accelerate only the measured computational hotspot.</span>
+          <span>Set the target, validate the output, and specifically speed up the bottleneck.</span>
         </p>
         <div class="ribbon" aria-label="Workflow">
           <div class="ribbon-step"><b class="dot">1</b>Simulate</div>
@@ -855,24 +855,24 @@
           <div class="arrow">➜</div>
           <div class="ribbon-step"><b class="dot">3</b>Find bottleneck</div>
           <div class="arrow">➜</div>
-          <div class="ribbon-step"><b class="dot">4</b>Pick the smallest tool</div>
+          <div class="ribbon-step"><b class="dot">4</b>Pick the simplest tool</div>
         </div>
       </section>
 
       <section class="columns">
         <div class="col">
           <section>
-            <div class="section-title blue"><b class="dot">1</b><h2>Simulation Provides the Test Harness</h2></div>
-            <p class="lead">Real biomedical data rarely provide known truth. Simulation creates a controlled setting for checking recovery, calibration, and agreement.</p>
+            <div class="section-title blue"><b class="dot">1</b><h2>Simulation Defines "Correct"</h2></div>
+            <p class="lead">Real biomedical data rarely provides ground truth. Simulation creates a controlled setting to test recovery, calibration, and agreement.</p>
             <div class="workflow">
-              <article class="workflow-card card blue"><span class="num">01</span><strong>Statistical target</strong><p>what to estimate, recover, preserve</p></article>
-              <article class="workflow-card card teal"><span class="num">02</span><strong>Scenario grid</strong><p>null, alternative, hard cases</p></article>
-              <article class="workflow-card card gold"><span class="num">03</span><strong>Reference implementation</strong><p>readable Python/NumPy implementation</p></article>
-              <article class="workflow-card card green"><span class="num">04</span><strong>Validation checks</strong><p>recovery, calibration, agreement</p></article>
-              <article class="workflow-card card gold"><span class="num">05</span><strong>Workload structure</strong><p>loops, algebra, repetition, memory</p></article>
-              <article class="workflow-card card berry"><span class="num">06</span><strong>Selective acceleration</strong><p>smallest sufficient tool</p></article>
+              <article class="workflow-card card blue"><span class="num">01</span><strong>Define Target</strong><p>what to estimate, recover, preserve</p></article>
+              <article class="workflow-card card teal"><span class="num">02</span><strong>Build Scenarios</strong><p>null, alternative, hard cases</p></article>
+              <article class="workflow-card card gold"><span class="num">03</span><strong>Establish Reference</strong><p>readable Python/NumPy implementation</p></article>
+              <article class="workflow-card card green"><span class="num">04</span><strong>Verify Behavior</strong><p>recovery, calibration, agreement</p></article>
+              <article class="workflow-card card gold"><span class="num">05</span><strong>Analyze Workload</strong><p>loops, algebra, repetition, memory</p></article>
+              <article class="workflow-card card berry"><span class="num">06</span><strong>Select Tool</strong><p>the minimum sufficient tool</p></article>
             </div>
-            <div class="gate">Gate: optimization starts only after validation passes.</div>
+            <div class="gate">Rule: Do not optimize until validation passes.</div>
           </section>
 
           <section>
@@ -880,40 +880,40 @@
             <table class="decision-table card">
               <thead><tr><th>Question</th><th>Decision before measuring speed</th></tr></thead>
               <tbody>
-                <tr><td>Scientific target</td><td>estimator, statistic, null, stopping rule</td></tr>
-                <tr><td>Ground truth</td><td>labels, known effect, nominal type-I rate</td></tr>
-                <tr><td>Acceptance</td><td>exact match, tolerance, recovery, calibration</td></tr>
-                <tr><td>Failure meaning</td><td>implementation, method, or systems limit</td></tr>
-                <tr><td>Scale stress</td><td>dimensions that make work expensive</td></tr>
+                <tr><td>Statistical target</td><td>estimator, test statistic, or stopping rule</td></tr>
+                <tr><td>Simulated truth</td><td>labels, effect size, or nominal alpha</td></tr>
+                <tr><td>Acceptance criteria</td><td>exact match, numerical tolerance, or calibration</td></tr>
+                <tr><td>Failure mode</td><td>code bug, method breakdown, or out-of-memory (OOM)</td></tr>
+                <tr><td>Cost drivers</td><td>samples (n), features (p), or repeats (R)</td></tr>
               </tbody>
             </table>
           </section>
 
           <section>
-            <div class="section-title green"><b class="dot">3</b><h2>Validation Gates Passed</h2></div>
+            <div class="section-title green"><b class="dot">3</b><h2>Validation Checks Passed</h2></div>
             <article class="validation-gate card">
-              <h3>All speed claims below passed these checks.</h3>
+              <h3>Speedup results verified using these criteria:</h3>
               <div class="gate-list">
-                <div class="gate-row"><b>✓</b><span><strong>k-means:</strong> max relative inertia difference 3.1e-14 &lt; tolerance 1e-8.</span></div>
-                <div class="gate-row"><b>✓</b><span><strong>permutation:</strong> same test statistic, same p-value definition, same resampling stream; max |p diff| = 0.0.</span></div>
-                <div class="gate-row"><b>✓</b><span><strong>statistic difference:</strong> max |stat diff| = 9.4e-16 across the recorded validation grid.</span></div>
-                <div class="gate-row"><b>✓</b><span><strong>null calibration:</strong> estimated type-I error 0.051 near nominal alpha 0.05.</span></div>
+                <div class="gate-row"><b>✓</b><span><strong>K-means agreement:</strong> max relative inertia difference is 3.1e-14 (well below the 1e-8 tolerance).</span></div>
+                <div class="gate-row"><b>✓</b><span><strong>Permutation equivalence:</strong> same test statistic, same p-value definition, same resampling stream; max |p diff| = 0.0.</span></div>
+                <div class="gate-row"><b>✓</b><span><strong>Statistic difference:</strong> max |stat diff| = 9.4e-16 across the validation grid.</span></div>
+                <div class="gate-row"><b>✓</b><span><strong>Null calibration:</strong> estimated type-I error 0.051 aligns with nominal alpha 0.05.</span></div>
               </div>
             </article>
           </section>
 
           <section>
-            <div class="section-title purple"><b class="dot">AI</b><h2>AI Scales the Workflow; the Statistician Owns the Claim</h2></div>
+            <div class="section-title purple"><b class="dot">AI</b><h2>AI for Scale, Statistician for Science</h2></div>
             <div class="ai-grid">
               <article class="ai-card card teal">
                 <div>
-                  <strong>What AI can automate</strong>
+                  <strong>AI Automates Execution</strong>
                   <ul>
-                    <li>implementation variants</li>
-                    <li>scenario-grid runners</li>
-                    <li>metadata capture</li>
-                    <li>plot regeneration</li>
-                    <li>result manifests</li>
+                    <li>Code variants</li>
+                    <li>Scenario grids</li>
+                    <li>Metadata tracking</li>
+                    <li>Plot regeneration</li>
+                    <li>Result manifests</li>
                   </ul>
                 </div>
                 <img class="duty-art" src="assets/ai_duty_thumb.png" alt="Automation layer illustration" />
@@ -921,13 +921,13 @@
               </article>
               <article class="ai-card card green">
                 <div>
-                  <strong>What the statistician decides</strong>
+                  <strong>Statistician Owns Inference</strong>
                   <ul>
-                    <li>statistical target</li>
-                    <li>data-generating assumptions</li>
-                    <li>validation criteria</li>
-                    <li>interpretation of difficult cases</li>
-                    <li>scientific claims</li>
+                    <li>Statistical target</li>
+                    <li>Data assumptions</li>
+                    <li>Validation criteria</li>
+                    <li>Hard-case interpretation</li>
+                    <li>Scientific claims</li>
                   </ul>
                 </div>
                 <img class="duty-art" src="assets/human_duty_thumb.png" alt="Statistician judgment illustration" />
@@ -942,46 +942,50 @@
             <div class="section-title teal"><b class="dot">4</b><h2>Two Workloads, Two Bottleneck Patterns</h2></div>
             <div class="workload-grid">
               <article class="workload blue">
-                <h3>k-means = iterative fitting</h3>
+                <h3>K-means = Iterative Fitting</h3>
                 <div class="figure card">
                   <img src="figures/kmeans_illustration.png" alt="k-means iterative fitting illustration" />
                   <div class="chips"><span class="chip">distance loops</span><span class="chip">temporaries</span><span class="chip">compiled kernels</span></div>
                 </div>
               </article>
               <article class="workload green">
-                <h3>permutation = resampling inference</h3>
+                <h3>Permutation = Resampling Inference</h3>
                 <div class="figure card">
                   <img src="figures/permutation_task_schematic.png" alt="permutation-test workflow schematic" />
                   <div class="chips"><span class="chip">shared arrays</span><span class="chip">batching</span><span class="chip">W @ X</span></div>
                 </div>
               </article>
             </div>
-            <div class="contract" style="font-size: 1cqb;"><strong>Validation contract:</strong> k-means keeps the same data, initialization, and stopping rule; permutation keeps the same resampling stream and p-value definition.</div>
+            <div class="contract" style="font-size: 1cqb;">
+            <strong>Validation criteria:</strong> 
+            <b>K-means</b> keeps same data, initialization, and stopping rule. 
+            <b>Permutation</b> keeps same resampling stream and p-value definition.
+          </div>
           </section>
 
           <article class="takeaway-strip card">
-            <strong>Validate the analysis before optimizing the implementation.</strong>
-            <span>Speed only counts after agreement with the reference passes the validation criteria.</span>
+            <strong>Validate the Statistic, Then Accelerate.</strong>
+            <span>Speed only counts when the statistical target is preserved.</span>
           </article>
 
           <section>
-            <div class="section-title berry"><b class="dot">5</b><h2>After Validation, Performance Depends on Workload Structure</h2></div>
+            <div class="section-title berry"><b class="dot">5</b><h2>Performance Depends on Workload Structure</h2></div>
             <div class="evidence-grid">
               <article class="plot-card card">
-                <h3>K-means: workload structure determines the implementation</h3>
+                <h3>K-means: Workload Shape Determines the Tool</h3>
                 <ul class="shape-notes">
-                  <li>loop-dominated computations: Numba, NumPy, and A100 are similar</li>
-                  <li>dense distance computations: NumPy / BLAS is best</li>
-                  <li>large regular batches: JAX / A100 is best</li>
+                  <li><strong>Loop-dominated:</strong> Numba, NumPy, and GPU tie.</li>
+                  <li><strong>Dense algebra:</strong> NumPy / BLAS dominates.</li>
+                  <li><strong>Large regular batches:</strong> JAX / GPU wins.</li>
                 </ul>
                 <img src="figures/kmeans_evidence_rows_cropped.png" alt="Server k-means evidence showing implementation choice depends on workload structure" />
               </article>
               <article class="plot-card card">
-                <h3>Permutation: A100 is useful only after batching and streaming</h3>
+                <h3>Permutation: GPU Demands Batching and Streaming</h3>
                 <ul class="shape-notes">
-                  <li>A100 becomes advantageous after batching and streamed reduction</li>
-                  <li>largest validated speedup in this grid: 8.54×</li>
-                  <li>out-of-memory configurations are reported explicitly</li>
+                  <li><strong>GPU prerequisite:</strong> batching and streamed reduction</li>
+                  <li><strong>Validated speedup:</strong> peaks at 8.54×</li>
+                  <li><strong>Memory limits:</strong> OOM configurations remain explicit</li>
                 </ul>
                 <img src="figures/gpu_permutation_decision_map.png" alt="GPU permutation decision map" />
               </article>
@@ -993,39 +997,39 @@
           <section>
             <div class="section-title berry"><b class="dot">6</b><h2>Bottleneck Signal → Smallest Move</h2></div>
             <article class="diagnostic-guide card">
-              <h3>Reusable diagnostic guide</h3>
-              <div class="diagnostic-row"><strong>validation fails</strong><span>revisit the statistical definition or implementation</span></div>
-              <div class="diagnostic-row"><strong>loop-dominated Python code</strong><span>Numba</span></div>
-              <div class="diagnostic-row"><strong>dense array algebra</strong><span>NumPy / BLAS</span></div>
-              <div class="diagnostic-row"><strong>repeated independent work</strong><span>threads / workers</span></div>
-              <div class="diagnostic-row"><strong>large regular batches</strong><span>JAX / A100</span></div>
-              <div class="diagnostic-row"><strong>memory-limited workload</strong><span>streaming / reduction</span></div>
+              <h3>Diagnostic Guide: Signal vs. Action</h3>
+              <div class="diagnostic-row"><strong>Validation Failure</strong><span>Revisit the Statistic or Implementation</span></div>
+              <div class="diagnostic-row"><strong>Loop-Dominated Python</strong><span>Numba</span></div>
+              <div class="diagnostic-row"><strong>Dense Array Algebra</strong><span>NumPy / BLAS</span></div>
+              <div class="diagnostic-row"><strong>Repeated Independent Work</strong><span>Threads / Workers</span></div>
+              <div class="diagnostic-row"><strong>Large Regular Batches</strong><span>JAX / GPU</span></div>
+              <div class="diagnostic-row"><strong>Memory-Bound Workload</strong><span>Streamed Reduction</span></div>
             </article>
           </section>
 
           <section>
             <div class="section-title berry"><b class="dot">7</b><h2>Tool Choices in This Talk</h2></div>
-            <p class="lead">Examples, not a ranking.</p>
+            <p class="lead">Mapping validated bottlenecks to tools. Not a hardware ranking.</p>
             <div class="tool-grid">
               <article class="tool card green">
                 <strong>Numba</strong>
-                <b>loop-dominated CPU code</b>
-                <em>k-means assignment/update</em>
+                <b>Explicit CPU Loops</b>
+                <em>K-means Assignment / Update</em>
               </article>
               <article class="tool card blue">
                 <strong>NumPy / BLAS</strong>
-                <b>dense distance algebra</b>
-                <em>distance identity and W @ X on CPU</em>
+                <b>Dense Matrix Algebra</b>
+                <em>Distance Identity and W @ X (CPU)</em>
               </article>
               <article class="tool card teal">
                 <strong>Threads / workers</strong>
-                <b>repeated work over shared data</b>
-                <em>permutation worker sweep</em>
+                <b>Shared-Data Repetition</b>
+                <em>Permutation Worker Sweep</em>
               </article>
               <article class="tool card berry">
-                <strong>JAX / A100</strong>
-                <b>device-resident regular batches</b>
-                <em>streamed W @ X after validation</em>
+                <strong>JAX / GPU</strong>
+                <b>Large Regular Batches</b>
+                <em>Streamed W @ X (After Validation)</em>
               </article>
             </div>
           </section>
@@ -1034,12 +1038,12 @@
             <div class="section-title orange"><b class="dot">8</b><h2>Report Every Speed Claim</h2></div>
             <article class="report-card card">
               <div class="checks">
-                <div><b>✓</b><span>validation target and acceptance criteria</span></div>
-                <div><b>✓</b><span>compute tier: local validation, server CPU, or A100</span></div>
-                <div><b>✓</b><span>cold/warm timing and compilation treatment</span></div>
-                <div><b>✓</b><span>transfer, allocation, and collection treatment</span></div>
-                <div><b>✓</b><span>unavailable or out-of-memory configurations reported explicitly</span></div>
-                <div><b>✓</b><span>smallest tool that preserves the statistical result</span></div>
+                <div><b>✓</b><span><strong>Validation Criteria:</strong> target and acceptance threshold</span></div>
+                <div><b>✓</b><span><strong>Compute Tier:</strong> local validation, server CPU, or GPU</span></div>
+                <div><b>✓</b><span><strong>Timing State:</strong> cold/warm execution and compilation handling</span></div>
+                <div><b>✓</b><span><strong>Memory Overhead:</strong> transfer, allocation, and collection costs</span></div>
+                <div><b>✓</b><span><strong>Failure Modes:</strong> OOM and unavailable configurations remain explicit</span></div>
+                <div><b>✓</b><span><strong>Tool Selection:</strong> simplest tool preserving the statistic</span></div>
               </div>
               <div class="gate">Timing semantics: compilation excluded; data transfer included; kernel-only timings not reported.</div>
             </article>
