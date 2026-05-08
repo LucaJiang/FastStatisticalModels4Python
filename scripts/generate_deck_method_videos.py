@@ -19,6 +19,7 @@ from matplotlib.patches import FancyArrowPatch, Rectangle
 ROOT = Path(__file__).resolve().parents[1]
 VIDEO_DIR = ROOT / "slides" / "assets" / "videos"
 POSTER_DIR = ROOT / "slides" / "assets" / "posters"
+IRIS_IMAGE = ROOT / "slides" / "assets" / "iris.png"
 FPS = 24
 W = 1280
 H = 720
@@ -112,29 +113,31 @@ def _draw_header(ax: plt.Axes, title: str, subtitle: str) -> None:
 
 
 def generate_kmeans() -> None:
+    rng = np.random.default_rng(12)
     try:
         from sklearn.datasets import load_iris
 
         iris = load_iris()
         raw = iris.data[:, [2, 3]].astype(float)
     except Exception:
-        rng = np.random.default_rng(12)
-        centers = np.array([[1.45, 0.25], [4.35, 1.35], [5.45, 2.00]])
-        raw = np.vstack([rng.normal(loc=c, scale=[0.32, 0.16], size=(50, 2)) for c in centers])
+        centers = np.array([[1.5, 0.2], [4.3, 1.3], [5.6, 2.0]])
+        raw = np.vstack([rng.normal(loc=c, scale=[0.28, 0.18], size=(50, 2)) for c in centers])
 
     data = raw
-    centroids = [
-        np.array(
-            [
-                [5.171757483762562, 0.4162410699562752],
-                [0.9606008259748919, 0.392536523038085],
-                [2.0764111475764966, 2.1738646186361663],
-            ]
-        )
-    ]
+    init_centroids = np.array(
+        [
+            [1.1, 2.35],
+            [3.4, 0.35],
+            [6.7, 0.75],
+        ],
+        dtype=float,
+    )
+    centroids = [init_centroids.copy()]
+    iris_img = plt.imread(IRIS_IMAGE)
     labels = []
     changed = []
-    for _ in range(9):
+    n_iter = 8
+    for _ in range(n_iter):
         d = ((data[:, None, :] - centroids[-1][None, :, :]) ** 2).sum(axis=2)
         lab = d.argmin(axis=1)
         labels.append(lab)
@@ -144,87 +147,156 @@ def generate_kmeans() -> None:
             if np.any(lab == k):
                 new[k] = data[lab == k].mean(axis=0)
         centroids.append(new)
+        if len(labels) > 1 and changed[-1] == 0:
+            break
 
-    x0, x1 = 0.7, 7.3
+    n_iter = len(labels)
+    x0, x1 = 0.8, 7.1
     y0, y1 = 0.0, 2.7
-    plot_left, plot_right = 0.085, 0.690
-    plot_bottom, plot_top = 0.155, 0.745
 
-    def sx(x: np.ndarray) -> np.ndarray:
-        return plot_left + (x - x0) / (x1 - x0) * (plot_right - plot_left)
-
-    def sy(y: np.ndarray) -> np.ndarray:
-        return plot_bottom + (y - y0) / (y1 - y0) * (plot_top - plot_bottom)
-
-    total = 240
+    assign_frames = 26
+    update_frames = 26
+    init_frames = 42
+    converged_frames = 42
+    total = init_frames + n_iter * (assign_frames + update_frames) + converged_frames
     with tempfile.TemporaryDirectory() as tmp:
         frame_dir = Path(tmp)
         for frame in range(total):
-            t = frame / total
-            cycle = min(int(t * 9), 8)
-            local = (t * 9) - cycle
-            assign_phase = local < 0.45
-            move_alpha = 0 if assign_phase else min((local - 0.45) / 0.45, 1)
-            lab = labels[cycle]
-            current = centroids[cycle] * (1 - move_alpha) + centroids[cycle + 1] * move_alpha
+            if frame < init_frames:
+                phase = "init"
+                cycle = 0
+                move_alpha = 0.0
+                lab = None
+                current = centroids[0]
+            else:
+                phase_frame = frame - init_frames
+                per_iter = assign_frames + update_frames
+                if phase_frame >= n_iter * per_iter:
+                    phase = "converged"
+                    cycle = n_iter - 1
+                    move_alpha = 1.0
+                    lab = labels[-1]
+                    current = centroids[-1]
+                else:
+                    cycle = min(phase_frame // per_iter, n_iter - 1)
+                    local_frame = phase_frame % per_iter
+                    phase = "assign" if local_frame < assign_frames else "update"
+                    move_alpha = 0.0 if phase == "assign" else min((local_frame - assign_frames) / max(update_frames - 1, 1), 1.0)
+                    lab = labels[cycle]
+                    current = centroids[cycle] * (1 - move_alpha) + centroids[cycle + 1] * move_alpha
 
-            fig, ax = _new_fig()
-            _soft_panel(ax, (0.055, 0.065), 0.89, 0.84)
-            ax.text(0.085, 0.855, "Iris petal measurements", fontsize=30, color=INK, weight="bold")
-            ax.text(0.085, 0.807, "each point = one flower; K = 3 centroids", fontsize=20, color=MUTED)
-            phase = "assignment phase" if assign_phase else "update phase"
-            phase_color = BLUE if assign_phase else ORANGE
-            ax.text(0.725, 0.850, f"Iteration {cycle + 1} / 9", fontsize=24, color=INK, weight="bold", ha="left")
-            ax.text(0.725, 0.810, phase, fontsize=21, color=phase_color, weight="bold", ha="left")
-            ax.text(0.725, 0.772, f"{changed[cycle]} flowers changed cluster", fontsize=14, color=MUTED, ha="left")
+            fig = plt.figure(figsize=(W / DPI, H / DPI), dpi=DPI, facecolor=PAPER)
+            title_ax = fig.add_axes([0, 0, 1, 1])
+            title_ax.set_xlim(0, 1)
+            title_ax.set_ylim(0, 1)
+            title_ax.axis("off")
+            title_ax.text(0.055, 0.930, "Iris petal measurements", fontsize=32, color=INK, weight="bold", va="top")
+            if phase == "init":
+                status = "Iteration 0 / random starting centroids"
+                status_color = BERRY
+                status_detail = "points start neutral; assignments come next"
+            elif phase == "assign":
+                status = f"Iteration {cycle + 1} / assign points"
+                status_color = BLUE
+                status_detail = f"{changed[cycle]} flowers changed assignment"
+            elif phase == "converged":
+                status = "Converged / assignments stable"
+                status_color = GREEN
+                status_detail = "no flower changes assignment"
+            else:
+                status = f"Iteration {cycle + 1} / update centroids"
+                status_color = ORANGE
+                status_detail = "centroids move to assigned-flower means"
+            title_ax.text(0.945, 0.865, status, fontsize=21, color=status_color, weight="bold", ha="right", va="top")
+            title_ax.text(0.945, 0.822, status_detail, fontsize=14, color=MUTED, ha="right", va="top")
 
-            ax.add_patch(Rectangle((plot_left, plot_bottom), plot_right - plot_left, plot_top - plot_bottom, facecolor="#fffaf2", edgecolor=LINE, linewidth=1.6))
-            for xt in np.arange(1, 8, 1):
-                ax.plot([sx(xt), sx(xt)], [plot_bottom, plot_top], color=LINE, linewidth=0.8, alpha=0.55)
-                ax.text(sx(xt), plot_bottom - 0.035, f"{xt:g}", fontsize=12, color=MUTED, ha="center", va="top")
-            for yt in np.arange(0.5, 2.6, 0.5):
-                ax.plot([plot_left, plot_right], [sy(yt), sy(yt)], color=LINE, linewidth=0.8, alpha=0.55)
-                ax.text(plot_left - 0.020, sy(yt), f"{yt:g}", fontsize=12, color=MUTED, ha="right", va="center")
-            ax.text((plot_left + plot_right) / 2, 0.075, "petal length", fontsize=18, color=INK, weight="bold", ha="center")
-            ax.text(0.030, (plot_bottom + plot_top) / 2, "petal width", fontsize=18, color=INK, weight="bold", rotation=90, ha="center", va="center")
+            ax = fig.add_axes([0.085, 0.115, 0.845, 0.665], facecolor="#fffaf2")
+            ax.set_xlim(x0, x1)
+            ax.set_ylim(y0, y1)
+            ax.grid(color=LINE, linewidth=0.8, alpha=0.55)
+            for spine in ax.spines.values():
+                spine.set_color(LINE)
+                spine.set_linewidth(1.2)
+            ax.tick_params(colors=MUTED, labelsize=13)
+            ax.set_xlabel("petal length", fontsize=17, color=INK, labelpad=10)
+            ax.set_ylabel("petal width", fontsize=17, color=INK, labelpad=10)
+            ax.text(
+                0.015,
+                0.985,
+                "colors = k-means assignments; X = centroids",
+                transform=ax.transAxes,
+                fontsize=11.5,
+                color=MUTED,
+                weight="semibold",
+                ha="left",
+                va="top",
+                bbox={"facecolor": "#fffaf2", "edgecolor": "none", "alpha": 0.66, "pad": 2.0},
+                zorder=10,
+            )
 
-            point_colors = COLORS[lab]
-            ax.scatter(sx(data[:, 0]), sy(data[:, 1]), s=58, c=point_colors, edgecolors="white", linewidths=0.8, alpha=0.88)
+            iax = ax.inset_axes([0.73, -0.06, 0.46, 0.58], transform=ax.transAxes)
+            iax.imshow(iris_img, alpha=0.90)
+            iax.set_xticks([])
+            iax.set_yticks([])
+            for spine in iax.spines.values():
+                spine.set_edgecolor("#fffaf2")
+                spine.set_linewidth(1.2)
+            iax.set_facecolor("#fffaf2")
+            iax.set_zorder(4)
+
+            if lab is None:
+                point_colors = np.array(["#a8b0b6"] * len(data))
+                point_alpha = 0.68
+            else:
+                point_colors = COLORS[lab]
+                point_alpha = 0.88
+            ax.scatter(data[:, 0], data[:, 1], s=78, c=point_colors, edgecolors="white", linewidths=0.9, alpha=point_alpha, zorder=3)
 
             for k in range(3):
                 path = np.array([c[k] for c in centroids[: cycle + 1]])
                 if len(path) > 1:
-                    segments = np.stack([np.column_stack([sx(path[:-1, 0]), sy(path[:-1, 1])]), np.column_stack([sx(path[1:, 0]), sy(path[1:, 1])])], axis=1)
-                    ax.add_collection(LineCollection(segments, colors=[COLORS[k]], linewidths=3.8, alpha=0.46, zorder=6))
-                if not assign_phase:
+                    ax.plot(path[:, 0], path[:, 1], color=COLORS[k], linewidth=2.6, alpha=0.46, zorder=5)
+                if phase == "update":
                     prev = centroids[cycle][k]
-                    ax.plot([sx(prev[0]), sx(current[k, 0])], [sy(prev[1]), sy(current[k, 1])], color=COLORS[k], linewidth=5.0, alpha=0.62, zorder=7)
-                ax.scatter(sx(current[k, 0]), sy(current[k, 1]), marker="X", s=780, c=[COLORS[k]], edgecolors=INK, linewidths=3.2, zorder=9)
-
-            _soft_panel(ax, (0.725, 0.455), 0.215, 0.270)
-            ax.text(0.745, 0.686, "Iris data", fontsize=16, color=INK, weight="bold")
-            ax.text(
-                0.745,
-                0.646,
-                "three species measured\nby sepal and petal dimensions",
-                fontsize=11.0,
-                color=MUTED,
-                linespacing=1.25,
-            )
-            ax.text(0.745, 0.572, "shown here:", fontsize=11.0, color=INK, weight="bold")
-            ax.text(0.745, 0.546, "petal length + petal width", fontsize=11.0, color=MUTED)
-            ax.text(0.745, 0.505, "species names are context;\nclustering uses only the axes", fontsize=10.8, color=MUTED, linespacing=1.18)
-            ax.text(0.725, 0.390, "Colors are k-means assignments.", fontsize=13, color=INK, weight="bold")
-
-            for k, label in enumerate(["cluster A", "cluster B", "cluster C"]):
-                y = 0.282 - k * 0.047
-                ax.scatter(0.745, y, s=86, color=COLORS[k], edgecolor="white", linewidth=0.9)
-                ax.scatter(0.795, y, marker="X", s=150, color=COLORS[k], edgecolor=INK, linewidth=1.4)
-                ax.text(0.825, y, label, fontsize=11.5, color=MUTED, va="center")
+                    ax.scatter(
+                        prev[0],
+                        prev[1],
+                        marker="X",
+                        s=360,
+                        c=["#fffaf2"],
+                        edgecolors=COLORS[k],
+                        linewidths=2.2,
+                        alpha=0.72,
+                        zorder=6,
+                    )
+                    ax.add_patch(
+                        FancyArrowPatch(
+                            (prev[0], prev[1]),
+                            (current[k, 0], current[k, 1]),
+                            arrowstyle="-|>",
+                            mutation_scale=18,
+                            linewidth=3.2,
+                            color=COLORS[k],
+                            alpha=0.60,
+                            zorder=6,
+                        )
+                    )
+                    ax.plot([prev[0], current[k, 0]], [prev[1], current[k, 1]], color=COLORS[k], linewidth=3.6, alpha=0.68, zorder=6)
+                ax.scatter(
+                    current[k, 0],
+                    current[k, 1],
+                    marker="X",
+                    s=520,
+                    c=[COLORS[k]],
+                    edgecolors=INK,
+                    linewidths=2.8,
+                    zorder=8,
+                )
 
             _save_frame(fig, frame_dir / f"frame_{frame:04d}.png")
 
-        shutil.copy(frame_dir / "frame_0144.png", POSTER_DIR / "kmeans_animation_poster.png")
+        poster_frame = init_frames + assign_frames + update_frames - 1
+        shutil.copy(frame_dir / f"frame_{poster_frame:04d}.png", POSTER_DIR / "kmeans_animation_poster.png")
         _encode(frame_dir, "kmeans_animation")
 
 

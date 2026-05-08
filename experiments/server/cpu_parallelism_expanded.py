@@ -16,9 +16,8 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[2]
-for path in (ROOT / "experiments", ROOT / "experiments" / "kmeans_v3"):
-    if str(path) not in sys.path:
-        sys.path.insert(0, str(path))
+if str(ROOT / "experiments") not in sys.path:
+    sys.path.insert(0, str(ROOT / "experiments"))
 
 from common.server_utils import timestamp
 from server.cpu_parallelism_targeted import (
@@ -400,9 +399,11 @@ def plot_expanded(out_dir: Path, presentation_dir: Path) -> None:
     ax.set_title("permutation runtime vs workers", weight="bold")
     ax.set_ylim(0, max(y) * 1.30)
 
+    fig_dir = out_dir / "figures"
+    fig_dir.mkdir(parents=True, exist_ok=True)
     fig.tight_layout(rect=[0.04, 0.08, 0.98, 0.96])
-    fig.savefig(presentation_dir / "server_cpu_parallelism_expanded.png", dpi=220)
-    fig.savefig(presentation_dir / "server_cpu_parallelism_expanded.svg", format="svg")
+    fig.savefig(fig_dir / "server_cpu_parallelism_expanded.png", dpi=220)
+    fig.savefig(fig_dir / "server_cpu_parallelism_expanded.svg", format="svg")
     plt.close(fig)
 
 

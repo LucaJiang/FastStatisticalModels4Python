@@ -30,14 +30,13 @@ PDF/print mode:
 http://localhost:8000/slides/index.html?print-pdf
 ```
 
-The canonical deck is [`slides/index.html`](slides/index.html). Current structure is 33 slides total: 29 main-path slides and 4 backup slides. Slides 9 and 16 are video method-transition slides.
+The canonical deck is [`slides/index.html`](slides/index.html). Current structure is 36 slides total: 29 main-path slides and 7 backup slides. Slides 9 and 17 are video method-transition slides.
 
 ## Results layout
 
 - MacBook/local trust tier: [`experiments/results/macbook_air_long/latest/`](experiments/results/macbook_air_long/latest/)
 - Linux server CPU scale tier: [`experiments/results/linux_server_cpu/long_safe_20260503_190133/`](experiments/results/linux_server_cpu/long_safe_20260503_190133/)
 - Historical A100 long-safe tier: [`experiments/results/linux_server_a100/long_safe_20260503_190133/`](experiments/results/linux_server_a100/long_safe_20260503_190133/)
-- A100 permutation follow-up notes and figures: [`experiments/results/linux_server_a100/permutation_followup/`](experiments/results/linux_server_a100/permutation_followup/)
 - A100 permutation break-even notes: [`experiments/results/linux_server_a100/permutation_break_even/`](experiments/results/linux_server_a100/permutation_break_even/)
 - Slide-ready figures: [`experiments/results/presentation_figures/`](experiments/results/presentation_figures/)
 
@@ -74,4 +73,4 @@ python -m experiments.server.a100_permutation_break_even plot \
 
 ## Deck QA
 
-Latest screenshot and render QA artifacts are written under [`slides/qa/latest/`](slides/qa/latest/). The QA pass checks browser mode, print/PDF mode, video poster fallbacks, broken media URLs, clipping, overlap, console errors, and A100 pending/experimental wording.
+Latest review screenshots are written under [`slides/review/screenshots/`](slides/review/screenshots/) by `python scripts/screenshot_slides_only.py`. The QA pass checks browser mode, video poster fallbacks, broken media URLs, clipping, overlap, console errors, and A100 pending/experimental wording.

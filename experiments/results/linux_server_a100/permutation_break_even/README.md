@@ -1,16 +1,16 @@
 # CPU vs A100 permutation break-even
 
-Generated/updated: 2026-05-06T17:40:37+0800
+Generated/updated: 2026-05-08T01:34:00+0800
 
 ## CPU baseline
 - Matched CPU matrix baseline used here: `numpy_matrix_same_stream` batched matrix path.
 - Scope: this is not an exhaustive best-of-all-CPU search; speedup means matched CPU matrix baseline divided by A100 streamed full end-to-end.
-- CPU rows recorded: 29.
+- CPU summary rows committed: 2.
 
 ## Break-even
 - A100 becomes faster in the streamed-reduction grid at n=5,000, p=10,000, R=5,000, batch_R=8,192.
 - Largest slide-level measured speedup: 8.54x at n=5,000, p=500,000, R=5,000.
-- Speedups in `break_even_shape_sweep_summary.csv` are lightweight slide-level summaries where raw CPU/A100 timing pairs are not committed unless the CSV says otherwise in `timing_note`.
+- Speedups in lightweight summary CSVs are slide-level summaries where raw CPU/A100 timing pairs are not committed unless the CSV says otherwise in `timing_note`.
 
 ## Streamed reduction
 - `a100_streamed_reduction` computes `T_null_batch = W_batch @ X_device`, accumulates exceedance counts on device, and collects final p-values/counts only.
@@ -32,6 +32,9 @@ Generated/updated: 2026-05-06T17:40:37+0800
 
 ## Batch_R
 - Best safe batch_R from Stage 1: 8192.
+- The main deck uses batch_R=8192 in the A100 decision map and keeps the batch-size sweep in backup for Q&A.
+- `batch_R_sweep_summary.csv` is the committed lightweight source for the backup batch-size tuning figure.
+- batch_R is an A100 pipeline tuning choice, not a new statistical method; it changes scheduling while preserving the same permutation statistic and p-value definition.
 
 ## Targeted rerun policy
 - 2026-05-06 targeted rerun covered only cells previously marked timeout/skipped/unavailable/memory-risk in the Stage 2 break-even grid.
@@ -49,7 +52,5 @@ Generated/updated: 2026-05-06T17:40:37+0800
 - Lightweight summary CSVs with slide-level rows are committed in this directory.
 
 ## OOM / memory-risk / timeout
-- `batch_R_sweep.csv`: 0 timeout/skipped/memory-risk/unavailable/OOM/fail rows.
-- `break_even_shape_sweep.csv`: 2 timeout/skipped/memory-risk/unavailable/OOM/fail rows.
-- `n_sensitivity_sweep.csv`: 0 timeout/skipped/memory-risk/unavailable/OOM/fail rows.
-- `cpu_matched_baselines.csv`: 0 timeout/skipped/memory-risk/unavailable/OOM/fail rows.
+- `break_even_shape_sweep_summary.csv`: 2 timeout/skipped/memory-risk/unavailable/OOM/fail rows.
+- `cpu_matched_baselines_summary.csv`: 0 timeout/skipped/memory-risk/unavailable/OOM/fail rows.

@@ -21,9 +21,8 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[2]
-for path in (ROOT / "experiments", ROOT / "experiments" / "kmeans_v3"):
-    if str(path) not in sys.path:
-        sys.path.insert(0, str(path))
+if str(ROOT / "experiments") not in sys.path:
+    sys.path.insert(0, str(ROOT / "experiments"))
 
 from common.server_utils import RESULT_FIELDS, gpu_memory_used_mb, timestamp
 
@@ -291,7 +290,7 @@ def child_main(kind: str, params: dict[str, Any]) -> None:
     from common.server_utils import gpu_memory_used_mb, rss_mb
 
     if "kmeans" in kind:
-        from kmeans_v3.data_generation import KMeansScenario, initial_centroids, make_gaussian_mixture
+        from kmeans.data_generation import KMeansScenario, initial_centroids, make_gaussian_mixture
 
         scenario = KMeansScenario(
             n=int(params["n"]),
@@ -304,12 +303,12 @@ def child_main(kind: str, params: dict[str, Any]) -> None:
         init = initial_centroids(x, scenario.k, seed=123 + scenario.seed)
 
     if kind == "kmeans_cpu":
-        from kmeans_v3.kmeans_numpy_matmul import kmeans_numpy_matmul
+        from kmeans.kmeans_numpy_matmul import kmeans_numpy_matmul
 
         impl = params["implementation"]
         if impl == "numba":
             import numba
-            from kmeans_v3.kmeans_numba import kmeans_numba
+            from kmeans.kmeans_numba import kmeans_numba
 
             numba.set_num_threads(int(params.get("threads") or 1))
             fn = lambda: kmeans_numba(x, init, max_iter=int(params["max_iter"]))
@@ -325,7 +324,7 @@ def child_main(kind: str, params: dict[str, Any]) -> None:
 
     if kind == "kmeans_threads":
         import numba
-        from kmeans_v3.kmeans_numba import kmeans_numba
+        from kmeans.kmeans_numba import kmeans_numba
 
         numba.set_num_threads(int(params["threads"]))
         out, cold, med, warm_iqr = time_call(lambda: kmeans_numba(x, init, max_iter=int(params["max_iter"])), int(params["repeat"]))
@@ -335,7 +334,7 @@ def child_main(kind: str, params: dict[str, Any]) -> None:
         return
 
     if kind == "kmeans_a100":
-        from kmeans_v3.kmeans_jax import kmeans_jax
+        from kmeans.kmeans_jax import kmeans_jax
 
         before = gpu_memory_used_mb()
         out, cold, med, warm_iqr = time_call(

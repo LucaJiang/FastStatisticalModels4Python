@@ -965,12 +965,6 @@ def make_figures(out_dir: Path, presentation_dir: Path) -> None:
                 fig.savefig(fig_dir / "figure4_kernel_only_vs_end_to_end.png", dpi=220)
                 plt.close(fig)
 
-    summary_fig = fig_dir / "figure1_a100_end_to_end_decomposition.png"
-    if summary_fig.exists():
-        presentation_dir.mkdir(parents=True, exist_ok=True)
-        target = presentation_dir / "server_permutation_followup_decomposition.png"
-        target.write_bytes(summary_fig.read_bytes())
-
 
 def make_clean_decomposition_figure(decomp: Any, cpu: Any, fig_dir: Path, presentation_dir: Path) -> None:
     import matplotlib.pyplot as plt
@@ -1162,9 +1156,6 @@ def make_clean_decomposition_figure(decomp: Any, cpu: Any, fig_dir: Path, presen
     )
     fig.savefig(fig_dir / "a100_permutation_decomposition_clean.png", dpi=220)
     fig.savefig(fig_dir / "a100_permutation_decomposition_clean.svg", format="svg")
-    presentation_dir.mkdir(parents=True, exist_ok=True)
-    fig.savefig(presentation_dir / "a100_permutation_decomposition_clean.png", dpi=220)
-    fig.savefig(presentation_dir / "a100_permutation_decomposition_clean.svg", format="svg")
     plt.close(fig)
 
 
@@ -1285,7 +1276,7 @@ def write_readme(out_dir: Path) -> None:
     lines.append("")
     lines.append("## Figures")
     lines.append("- `figures/figure1_a100_end_to_end_decomposition.png`")
-    lines.append("- `figures/a100_permutation_decomposition_clean.png` and `experiments/results/presentation_figures/a100_permutation_decomposition_clean.{png,svg}`")
+    lines.append("- `figures/a100_permutation_decomposition_clean.png`")
     lines.append("- `figures/figure2_a100_batch_R_sweep.png`")
     lines.append("- `figures/figure3_cpu_vs_a100_break_even_map.png`")
     lines.append("- `figures/figure4_kernel_only_vs_end_to_end.png`")

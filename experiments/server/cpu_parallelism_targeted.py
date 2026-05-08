@@ -18,9 +18,8 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[2]
-for path in (ROOT / "experiments", ROOT / "experiments" / "kmeans_v3"):
-    if str(path) not in sys.path:
-        sys.path.insert(0, str(path))
+if str(ROOT / "experiments") not in sys.path:
+    sys.path.insert(0, str(ROOT / "experiments"))
 
 from common.server_utils import rss_mb, timestamp
 
@@ -333,8 +332,8 @@ def timed_repeats(fn, repeats: int = 5) -> tuple[Any, float, list[float]]:
 
 
 def child_kmeans(params: dict[str, Any]) -> None:
-    from kmeans_v3.data_generation import KMeansScenario, initial_centroids, make_gaussian_mixture
-    from kmeans_v3.kmeans_numpy_matmul import kmeans_numpy_matmul
+    from kmeans.data_generation import KMeansScenario, initial_centroids, make_gaussian_mixture
+    from kmeans.kmeans_numpy_matmul import kmeans_numpy_matmul
 
     scenario = KMeansScenario(
         n=int(params["n"]),
@@ -352,7 +351,7 @@ def child_kmeans(params: dict[str, Any]) -> None:
     ref = kmeans_numpy_matmul(x, init, max_iter=max_iter)
     if method in {"numba_cpu_serial", "numba_cpu_parallel"}:
         import numba
-        from kmeans_v3.kmeans_numba import kmeans_numba
+        from kmeans.kmeans_numba import kmeans_numba
 
         numba.set_num_threads(int(params["thread_count"]))
         fn = lambda: kmeans_numba(x, init, max_iter=max_iter)
@@ -608,9 +607,11 @@ def plot_main(out_dir: Path, presentation_dir: Path) -> None:
         mem_gib = float(row.total_peak_rss_mb) / 1024.0
         ax.annotate(f"{mem_gib:.1f} GiB", (int(row.worker_count), float(row.median_warm_time_s)), textcoords="offset points", xytext=(0, 12), ha="center", fontsize=9, color=colors["mem"])
 
+    fig_dir = out_dir / "figures"
+    fig_dir.mkdir(parents=True, exist_ok=True)
     fig.tight_layout(rect=[0.03, 0.05, 0.98, 0.94])
-    fig.savefig(presentation_dir / "server_cpu_parallelism_targeted.png", dpi=220)
-    fig.savefig(presentation_dir / "server_cpu_parallelism_targeted.svg", format="svg")
+    fig.savefig(fig_dir / "server_cpu_parallelism_targeted.png", dpi=220)
+    fig.savefig(fig_dir / "server_cpu_parallelism_targeted.svg", format="svg")
     plt.close(fig)
 
 

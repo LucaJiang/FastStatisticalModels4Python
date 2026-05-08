@@ -14,7 +14,7 @@ Run conditions:
 Regenerate the figures and summaries from the repository root:
 
 ```bash
-PYTHONPATH=experiments:experiments/kmeans_v3 \
+PYTHONPATH=experiments \
 /home/wjiang49/conda_envs/fsm4py312/bin/python -c '
 from pathlib import Path
 from server.long_safe_orchestrator import plot_and_summarize

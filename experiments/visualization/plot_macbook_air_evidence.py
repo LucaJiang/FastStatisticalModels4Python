@@ -13,10 +13,12 @@ os.environ.setdefault("XDG_CACHE_HOME", "/private/tmp/fsm4py-cache")
 import matplotlib
 
 matplotlib.use("Agg")
+from matplotlib.patches import Rectangle
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import numpy as np
 import pandas as pd
+from textwrap import fill
 
 DEFAULT_ROOT = Path("experiments/results/macbook_air_long/latest")
 SLIDE_FIGSIZE = (12.8, 7.2)
@@ -76,6 +78,29 @@ def strip_spines(ax: plt.Axes) -> None:
     ax.spines["bottom"].set_alpha(0.35)
 
 
+def compact_label(value: float | int) -> str:
+    value = float(value)
+    if value >= 1000 and value.is_integer():
+        return f"{int(value / 1000)}k"
+    if value.is_integer():
+        return f"{int(value)}"
+    return f"{value:g}"
+
+
+def add_panel_caption(ax: plt.Axes, text: str, *, y: float = -0.33) -> None:
+    ax.text(
+        0,
+        y,
+        fill(text, 54),
+        transform=ax.transAxes,
+        ha="left",
+        va="top",
+        fontsize=9.8,
+        color=MUTED,
+        linespacing=1.12,
+    )
+
+
 def _read(path: Path) -> pd.DataFrame:
     if not path.exists() or path.stat().st_size == 0:
         return pd.DataFrame()
@@ -105,27 +130,25 @@ def _save(fig, path: Path, manifest: list[dict[str, str]], source: str, purpose:
     manifest.append({"figure": path.name, "source": source, "purpose": purpose})
 
 
-def plot_kmeans_recovery(root: Path, fig_dir: Path, manifest: list[dict[str, str]]) -> None:
+def _kmeans_recovery_grid(root: Path) -> tuple[list[float], list[tuple[str, dict[str, object]]], np.ndarray]:
     df = _read(root / "kmeans_correctness.csv")
     if df.empty:
-        return
-    fig_dir.mkdir(parents=True, exist_ok=True)
+        return [], [], np.array([])
     df = _numeric(df, ["d", "separation", "ari_true", "outlier_fraction"])
     status = _status_column(df)
     df = df[(df["implementation"] == "numpy_matmul") & (df[status] == "pass")].copy()
     if df.empty:
-        return
+        return [], [], np.array([])
 
-    scenario_specs = [
+    scenario_specs: list[tuple[str, dict[str, object]]] = [
         ("Clean\nlow-d", {"imbalance": "balanced", "outlier_fraction": 0.0, "d": 2}),
         ("Clean\nhigh-d", {"imbalance": "balanced", "outlier_fraction": 0.0, "d": 50}),
         ("Outliers\n1%", {"imbalance": "balanced", "outlier_fraction": 0.01, "d": 10}),
         ("Imbalance\n90/10", {"imbalance": "90_10", "outlier_fraction": 0.0, "d": 10}),
         ("Imbalance\n+ outliers", {"imbalance": "90_10", "outlier_fraction": 0.01, "d": 10}),
     ]
-    separations = sorted(df["separation"].dropna().unique())
+    separations = [0.5, 1.0, 2.0, 4.0]
     median = np.full((len(separations), len(scenario_specs)), np.nan)
-    iqr = np.full_like(median, np.nan)
 
     for col, (_, filters) in enumerate(scenario_specs):
         sub = df.copy()
@@ -139,7 +162,15 @@ def plot_kmeans_recovery(root: Path, fig_dir: Path, manifest: list[dict[str, str
             if values.empty:
                 continue
             median[row, col] = values.median()
-            iqr[row, col] = values.quantile(0.75) - values.quantile(0.25)
+
+    return separations, scenario_specs, median
+
+
+def plot_kmeans_recovery(root: Path, fig_dir: Path, manifest: list[dict[str, str]]) -> None:
+    separations, scenario_specs, median = _kmeans_recovery_grid(root)
+    if median.size == 0:
+        return
+    fig_dir.mkdir(parents=True, exist_ok=True)
 
     fig = plt.figure(figsize=SLIDE_FIGSIZE)
     ax = fig.add_axes([0.09, 0.28, 0.75, 0.56])
@@ -227,6 +258,85 @@ def plot_kmeans_recovery(root: Path, fig_dir: Path, manifest: list[dict[str, str
         ]
     )
     plt.close(fig)
+
+
+def plot_kmeans_recovery_slide_heatmap(root: Path, fig_dir: Path, manifest: list[dict[str, str]]) -> None:
+    separations, scenario_specs, median = _kmeans_recovery_grid(root)
+    if median.size == 0:
+        return
+    fig_dir.mkdir(parents=True, exist_ok=True)
+
+    fig, ax = plt.subplots(figsize=(12.8, 4.6))
+    fig.patch.set_facecolor("#FFFFFF")
+    ax.set_facecolor("#FFFFFF")
+    fig.subplots_adjust(left=0.11, right=0.9, bottom=0.25, top=0.94)
+
+    cmap = plt.get_cmap("viridis").copy()
+    cmap.set_bad("#F1ECE4")
+    im = ax.imshow(median, vmin=0, vmax=1, cmap=cmap, aspect="auto")
+
+    ax.set_xticks(range(len(scenario_specs)), [label for label, _ in scenario_specs])
+    ax.set_yticks(range(len(separations)), [f"{x:g}" for x in separations])
+    ax.set_xlabel("Scenario stressor", fontsize=20, color=INK, labelpad=16, fontweight="bold")
+    ax.set_ylabel("Cluster separation", fontsize=20, color=INK, labelpad=18, fontweight="bold")
+    ax.tick_params(axis="x", length=0, pad=10, labelsize=19, colors=INK)
+    ax.tick_params(axis="y", length=0, pad=8, labelsize=20, colors=INK)
+
+    for spine in ax.spines.values():
+        spine.set_visible(False)
+    ax.set_xticks(np.arange(-0.5, len(scenario_specs), 1), minor=True)
+    ax.set_yticks(np.arange(-0.5, len(separations), 1), minor=True)
+    ax.grid(which="minor", color="#FFFFFF", linewidth=3)
+    ax.tick_params(which="minor", bottom=False, left=False)
+
+    for row in range(median.shape[0]):
+        for col in range(median.shape[1]):
+            value = median[row, col]
+            if np.isnan(value):
+                continue
+            text_color = "#FFFFFF" if value < 0.62 else INK
+            ax.text(
+                col,
+                row,
+                f"{value:.2f}",
+                ha="center",
+                va="center",
+                fontsize=22,
+                fontweight="bold",
+                color=text_color,
+            )
+
+    hard_outline = Rectangle((2.5, -0.5), 2.0, 1.0, fill=False, edgecolor=PROCESS_ORANGE, linewidth=4)
+    easy_outline = Rectangle((-0.5, 2.5), 2.0, 1.0, fill=False, edgecolor=NUMBA_GREEN, linewidth=4)
+    ax.add_patch(hard_outline)
+    ax.add_patch(easy_outline)
+
+    cbar = fig.colorbar(im, ax=ax, fraction=0.04, pad=0.025)
+    cbar.set_label("Median ARI", fontsize=19, fontweight="bold", color=INK, labelpad=12)
+    cbar.set_ticks([0, 0.5, 1.0])
+    cbar.ax.set_yticklabels(["0", "0.5", "1"])
+    cbar.ax.tick_params(labelsize=18, colors=INK, length=0, pad=6)
+    cbar.outline.set_visible(False)
+
+    png_path = fig_dir / "kmeans_recovery_slide_heatmap.png"
+    svg_path = fig_dir / "kmeans_recovery_slide_heatmap.svg"
+    fig.savefig(png_path, dpi=DPI)
+    fig.savefig(svg_path, format="svg")
+    plt.close(fig)
+    manifest.extend(
+        [
+            {
+                "figure": png_path.name,
+                "source": "kmeans_correctness.csv",
+                "purpose": "Slide-specific large ARI heatmap for k-means recovery before timing.",
+            },
+            {
+                "figure": svg_path.name,
+                "source": "kmeans_correctness.csv",
+                "purpose": "Vector version of the slide-specific k-means recovery heatmap.",
+            },
+        ]
+    )
 
 
 def plot_kmeans_shape_runtime(root: Path, fig_dir: Path, manifest: list[dict[str, str]]) -> None:
@@ -701,77 +811,183 @@ def plot_permutation_runtime(root: Path, fig_dir: Path, manifest: list[dict[str,
     df = _read(root / "permutation_runtime_scaling_extended.csv")
     if df.empty:
         return
-    df = _numeric(df, ["p", "r", "warm_median_s", "peak_python_mb"])
+    df = _numeric(df, ["n", "p", "r", "warm_median_s", "peak_python_mb"])
     df = df[df[_status_column(df)] == "pass"].copy()
     if df.empty:
         return
-    scenario = df[(df["n"] == 500) & (df["p"] == 1000) & (df["r"] == 1000)].copy()
-    if scenario.empty:
-        scenario = df[(df["p"] == 1000) & (df["r"] == 1000)].copy()
     order = ["numpy_matrix", "numpy_matrix_batched", "jax_matrix_cpu"]
-    summary = (
-        scenario.groupby("implementation", as_index=False)["warm_median_s"]
-        .median()
-        .set_index("implementation")
-        .reindex([name for name in order if name in scenario["implementation"].unique()])
-        .dropna()
-        .reset_index()
-    )
-    if summary.empty:
-        return
-
     labels = {
         "numpy_matrix": "NumPy matrix",
-        "numpy_matrix_batched": "Batched NumPy matrix",
+        "numpy_matrix_batched": "Batched NumPy",
         "jax_matrix_cpu": "JAX CPU",
     }
-    colors = [COLORS.get(name, PY_GOLD) for name in summary["implementation"]]
-    fig, ax = plt.subplots(figsize=SLIDE_FIGSIZE)
-    fig.patch.set_facecolor("#FBF7EF")
-    ax.set_facecolor("#FFFFFF")
-    x = np.arange(len(summary))
-    bars = ax.bar(x, summary["warm_median_s"], color=colors, width=0.58)
-    ax.set_xticks(x, [labels.get(name, name) for name in summary["implementation"]])
-    ax.set_ylabel("warm median runtime (seconds)")
-    ax.set_ylim(0, max(summary["warm_median_s"]) * 1.45)
-    ax.grid(True, axis="y", alpha=0.28)
-    strip_spines(ax)
-    for bar, value in zip(bars, summary["warm_median_s"]):
-        ax.text(bar.get_x() + bar.get_width() / 2, value * 1.04, f"{value:.3f}s", ha="center", va="bottom", fontsize=18, fontweight="bold", color=INK)
+    p_values = sorted(df["p"].dropna().unique())
+    p_colors = {
+        p: color
+        for p, color in zip(p_values, [PY_BLUE, THREAD_TEAL, PROCESS_ORANGE, JAX_BERRY, NUMBA_GREEN])
+    }
 
-    n_val = int(scenario["n"].dropna().iloc[0])
-    p_val = int(scenario["p"].dropna().iloc[0])
-    r_val = int(scenario["r"].dropna().iloc[0])
-    fig.text(0.07, 0.93, "Local validation scale: methods are close enough", ha="left", va="top", fontsize=30, fontweight="bold", color=INK)
+    fig, axes = plt.subplots(1, 3, figsize=SLIDE_FIGSIZE, sharey=True)
+    for ax, implementation in zip(axes, order):
+        sub = df[df["implementation"] == implementation]
+        if sub.empty:
+            ax.set_axis_off()
+            continue
+        for p_value, p_df in sub.groupby("p"):
+            agg = p_df.groupby("r", as_index=False)["warm_median_s"].median().sort_values("r")
+            ax.plot(
+                agg["r"],
+                agg["warm_median_s"],
+                marker="o",
+                markersize=5.5,
+                linewidth=2.3,
+                color=p_colors.get(p_value, PY_GOLD),
+                label=f"p={int(p_value):,}",
+            )
+        ax.set_xscale("log")
+        ax.set_yscale("log")
+        ax.set_title(labels.get(implementation, implementation), fontsize=19)
+        ax.set_xlabel("permutations R")
+        ax.grid(True, axis="both", which="major", alpha=0.30)
+        ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: compact_label(x)))
+        strip_spines(ax)
+
+    axes[0].set_ylabel("warm median runtime (s)")
+    handles, legend_labels = axes[-1].get_legend_handles_labels()
+    if handles:
+        fig.legend(handles, legend_labels, loc="upper center", ncol=len(handles), frameon=False, bbox_to_anchor=(0.56, 0.88))
+
+    max_p = int(max(p_values))
+    max_r = int(df["r"].max())
+    fig.text(0.06, 0.94, "Permutation runtime scaling on the local validation tier", ha="left", va="top", fontsize=27, fontweight="bold", color=INK)
     fig.text(
-        0.07,
-        0.85,
-        f"MacBook CPU validation tier; n={n_val:,}, p={p_val:,}, R={r_val:,}; same validated p-values.",
+        0.06,
+        0.83,
+        f"MacBook Air sweep at n=500; p up to {max_p:,}, R up to {max_r:,}. Memory-risk shapes are documented, not ranked here.",
         ha="left",
         va="bottom",
-        fontsize=18,
+        fontsize=15.5,
         color=MUTED,
     )
     fig.text(
-        0.07,
-        0.07,
-        "Choose the clearest correct implementation until the bottleneck is real.",
+        0.06,
+        0.06,
+        "Local runtime evidence finds the bottleneck shape before server/GPU scaling.",
         ha="left",
         va="center",
-        fontsize=20,
+        fontsize=19,
         color=INK,
         fontweight="bold",
         bbox=dict(facecolor="#F7E7D8", edgecolor="none", boxstyle="round,pad=0.36"),
     )
-    fig.subplots_adjust(left=0.13, right=0.96, top=0.75, bottom=0.22)
-    _save(
-        fig,
-        fig_dir / "permutation_runtime_scaling_extended.png",
-        manifest,
-        "permutation_runtime_scaling_extended.csv",
-        "Single validation-scale runtime comparison for matrix, batched matrix, and JAX CPU implementations.",
-        tight=False,
+    fig.subplots_adjust(left=0.10, right=0.98, top=0.76, bottom=0.19, wspace=0.22)
+    fig_dir.mkdir(parents=True, exist_ok=True)
+    png_path = fig_dir / "permutation_runtime_scaling_extended.png"
+    grid_png_path = fig_dir / "permutation_runtime_scaling_grid.png"
+    grid_svg_path = fig_dir / "permutation_runtime_scaling_grid.svg"
+    fig.savefig(png_path, dpi=DPI)
+    fig.savefig(grid_png_path, dpi=DPI)
+    fig.savefig(grid_svg_path, format="svg")
+    plt.close(fig)
+    purpose = "Small-multiple runtime scaling sweep by implementation, p, and R on the MacBook validation tier."
+    manifest.append({"figure": png_path.name, "source": "permutation_runtime_scaling_extended.csv", "purpose": purpose})
+    manifest.append({"figure": grid_png_path.name, "source": "permutation_runtime_scaling_extended.csv", "purpose": purpose})
+    manifest.append({"figure": grid_svg_path.name, "source": "permutation_runtime_scaling_extended.csv", "purpose": purpose})
+
+
+def plot_permutation_local_runtime_signal(root: Path, fig_dir: Path, manifest: list[dict[str, str]]) -> None:
+    """Create the main-path local runtime signal figure after validation passes."""
+    df = _read(root / "permutation_runtime_scaling_extended.csv")
+    if df.empty:
+        return
+    df = _numeric(df, ["n", "p", "r", "warm_median_s"])
+    df = df[df[_status_column(df)] == "pass"].copy()
+    df = df[(df["implementation"] == "numpy_matrix_batched") & df["warm_median_s"].notna()].copy()
+    if df.empty:
+        return
+
+    p_values = sorted(df["p"].dropna().unique())
+    p_colors = {
+        p: color
+        for p, color in zip(p_values, [PY_BLUE, THREAD_TEAL, PROCESS_ORANGE, JAX_BERRY, NUMBA_GREEN])
+    }
+
+    fig, ax = plt.subplots(figsize=(9.0, 5.05))
+    fig.patch.set_facecolor("#FFFFFF")
+    ax.set_facecolor("#FFFFFF")
+    fig.subplots_adjust(left=0.13, right=0.96, top=0.92, bottom=0.25)
+
+    for p_value, sub in df.groupby("p"):
+        agg = sub.groupby("r", as_index=False)["warm_median_s"].median().sort_values("r")
+        ax.plot(
+            agg["r"],
+            agg["warm_median_s"],
+            marker="o",
+            markersize=8.5,
+            linewidth=3.3,
+            color=p_colors.get(p_value, PY_GOLD),
+            label=f"p = {int(p_value):,}",
+        )
+        if not agg.empty:
+            last = agg.iloc[-1]
+            ax.annotate(
+                f"p={int(p_value):,}",
+                xy=(last["r"], last["warm_median_s"]),
+                xytext=(10, 0),
+                textcoords="offset points",
+                ha="left",
+                va="center",
+                fontsize=15,
+                fontweight="bold",
+                color=p_colors.get(p_value, PY_GOLD),
+            )
+
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    r_min = float(df["r"].min())
+    r_max = float(df["r"].max())
+    ax.set_xlim(r_min / 1.2, r_max * 1.9)
+    ax.set_xlabel("Permutations R", fontsize=21, fontweight="bold", labelpad=10)
+    ax.set_ylabel("Warm median runtime (s)", fontsize=21, fontweight="bold", labelpad=12)
+    ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: compact_label(x)))
+    ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda y, _: f"{y:g}"))
+    ax.tick_params(axis="both", labelsize=18, pad=6)
+    ax.grid(True, axis="both", which="major", alpha=0.34)
+    ax.text(
+        0.035,
+        0.955,
+        "MacBook Air · NumPy batched matrix · n=500",
+        transform=ax.transAxes,
+        ha="left",
+        va="top",
+        fontsize=14.5,
+        fontweight="bold",
+        color=INK,
+        bbox={"boxstyle": "round,pad=0.35,rounding_size=0.14", "facecolor": "#FFFFFF", "edgecolor": "#D7CDC0", "alpha": 0.94},
     )
+    fig.text(
+        0.13,
+        0.042,
+        "batch_R = min(500, R); warm median over seeds",
+        ha="left",
+        va="bottom",
+        fontsize=10.5,
+        color=MUTED,
+    )
+    strip_spines(ax)
+
+    fig_dir.mkdir(parents=True, exist_ok=True)
+    png_path = fig_dir / "permutation_local_runtime_signal.png"
+    svg_path = fig_dir / "permutation_local_runtime_signal.svg"
+    fig.savefig(png_path, dpi=DPI)
+    fig.savefig(svg_path, format="svg")
+    plt.close(fig)
+    purpose = (
+        "Main-path local permutation runtime signal for the validated batched NumPy path, "
+        "showing warm runtime growth as p and R increase."
+    )
+    manifest.append({"figure": png_path.name, "source": "permutation_runtime_scaling_extended.csv", "purpose": purpose})
+    manifest.append({"figure": svg_path.name, "source": "permutation_runtime_scaling_extended.csv", "purpose": purpose})
 
 
 def plot_permutation_equivalence(root: Path, fig_dir: Path, manifest: list[dict[str, str]]) -> None:
@@ -900,6 +1116,451 @@ def plot_permutation_equivalence(root: Path, fig_dir: Path, manifest: list[dict[
     manifest.append({"figure": svg_path.name, "source": "permutation_equivalence.csv", "purpose": purpose})
 
 
+def plot_permutation_local_gate_slide(root: Path, fig_dir: Path, manifest: list[dict[str, str]]) -> None:
+    """Create the backup permutation validation inventory figure."""
+    equiv = _read(root / "permutation_equivalence.csv")
+    calibration = _read(root / "permutation_calibration_extended.csv")
+    runtime = _read(root / "permutation_runtime_scaling_extended.csv")
+    if any(df.empty for df in [equiv, calibration, runtime]):
+        return
+
+    equiv = _numeric(equiv, ["max_abs_p_diff", "max_abs_stat_diff"])
+    calibration = _numeric(calibration, ["p", "prop_below_alpha"])
+    runtime = _numeric(runtime, ["p", "r", "warm_median_s"])
+
+    status = _status_column(equiv)
+    equiv = equiv[(equiv[status] == "pass") & equiv["max_abs_p_diff"].notna()].copy()
+    calibration = calibration[(calibration[_status_column(calibration)] == "pass") & calibration["prop_below_alpha"].notna()].copy()
+    runtime = runtime[(runtime[_status_column(runtime)] == "pass") & runtime["warm_median_s"].notna()].copy()
+    if equiv.empty or calibration.empty or runtime.empty:
+        return
+
+    eq_summary = equiv.groupby("implementation", as_index=False).agg(
+        max_abs_p_diff=("max_abs_p_diff", "max"),
+        max_abs_stat_diff=("max_abs_stat_diff", "max"),
+    )
+    row_lookup = {row["implementation"]: row for _, row in eq_summary.iterrows()}
+    eq_rows = [
+        ("NumPy p", "numpy_matrix", "max_abs_p_diff"),
+        ("JAX p", "jax_matrix_cpu", "max_abs_p_diff"),
+        ("NumPy stat", "numpy_matrix", "max_abs_stat_diff"),
+        ("JAX stat", "jax_matrix_cpu", "max_abs_stat_diff"),
+    ]
+    eq_rows = [row for row in eq_rows if row[1] in row_lookup]
+
+    nominal = 0.05
+    n_features = int(calibration["p"].dropna().iloc[0]) if calibration["p"].notna().any() else 1000
+    se = np.sqrt(nominal * (1.0 - nominal) / n_features)
+    band_low = nominal - 1.96 * se
+    band_high = nominal + 1.96 * se
+    cal_values = calibration["prop_below_alpha"].dropna().to_numpy()
+    cal_mean = float(np.mean(cal_values))
+    cal_q25, cal_q75 = np.quantile(cal_values, [0.25, 0.75])
+    cal_min = float(np.min(cal_values))
+    cal_max = float(np.max(cal_values))
+
+    rt = runtime[runtime["implementation"] == "numpy_matrix_batched"].copy()
+    if rt.empty:
+        rt = runtime[runtime["implementation"] == "numpy_matrix"].copy()
+    if rt.empty:
+        return
+    p_values = sorted(rt["p"].dropna().unique())
+    p_colors = {
+        p: color
+        for p, color in zip(p_values, [PY_BLUE, THREAD_TEAL, PROCESS_ORANGE, JAX_BERRY, NUMBA_GREEN])
+    }
+
+    fig, axes = plt.subplots(1, 3, figsize=SLIDE_FIGSIZE)
+    fig.subplots_adjust(left=0.105, right=0.985, top=0.84, bottom=0.18, wspace=0.46)
+
+    # A. Equivalence tolerance
+    ax = axes[0]
+    floor = 1e-18
+    tolerance = 1e-6
+    ax.axvspan(floor, tolerance, color="#DCEEDB", alpha=0.9, zorder=0)
+    ax.axvline(tolerance, color=NUMBA_GREEN, linewidth=2.4, linestyle="--", zorder=1)
+    y_pos = np.arange(len(eq_rows))[::-1]
+    for yi, (label, implementation, metric) in zip(y_pos, eq_rows):
+        value = float(row_lookup[implementation][metric])
+        plotted = max(value, floor)
+        color = COLORS.get(implementation, PY_GOLD)
+        ax.hlines(yi, floor, plotted, color=color, linewidth=5.0, alpha=0.6, zorder=2)
+        ax.scatter(plotted, yi, s=150, color=color, edgecolor="white", linewidth=1.8, zorder=3)
+        value_label = "0" if value == 0 else f"{value:.1e}"
+        ax.annotate(
+            value_label,
+            xy=(plotted, yi),
+            xytext=(8, 0),
+            textcoords="offset points",
+            va="center",
+            ha="left",
+            fontsize=16,
+            color=INK,
+            fontweight="bold",
+        )
+    ax.text(
+        tolerance * 1.2,
+        len(eq_rows) - 0.9,
+        "tol. 1e-6",
+        ha="left",
+        va="center",
+        fontsize=15,
+        color=NUMBA_GREEN,
+        fontweight="bold",
+    )
+    ax.set_xscale("log")
+    ax.set_xlim(floor, 1e-4)
+    ax.set_ylim(-0.7, len(eq_rows) - 0.25)
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels([row[0] for row in eq_rows], fontsize=16, color=INK)
+    ax.set_title("A. Equivalence", loc="left", fontsize=21, pad=12)
+    ax.set_xlabel("max absolute diff", fontsize=18, labelpad=7)
+    ax.text(
+        0.03,
+        0.96,
+        "same stream + p-value rule",
+        transform=ax.transAxes,
+        ha="left",
+        va="top",
+        fontsize=14.5,
+        color=MUTED,
+        fontweight="bold",
+        bbox=dict(facecolor="#FFFFFF", edgecolor="none", alpha=0.82, pad=2.5),
+    )
+    ax.grid(True, axis="x", which="major", alpha=0.28)
+    ax.xaxis.set_major_locator(mticker.LogLocator(base=10, numticks=5))
+    ax.xaxis.set_minor_formatter(mticker.NullFormatter())
+    ax.tick_params(axis="x", labelsize=16)
+    strip_spines(ax)
+
+    # B. Null calibration
+    ax = axes[1]
+    ax.axvspan(band_low, band_high, ymin=0.32, ymax=0.68, color="#DCEEDB", alpha=0.95, zorder=0)
+    ax.axvline(nominal, color=INK, linewidth=2.8, linestyle="--", zorder=1)
+    ax.hlines(0.5, cal_min, cal_max, color="#C9B9A5", linewidth=8, alpha=0.75, zorder=2)
+    ax.hlines(0.5, cal_q25, cal_q75, color=THREAD_TEAL, linewidth=14, alpha=0.9, zorder=3)
+    ax.scatter([cal_mean], [0.5], s=260, color=JAX_BERRY, edgecolor="white", linewidth=2.0, zorder=4)
+    ax.text(cal_mean + 0.002, 0.5, f"mean {cal_mean:.3f}", ha="left", va="center", fontsize=18, color=INK, fontweight="bold")
+    ax.text(nominal + 0.002, 0.78, "alpha 0.050", ha="left", va="center", fontsize=17, color=INK, fontweight="bold")
+    ax.text(
+        band_high,
+        0.23,
+        f"binomial band\n{band_low:.3f}-{band_high:.3f}",
+        ha="right",
+        va="top",
+        fontsize=14.5,
+        color=NUMBA_GREEN,
+        fontweight="bold",
+        linespacing=1.08,
+    )
+    ax.set_xlim(0.025, 0.075)
+    ax.set_ylim(0, 1)
+    ax.set_yticks([])
+    ax.set_title("B. Null calibration", loc="left", fontsize=21, pad=12)
+    ax.set_xlabel("type-I error estimate", fontsize=18, labelpad=7)
+    ax.text(
+        0.03,
+        0.96,
+        "p <= 0.05 stays near alpha",
+        transform=ax.transAxes,
+        ha="left",
+        va="top",
+        fontsize=14.5,
+        color=MUTED,
+        fontweight="bold",
+        bbox=dict(facecolor="#FFFFFF", edgecolor="none", alpha=0.82, pad=2.5),
+    )
+    ax.tick_params(axis="x", labelsize=16)
+    ax.grid(True, axis="x", alpha=0.28)
+    strip_spines(ax)
+
+    # C. Runtime shape
+    ax = axes[2]
+    for p_value, sub in rt.groupby("p"):
+        agg = sub.groupby("r", as_index=False)["warm_median_s"].median().sort_values("r")
+        ax.plot(
+            agg["r"],
+            agg["warm_median_s"],
+            marker="o",
+            markersize=7,
+            linewidth=3.0,
+            color=p_colors.get(p_value, PY_GOLD),
+            label=f"p={int(p_value):,}",
+        )
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    ax.set_title("C. Runtime shape", loc="left", fontsize=21, pad=12)
+    ax.set_xlabel("permutations R", fontsize=18, labelpad=7)
+    ax.set_ylabel("runtime (s)", fontsize=18, labelpad=8)
+    ax.text(
+        0.03,
+        0.96,
+        "local scaling by p and R",
+        transform=ax.transAxes,
+        ha="left",
+        va="top",
+        fontsize=14.5,
+        color=MUTED,
+        fontweight="bold",
+        bbox=dict(facecolor="#FFFFFF", edgecolor="none", alpha=0.82, pad=2.5),
+    )
+    ax.legend(frameon=False, fontsize=14, loc="upper left", bbox_to_anchor=(0.02, 0.88), handlelength=1.7)
+    ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: compact_label(x)))
+    ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda y, _: f"{y:g}"))
+    ax.tick_params(axis="both", labelsize=16)
+    ax.grid(True, axis="both", which="major", alpha=0.28)
+    strip_spines(ax)
+
+    fig_dir.mkdir(parents=True, exist_ok=True)
+    png_path = fig_dir / "permutation_local_gate_slide.png"
+    svg_path = fig_dir / "permutation_local_gate_slide.svg"
+    fig.savefig(png_path, dpi=DPI)
+    fig.savefig(svg_path, format="svg")
+    plt.close(fig)
+    source = "; ".join(
+        [
+            "permutation_equivalence.csv",
+            "permutation_calibration_extended.csv",
+            "permutation_runtime_scaling_extended.csv",
+        ]
+    )
+    purpose = "Backup permutation local validation inventory: equivalence, null calibration, and local runtime-shape evidence."
+    manifest.append({"figure": png_path.name, "source": source, "purpose": purpose})
+    manifest.append({"figure": svg_path.name, "source": source, "purpose": purpose})
+
+
+def plot_local_validation_suite_overview(root: Path, fig_dir: Path, manifest: list[dict[str, str]]) -> None:
+    """Create a compact 2x3 overview for the local-validation slide."""
+    kmeans = _read(root / "kmeans_correctness.csv")
+    shape = _read(root / "kmeans_shape_stress.csv")
+    perm_eq = _read(root / "permutation_equivalence.csv")
+    calibration = _read(root / "permutation_calibration_extended.csv")
+    power = _read(root / "permutation_power_extended.csv")
+    runtime = _read(root / "permutation_runtime_scaling_extended.csv")
+    if any(df.empty for df in [kmeans, shape, perm_eq, calibration, power, runtime]):
+        return
+
+    fig, axes = plt.subplots(2, 3, figsize=SLIDE_FIGSIZE)
+    fig.subplots_adjust(left=0.055, right=0.985, top=0.86, bottom=0.13, wspace=0.31, hspace=0.72)
+    fig.text(0.055, 0.95, "Local validation suite overview", ha="left", va="top", fontsize=24, fontweight="bold", color=INK)
+    fig.text(
+        0.055,
+        0.895,
+        "Correctness and statistical behavior come before acceleration claims.",
+        ha="left",
+        va="top",
+        fontsize=13.5,
+        color=MUTED,
+    )
+
+    # A. K-means recovery difficulty
+    ax = axes[0, 0]
+    km = _numeric(kmeans, ["d", "separation", "ari_true", "outlier_fraction"])
+    km = km[(km["implementation"] == "numpy_matmul") & (km[_status_column(km)] == "pass")].copy()
+    scenario_specs = [
+        ("clean\nlow-d", {"imbalance": "balanced", "outlier_fraction": 0.0, "d": 2}),
+        ("clean\nhigh-d", {"imbalance": "balanced", "outlier_fraction": 0.0, "d": 50}),
+        ("outliers", {"imbalance": "balanced", "outlier_fraction": 0.01, "d": 10}),
+        ("90/10", {"imbalance": "90_10", "outlier_fraction": 0.0, "d": 10}),
+        ("90/10+\noutliers", {"imbalance": "90_10", "outlier_fraction": 0.01, "d": 10}),
+    ]
+    separations = sorted(km["separation"].dropna().unique())
+    recovery = np.full((len(separations), len(scenario_specs)), np.nan)
+    for col, (_, filters) in enumerate(scenario_specs):
+        sub = km.copy()
+        for key, value in filters.items():
+            if isinstance(value, float):
+                sub = sub[np.isclose(sub[key], value)]
+            else:
+                sub = sub[sub[key] == value]
+        for row, separation in enumerate(separations):
+            values = sub[np.isclose(sub["separation"], separation)]["ari_true"].dropna()
+            if not values.empty:
+                recovery[row, col] = values.median()
+    cmap = plt.get_cmap("viridis").copy()
+    cmap.set_bad("#F1ECE4")
+    ax.imshow(recovery, vmin=0, vmax=1, cmap=cmap, aspect="auto")
+    ax.set_title("A. K-means recovery difficulty", loc="left", fontsize=12.5, pad=7)
+    ax.set_xticks(range(len(scenario_specs)), [label for label, _ in scenario_specs], fontsize=7.7)
+    ax.set_yticks(range(len(separations)), [compact_label(x) for x in separations], fontsize=8.5)
+    ax.set_ylabel("separation", fontsize=9.5)
+    ax.tick_params(length=0)
+    for spine in ax.spines.values():
+        spine.set_visible(False)
+    add_panel_caption(ax, "Some simulated shapes are statistically hard; low ARI is not a speed success.", y=-0.36)
+
+    # B. K-means equivalence
+    ax = axes[0, 1]
+    km_eq = _numeric(kmeans, ["inertia_rel_diff"])
+    km_eq = km_eq[
+        (km_eq[_status_column(km_eq)] == "pass")
+        & (km_eq["implementation"] != "reference")
+        & km_eq["inertia_rel_diff"].notna()
+    ].copy()
+    impl_order = ["numpy_matmul", "numba"]
+    labels = {"numpy_matmul": "NumPy", "numba": "Numba"}
+    y_pos = np.arange(len(impl_order))[::-1]
+    floor = 1e-16
+    tolerance = 1e-8
+    ax.axvspan(floor, tolerance, color="#DCEEDB", alpha=0.9, zorder=0)
+    ax.axvline(tolerance, color=PROCESS_ORANGE, linewidth=1.6, linestyle="--")
+    for yi, impl in zip(y_pos, impl_order):
+        values = km_eq.loc[km_eq["implementation"] == impl, "inertia_rel_diff"].dropna()
+        if values.empty:
+            continue
+        value = max(float(values.max()), floor)
+        ax.hlines(yi, floor, value, color=COLORS.get(impl, PY_GOLD), linewidth=4, alpha=0.55)
+        ax.scatter(value, yi, s=70, color=COLORS.get(impl, PY_GOLD), edgecolor="white", linewidth=1.2, zorder=3)
+        ax.text(value * 1.7, yi, f"{value:.0e}", ha="left", va="center", fontsize=8.5, fontweight="bold", color=INK)
+    ax.set_xscale("log")
+    ax.set_xlim(floor, 1e-7)
+    ax.set_ylim(-0.7, len(impl_order) - 0.3)
+    ax.set_yticks(y_pos, [labels[x] for x in impl_order], fontsize=9.2)
+    ax.set_title("B. K-means equivalence", loc="left", fontsize=12.5, pad=7)
+    ax.set_xlabel("relative inertia error", fontsize=9.5)
+    ax.tick_params(axis="x", labelsize=8.5)
+    ax.grid(True, axis="x", alpha=0.25)
+    strip_spines(ax)
+    add_panel_caption(ax, "Optimized paths preserve reference inertia within tolerance.", y=-0.36)
+
+    # C. K-means shape stress
+    ax = axes[0, 2]
+    sh = _numeric(shape, ["n", "d", "k", "separation", "outlier_fraction", "warm_median_s"])
+    sh = sh[sh[_status_column(sh)] == "pass"].copy()
+    focus = sh[
+        (sh["d"] == 100)
+        & (sh["imbalance"] == "balanced")
+        & np.isclose(sh["outlier_fraction"], 0.0)
+        & np.isclose(sh["separation"], 2.0)
+        & (sh["n"].isin([10_000, 50_000]))
+    ].copy()
+    for (implementation, n_value), sub in focus.groupby(["implementation", "n"]):
+        if implementation not in {"numpy_matmul", "numba"}:
+            continue
+        agg = sub.groupby("k", as_index=False)["warm_median_s"].median().sort_values("k")
+        linestyle = "-" if int(n_value) == 10_000 else "--"
+        label = f"{labels.get(implementation, implementation)} N={int(n_value/1000)}k"
+        ax.plot(agg["k"], agg["warm_median_s"], marker="o", markersize=4.5, linewidth=1.9, linestyle=linestyle, color=COLORS.get(implementation, PY_GOLD), label=label)
+    ax.set_title("C. K-means shape stress", loc="left", fontsize=12.5, pad=7)
+    ax.set_xlabel("clusters K", fontsize=9.5)
+    ax.set_ylabel("runtime (s)", fontsize=9.5)
+    ax.set_yscale("log")
+    ax.tick_params(labelsize=8.5)
+    ax.grid(True, axis="y", alpha=0.25)
+    ax.legend(frameon=False, fontsize=7.6, ncol=1, loc="upper left")
+    strip_spines(ax)
+    add_panel_caption(ax, "N, d, and K change the local bottleneck.", y=-0.36)
+
+    # D. Permutation equivalence
+    ax = axes[1, 0]
+    pe = _numeric(perm_eq, ["max_abs_p_diff", "max_abs_stat_diff"])
+    pe = pe[(pe[_status_column(pe)] == "pass") & pe["max_abs_p_diff"].notna()].copy()
+    eq_summary = pe.groupby("implementation", as_index=False).agg(
+        max_abs_p_diff=("max_abs_p_diff", "max"),
+        max_abs_stat_diff=("max_abs_stat_diff", "max"),
+    )
+    row_lookup = {row["implementation"]: row for _, row in eq_summary.iterrows()}
+    rows = [("NumPy p", "numpy_matrix", "max_abs_p_diff"), ("JAX p", "jax_matrix_cpu", "max_abs_p_diff"), ("NumPy stat", "numpy_matrix", "max_abs_stat_diff"), ("JAX stat", "jax_matrix_cpu", "max_abs_stat_diff")]
+    rows = [row for row in rows if row[1] in row_lookup]
+    floor = 1e-18
+    tolerance = 1e-6
+    ax.axvspan(floor, tolerance, color="#DCEEDB", alpha=0.9, zorder=0)
+    ax.axvline(tolerance, color=NUMBA_GREEN, linewidth=1.6, linestyle="--")
+    y = np.arange(len(rows))[::-1]
+    for yi, (label, implementation, metric) in zip(y, rows):
+        value = float(row_lookup[implementation][metric])
+        plotted = max(value, floor)
+        ax.hlines(yi, floor, plotted, color=COLORS.get(implementation, PY_GOLD), linewidth=3.2, alpha=0.55)
+        ax.scatter(plotted, yi, s=58, color=COLORS.get(implementation, PY_GOLD), edgecolor="white", linewidth=1.1, zorder=3)
+    ax.set_xscale("log")
+    ax.set_xlim(floor, 1e-4)
+    ax.set_yticks(y, [row[0] for row in rows], fontsize=8.8)
+    ax.set_title("D. Permutation equivalence", loc="left", fontsize=12.5, pad=7)
+    ax.set_xlabel("max absolute difference", fontsize=9.5)
+    ax.tick_params(axis="x", labelsize=8.5)
+    ax.grid(True, axis="x", alpha=0.25)
+    strip_spines(ax)
+    add_panel_caption(ax, "Same permutation stream; same p-value definition.", y=-0.36)
+
+    # E. Null calibration and power
+    ax = axes[1, 1]
+    cal = _numeric(calibration, ["prop_below_alpha", "p"])
+    cal = cal[cal[_status_column(cal)] == "pass"].copy()
+    values = cal["prop_below_alpha"].dropna().to_numpy()
+    nominal = 0.05
+    n_features = int(cal["p"].dropna().iloc[0]) if "p" in cal and cal["p"].notna().any() else 1000
+    se = np.sqrt(nominal * (1.0 - nominal) / n_features)
+    band_low = nominal - 1.96 * se
+    band_high = nominal + 1.96 * se
+    mean_value = float(np.mean(values)) if values.size else nominal
+    ax.axvspan(band_low, band_high, ymin=0.70, ymax=0.92, color="#DCEEDB", alpha=0.95)
+    ax.axvline(nominal, ymin=0.66, ymax=0.96, color=INK, linestyle="--", linewidth=1.4)
+    ax.scatter([mean_value], [0.81], s=90, color=JAX_BERRY, edgecolor="white", linewidth=1.1, zorder=4)
+    pw = _numeric(power, ["delta", "signal_fraction", "signal_power"])
+    pw = pw[pw[_status_column(pw)] == "pass"].copy()
+    for sf, sub in pw.groupby("signal_fraction"):
+        if float(sf) not in {0.01, 0.05, 0.1}:
+            continue
+        agg = sub.groupby("delta", as_index=False)["signal_power"].mean().sort_values("delta")
+        color = {0.01: PY_BLUE, 0.05: THREAD_TEAL, 0.1: PROCESS_ORANGE}.get(float(sf), PY_GOLD)
+        ax.plot(agg["delta"], agg["signal_power"], marker="o", markersize=3.8, linewidth=1.8, color=color, label=f"{float(sf):g}")
+    ax.text(0.012, 0.86, "null", ha="left", va="center", fontsize=8.5, color=MUTED, fontweight="bold")
+    ax.set_xlim(0, max(1.0, float(pw["delta"].max())))
+    ax.set_ylim(0, 1.04)
+    ax.set_title("E. Null calibration / power", loc="left", fontsize=12.5, pad=7)
+    ax.set_xlabel("effect size delta", fontsize=9.5)
+    ax.set_ylabel("p <= 0.05", fontsize=9.5)
+    ax.tick_params(labelsize=8.5)
+    ax.legend(title="signal frac.", title_fontsize=7.6, frameon=False, fontsize=7.6, loc="lower right")
+    ax.grid(True, axis="y", alpha=0.25)
+    strip_spines(ax)
+    add_panel_caption(ax, "Under the null, type-I error stays near alpha; signal power increases with effect size.", y=-0.36)
+
+    # F. Permutation runtime scaling
+    ax = axes[1, 2]
+    rt = _numeric(runtime, ["p", "r", "warm_median_s"])
+    rt = rt[(rt[_status_column(rt)] == "pass") & (rt["implementation"] == "numpy_matrix_batched")].copy()
+    p_values = sorted(rt["p"].dropna().unique())
+    p_colors = {
+        p: color
+        for p, color in zip(p_values, [PY_BLUE, THREAD_TEAL, PROCESS_ORANGE, JAX_BERRY, NUMBA_GREEN])
+    }
+    for p_value, sub in rt.groupby("p"):
+        agg = sub.groupby("r", as_index=False)["warm_median_s"].median().sort_values("r")
+        ax.plot(agg["r"], agg["warm_median_s"], marker="o", markersize=4.2, linewidth=1.9, color=p_colors.get(p_value, PY_GOLD), label=f"p={int(p_value):,}")
+    ax.set_xscale("log")
+    ax.set_yscale("log")
+    ax.set_title("F. Permutation runtime scaling", loc="left", fontsize=12.5, pad=7)
+    ax.set_xlabel("permutations R", fontsize=9.5)
+    ax.set_ylabel("runtime (s)", fontsize=9.5)
+    ax.tick_params(labelsize=8.5)
+    ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: compact_label(x)))
+    ax.legend(frameon=False, fontsize=7.6, loc="upper left")
+    ax.grid(True, axis="both", alpha=0.25)
+    strip_spines(ax)
+    add_panel_caption(ax, "Runtime scales with p and R; local evidence finds the bottleneck shape.", y=-0.36)
+
+    fig_dir.mkdir(parents=True, exist_ok=True)
+    png_path = fig_dir / "local_validation_suite_overview.png"
+    svg_path = fig_dir / "local_validation_suite_overview.svg"
+    fig.savefig(png_path, dpi=DPI)
+    fig.savefig(svg_path, format="svg")
+    plt.close(fig)
+    source = "; ".join(
+        [
+            "kmeans_correctness.csv",
+            "kmeans_shape_stress.csv",
+            "permutation_equivalence.csv",
+            "permutation_calibration_extended.csv",
+            "permutation_power_extended.csv",
+            "permutation_runtime_scaling_extended.csv",
+        ]
+    )
+    purpose = "Composite 2x3 local-validation overview for correctness, equivalence, calibration, power, and runtime-shape evidence."
+    manifest.append({"figure": png_path.name, "source": source, "purpose": purpose})
+    manifest.append({"figure": svg_path.name, "source": source, "purpose": purpose})
+
+
 def write_manifest(path: Path, rows: list[dict[str, str]]) -> None:
     with path.open("w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=["figure", "source", "purpose"])
@@ -918,13 +1579,17 @@ def main() -> None:
     fig_dir = args.output_dir or (root / "figures")
     manifest: list[dict[str, str]] = []
     plot_kmeans_recovery(root, fig_dir, manifest)
+    plot_kmeans_recovery_slide_heatmap(root, fig_dir, manifest)
     plot_kmeans_shape_runtime(root, fig_dir, manifest)
     plot_kmeans_equivalence(root, fig_dir, manifest)
     plot_kmeans_tradeoff(root, fig_dir, manifest)
     plot_permutation_power(root, fig_dir, manifest)
     plot_permutation_calibration(root, fig_dir, manifest)
     plot_permutation_runtime(root, fig_dir, manifest)
+    plot_permutation_local_runtime_signal(root, fig_dir, manifest)
     plot_permutation_equivalence(root, fig_dir, manifest)
+    plot_permutation_local_gate_slide(root, fig_dir, manifest)
+    plot_local_validation_suite_overview(root, fig_dir, manifest)
     write_manifest(root / "figure_manifest.csv", manifest)
     print(fig_dir)
 

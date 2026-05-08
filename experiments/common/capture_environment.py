@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Capture benchmark environment metadata for the v3 experiments."""
+"""Capture benchmark environment metadata for the experiment suite."""
 
 from __future__ import annotations
 
@@ -126,7 +126,7 @@ def main() -> None:
     parser.add_argument(
         "--output",
         type=Path,
-        default=Path("experiments/results/v3/environment.json"),
+        default=Path("experiments/results/current_environment.json"),
     )
     args = parser.parse_args()
     args.output.parent.mkdir(parents=True, exist_ok=True)

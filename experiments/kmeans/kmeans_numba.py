@@ -7,7 +7,7 @@ can map the statistical definition to the machine-code path Numba generates.
 from __future__ import annotations
 
 import numpy as np
-from numba import njit
+from numba import njit, prange
 
 
 @njit(cache=True, fastmath=True)
@@ -85,13 +85,64 @@ def _run(X: np.ndarray, centroids: np.ndarray, max_iter: int, tol: float):
     return centroids, labels, inertia, it + 1
 
 
+@njit(cache=True, fastmath=True, parallel=True)
+def _assign_parallel(x: np.ndarray, centroids: np.ndarray) -> np.ndarray:
+    n, d = x.shape
+    k = centroids.shape[0]
+    labels = np.empty(n, dtype=np.int64)
+    for i in prange(n):
+        best = 0
+        best_dist = 1.0e308
+        for j in range(k):
+            dist = 0.0
+            for m in range(d):
+                diff = x[i, m] - centroids[j, m]
+                dist += diff * diff
+            if dist < best_dist:
+                best = j
+                best_dist = dist
+        labels[i] = best
+    return labels
+
+
+def _server_numba(
+    x: np.ndarray,
+    init_centroids: np.ndarray,
+    max_iter: int = 30,
+    tol: float = 1e-6,
+) -> tuple[np.ndarray, np.ndarray, float, int, int]:
+    centroids = init_centroids.astype(np.float64, copy=True)
+    labels = np.zeros(x.shape[0], dtype=np.int64)
+    empty = 0
+    for it in range(1, max_iter + 1):
+        labels = _assign_parallel(x, centroids)
+        new_centroids = centroids.copy()
+        empty = 0
+        for j in range(centroids.shape[0]):
+            mask = labels == j
+            if np.any(mask):
+                new_centroids[j] = x[mask].mean(axis=0)
+            else:
+                empty += 1
+        shift = float(np.linalg.norm(new_centroids - centroids))
+        centroids = new_centroids
+        if shift <= tol:
+            break
+    inertia = float(np.sum((x - centroids[labels]) ** 2))
+    return centroids, labels, inertia, it, empty
+
+
 def kmeans_numba(
     X: np.ndarray,
-    k: int,
-    max_iter: int,
-    init_centroids: np.ndarray,
+    k: int | np.ndarray,
+    max_iter: int = 30,
+    init_centroids: np.ndarray | None = None,
     tol: float = 1e-12,
 ) -> tuple[np.ndarray, np.ndarray, float, int]:
+    if isinstance(k, np.ndarray):
+        return _server_numba(X, k, max_iter=max_iter, tol=max(tol, 1e-6))
+    if init_centroids is None:
+        raise TypeError("init_centroids is required for the MacBook kmeans_numba signature")
     centroids = init_centroids.astype(np.float64, copy=True)
     return _run(X, centroids, max_iter, tol)
 
@@ -102,3 +153,4 @@ def warmup() -> None:
     X_tiny = rng.standard_normal((16, 2))
     c_tiny = X_tiny[:2].copy()
     _run(X_tiny, c_tiny, 2, 1e-12)
+    _server_numba(X_tiny, c_tiny, max_iter=2)

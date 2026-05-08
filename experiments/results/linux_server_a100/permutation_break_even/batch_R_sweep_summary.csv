@@ -1,0 +1,8 @@
+batch_R,a100_end_to_end_time_s,speedup_cpu_over_a100,source_label
+128,1.1436641019567755,1.7219324506340463,committed lightweight batch_R sweep summary
+256,0.9252115449341725,2.128499509693531,committed lightweight batch_R sweep summary
+512,0.8667446623663642,2.2720789710913722,committed lightweight batch_R sweep summary
+1024,0.8537363892297387,2.3066983485926107,committed lightweight batch_R sweep summary
+2048,0.8743005191468631,2.2524432681152113,committed lightweight batch_R sweep summary
+4096,0.857469707037501,2.296655269460702,committed lightweight batch_R sweep summary
+8192,0.8248471785476399,2.387487490435194,committed lightweight batch_R sweep summary

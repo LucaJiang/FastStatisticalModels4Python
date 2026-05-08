@@ -582,63 +582,28 @@ def write_decomposition_summary(out_dir: Path, category_by_key: dict[tuple[int, 
 def make_figures(out_dir: Path, presentation_dir: Path) -> None:
     import matplotlib.pyplot as plt
     import numpy as np
+    from visualization.plot_a100_decision_slide import plot_decision_map_slide
+    from visualization.plot_a100_pipeline_slide import (
+        load_batch_data,
+        plot_batch_tuning,
+        read_best_safe_batch_r,
+    )
 
     presentation_dir.mkdir(parents=True, exist_ok=True)
-    plt.rcParams.update({"font.size": 12, "axes.labelsize": 13, "axes.titlesize": 17, "xtick.labelsize": 11, "ytick.labelsize": 11})
-    shape = pd.read_csv(out_dir / "break_even_shape_sweep.csv")
-    shape["speedup"] = pd.to_numeric(shape["speedup_cpu_over_a100"], errors="coerce")
-    pivot = shape.pivot_table(index="R", columns="p", values="speedup", aggfunc="first").sort_index(ascending=True)
-    status_lookup = {
-        (int(row.R), int(row.p)): {
-            "winner": str(row.winner).lower(),
-            "a100_status": str(row.a100_status).lower(),
-            "cpu_timeout_status": str(row.cpu_timeout_status).lower(),
-            "notes": str(row.notes).lower(),
-        }
-        for row in shape.itertuples()
-    }
-    fig, ax = plt.subplots(figsize=(12.8, 7.2))
-    fig.patch.set_facecolor("#FBF7EF")
-    ax.set_facecolor("#FFFFFF")
-    data = pivot.to_numpy(dtype=float)
-    masked = np.ma.masked_invalid(data)
-    im = ax.imshow(masked, cmap="RdYlGn", vmin=0.25, vmax=max(2.5, float(np.nanmax(data)) if np.isfinite(data).any() else 2.5), aspect="auto", origin="lower")
-    ax.set_xticks(range(len(pivot.columns)), [f"{int(c):,}" for c in pivot.columns], rotation=25, ha="right")
-    ax.set_yticks(range(len(pivot.index)), [f"{int(r):,}" for r in pivot.index])
-    ax.set_xlabel("p_features")
-    ax.set_ylabel("R permutations")
-    ax.set_title("CPU vs A100 end-to-end break-even map", weight="bold")
-    for i, r in enumerate(pivot.index):
-        for j, p in enumerate(pivot.columns):
-            val = pivot.loc[r, p]
-            if pd.isna(val):
-                status = status_lookup.get((int(r), int(p)), {})
-                if status.get("a100_status") == "oom":
-                    txt = "A100\nOOM"
-                elif "memory-risk" in status.get("winner", "") or "memory-risk" in status.get("notes", ""):
-                    txt = "memory\nrisk"
-                elif "timeout" in status.get("cpu_timeout_status", ""):
-                    txt = "CPU\ntimeout"
-                else:
-                    txt = "unavail."
-            else:
-                txt = f"{val:.1f}x"
-            ax.text(j, i, txt, ha="center", va="center", fontsize=10, weight="bold", color="#17202A")
-    cb = fig.colorbar(im, ax=ax, fraction=0.035, pad=0.02)
-    cb.set_label("speedup = matched CPU matrix baseline / A100 streamed full end-to-end")
-    winners = shape[pd.to_numeric(shape["speedup_cpu_over_a100"], errors="coerce") > 1.0]
-    if winners.empty:
-        takeaway = "No end-to-end A100 break-even found in measured range."
+    shape_raw_path = out_dir / "break_even_shape_sweep.csv"
+    shape_summary_path = out_dir / "break_even_shape_sweep_summary.csv"
+    shape_path = shape_raw_path if shape_raw_path.exists() else shape_summary_path
+    if shape_path.exists():
+        plot_decision_map_slide(shape_path, presentation_dir)
+        try:
+            plot_batch_tuning(load_batch_data(), presentation_dir, read_best_safe_batch_r(out_dir / "README.md"))
+        except FileNotFoundError as exc:
+            print(f"[plot] skipped slide-specific A100 pipeline figures: {exc}", flush=True)
     else:
-        first = winners.sort_values(["p", "R"]).iloc[0]
-        takeaway = f"A100 faster region appears by n={int(first.n)}, p={int(first.p):,}, R={int(first.R):,}, batch_R={int(first.batch_R):,}."
-    fig.text(0.08, 0.05, takeaway, fontsize=15, weight="bold", bbox={"facecolor": "#FFF3E6", "edgecolor": "none", "boxstyle": "round,pad=0.35"})
-    fig.tight_layout(rect=[0.04, 0.10, 0.98, 0.94])
-    fig.savefig(presentation_dir / "cpu_vs_a100_break_even_map.png", dpi=220)
-    fig.savefig(presentation_dir / "cpu_vs_a100_break_even_map.svg", format="svg")
-    plt.close(fig)
+        return
 
-    decomp = pd.read_csv(out_dir / "decomposition_representative_shapes.csv")
+    decomp_path = out_dir / "decomposition_representative_shapes.csv"
+    decomp = pd.read_csv(decomp_path) if decomp_path.exists() else pd.DataFrame()
     decomp = decomp[decomp.get("correctness_status", pd.Series(dtype=str)).isin(ACCEPTED_CORRECTNESS_STATUSES)].copy()
     if not decomp.empty:
         decomp["total"] = pd.to_numeric(decomp["total_end_to_end_time_s"], errors="coerce")
@@ -714,57 +679,27 @@ def make_figures(out_dir: Path, presentation_dir: Path) -> None:
         plt.close(fig)
         write_decomposition_summary(out_dir)
 
-    batch = pd.read_csv(out_dir / "batch_R_sweep.csv")
-    batch["a100"] = pd.to_numeric(batch["a100_streamed_reduction_time_s"], errors="coerce")
-    batch["kernel"] = pd.to_numeric(batch["kernel_only_time_s"], errors="coerce")
-    batch["speedup"] = pd.to_numeric(batch["speedup_cpu_over_a100"], errors="coerce")
-    fig, ax = plt.subplots(figsize=(12.8, 7.2))
-    ax.plot(batch["batch_R"], batch["a100"], marker="o", linewidth=3, label="A100 streamed full e2e")
-    ax.plot(batch["batch_R"], batch["speedup"], marker="s", linewidth=3, label="speedup CPU/A100")
-    ax.axhline(1.0, color="#17202A", linestyle="--", linewidth=1.8)
-    ax.set_xscale("log", base=2)
-    ax.set_xlabel("batch_R")
-    ax.set_ylabel("seconds or speedup")
-    ax.set_title("Batch size controls whether the GPU path is saturated", weight="bold")
-    ax.grid(True, alpha=0.25)
-    ax.legend(loc="best")
-    fig.tight_layout()
-    fig.savefig(presentation_dir / "batch_R_sweep.png", dpi=220)
-    fig.savefig(presentation_dir / "batch_R_sweep.svg", format="svg")
-    plt.close(fig)
-
-    reps = shape.dropna(subset=["speedup"]).sort_values(["p", "R"]).tail(4).copy()
-    if not reps.empty:
-        x = np.arange(len(reps))
-        width = 0.2
-        fig, ax = plt.subplots(figsize=(12.8, 7.2))
-        labels = [f"p={int(r.p):,}\nR={int(r.R):,}" for r in reps.itertuples()]
-        ax.bar(x - 1.5 * width, pd.to_numeric(reps["kernel_only_time_s"], errors="coerce"), width, label="kernel-only W @ X\n(not full test)")
-        ax.bar(x - 0.5 * width, pd.to_numeric(reps["a100_end_to_end_time_s"], errors="coerce"), width, label="A100 full e2e")
-        ax.bar(x + 0.5 * width, pd.to_numeric(reps["a100_streamed_reduction_time_s"], errors="coerce"), width, label="A100 streamed reduction")
-        ax.bar(x + 1.5 * width, pd.to_numeric(reps["cpu_end_to_end_time_s"], errors="coerce"), width, label="matched CPU matrix full e2e")
-        ax.set_yscale("log")
-        ax.set_xticks(x, labels)
-        ax.set_ylabel("seconds, log scale")
-        ax.set_title("A fast kernel is not the same as a fast statistical pipeline", weight="bold")
-        ax.grid(axis="y", which="both", alpha=0.25)
-        ax.legend(loc="best")
-        fig.tight_layout()
-        fig.savefig(presentation_dir / "kernel_only_vs_end_to_end.png", dpi=220)
-        fig.savefig(presentation_dir / "kernel_only_vs_end_to_end.svg", format="svg")
-        plt.close(fig)
-
 
 def write_readme(out_dir: Path) -> None:
     lines = ["# CPU vs A100 permutation break-even", "", f"Generated/updated: {timestamp()}", ""]
-    batch = pd.read_csv(out_dir / "batch_R_sweep.csv")
-    shape = pd.read_csv(out_dir / "break_even_shape_sweep.csv")
-    cpu = pd.read_csv(out_dir / "cpu_matched_baselines.csv")
-    correct = pd.read_csv(out_dir / "correctness_checks.csv")
+
+    def read_result(name: str) -> pd.DataFrame:
+        raw = out_dir / f"{name}.csv"
+        summary = out_dir / f"{name}_summary.csv"
+        path = raw if raw.exists() else summary
+        return pd.read_csv(path) if path.exists() else pd.DataFrame()
+
+    batch = read_result("batch_R_sweep")
+    shape = read_result("break_even_shape_sweep")
+    cpu = read_result("cpu_matched_baselines")
+    correct = read_result("correctness_checks")
     lines.append("## CPU baseline")
     lines.append("- Matched CPU matrix baseline used here: `numpy_matrix_same_stream` batched matrix path.")
     lines.append("- Scope: this is not an exhaustive best-of-all-CPU search; speedup means matched CPU matrix baseline divided by A100 streamed full end-to-end.")
-    lines.append(f"- CPU rows recorded: {len(cpu)}.")
+    if (out_dir / "cpu_matched_baselines.csv").exists():
+        lines.append(f"- CPU rows recorded: {len(cpu)}.")
+    else:
+        lines.append(f"- CPU summary rows committed: {len(cpu)}.")
     lines.append("")
     lines.append("## Break-even")
     shape["speedup"] = pd.to_numeric(shape["speedup_cpu_over_a100"], errors="coerce")
@@ -787,6 +722,7 @@ def write_readme(out_dir: Path) -> None:
     lines.append("- Kernel-only rows are labeled as not full permutation tests and are not used for CPU/A100 speedup decisions.")
     lines.append("")
     decomp_path = out_dir / "decomposition_representative_shapes.csv"
+    decomp_summary_path = out_dir / "decomposition_representative_shapes_summary.csv"
     if decomp_path.exists():
         decomp = pd.read_csv(decomp_path)
         lines.append("## Representative A100 decomposition")
@@ -797,14 +733,28 @@ def write_readme(out_dir: Path) -> None:
             lines.append("- Fewer than four representative rows are available; do not claim all four representative categories from this output.")
         lines.append("- `decomposition_representative_shapes_summary.csv` includes explicit other overhead and stage-sum reconciliation.")
         lines.append("")
+    elif decomp_summary_path.exists():
+        decomp = pd.read_csv(decomp_summary_path)
+        lines.append("## Representative A100 decomposition")
+        lines.append(f"- Representative summary rows committed: {len(decomp)}.")
+        lines.append("- The committed lightweight summary covers one CPU-faster row and the largest/highest-speedup row. The raw 4-row representative decomposition CSV is not committed in this repository snapshot, so do not claim four representative categories from the committed evidence.")
+        lines.append("- `decomposition_representative_shapes_summary.csv` includes explicit other overhead and stage-sum reconciliation for the two committed summary rows.")
+        lines.append("")
     lines.append("## Timing semantics")
     lines.append("- CPU/A100 comparisons are full scenario end-to-end, warm timing, compile excluded, transfer included for A100.")
     lines.append("- Representative decomposition rows report named stages plus residual Python/JAX loop overhead. Figures include this residual as `other overhead` so stacked bars reconcile to `total_end_to_end_time_s`.")
     lines.append("- Kernel-only rows time only `W @ X` with device-resident inputs and are labeled as hypotheses, not full permutation tests.")
     lines.append("")
     lines.append("## Batch_R")
-    best_batch = choose_best_batch(batch.to_dict("records"))
+    if not batch.empty:
+        best_batch = choose_best_batch(batch.to_dict("records"))
+    elif not shape.empty and "batch_R" in shape:
+        best_batch = int(shape["batch_R"].mode().iloc[0])
+    else:
+        best_batch = 8192
     lines.append(f"- Best safe batch_R from Stage 1: {best_batch}.")
+    lines.append("- The main deck uses batch_R=8192 in the A100 decision map and keeps the batch-size sweep in backup for Q&A.")
+    lines.append("- batch_R is an A100 pipeline tuning choice, not a new statistical method; it changes scheduling while preserving the same permutation statistic and p-value definition.")
     lines.append("")
     lines.append("## Targeted rerun policy")
     lines.append("- 2026-05-06 targeted rerun covered only cells previously marked timeout/skipped/unavailable/memory-risk in the Stage 2 break-even grid.")
@@ -814,9 +764,16 @@ def write_readme(out_dir: Path) -> None:
     lines.append("- `targeted_rerun_audit.csv` records the old memory-risk state and the new explicit CPU-completed/A100-OOM state.")
     lines.append("")
     lines.append("## Correctness")
-    lines.append(f"- Correctness check rows: {len(correct)}.")
-    for key, val in correct["correctness_status"].value_counts(dropna=False).items():
-        lines.append(f"  - {key}: {val}")
+    if "rows_represented" in correct:
+        rows_represented = int(pd.to_numeric(correct["rows_represented"], errors="coerce").max())
+        lines.append(f"- Correctness rows represented in the committed lightweight correctness summary: {rows_represented} accepted bounded/GPU-tolerance rows.")
+        lines.append("- Two high-R p=500,000 cells are A100 OOM/unavailable in the break-even shape summary after the targeted rerun; they are not CPU wins and not hidden speedups.")
+        lines.append("- No committed lightweight summary row records a correctness failure.")
+    else:
+        lines.append(f"- Correctness check rows: {len(correct)}.")
+    if "correctness_status" in correct and "rows_represented" not in correct:
+        for key, val in correct["correctness_status"].value_counts(dropna=False).items():
+            lines.append(f"  - {key}: {val}")
     p_diff = pd.to_numeric(correct.get("max_abs_p_diff", pd.Series(dtype=float)), errors="coerce").dropna()
     stat_diff = pd.to_numeric(correct.get("max_abs_stat_diff", pd.Series(dtype=float)), errors="coerce").dropna()
     if not p_diff.empty:
@@ -824,17 +781,19 @@ def write_readme(out_dir: Path) -> None:
     if not stat_diff.empty:
         lines.append(f"- Max recorded `max_abs_stat_diff`: {float(stat_diff.max()):.6g}.")
     lines.append("- Accepted rows use the explicit status vocabulary `pass_exact`, `pass_gpu_tolerance`, `manual_check`, and `fail`.")
-    lines.append("- Historical `check` rows remain readable for backward compatibility, but newly generated accepted GPU rows are emitted as `pass_gpu_tolerance` unless they meet the stricter `pass_exact` rule.")
-    lines.append("- Rows with A100 OOM/unavailable are not CPU wins and not hidden speedups.")
+    lines.append("- Older generated raw rows may show `check`; treat that as a historical accepted bounded-check status, not an exact pass.")
+    lines.append("- Lightweight summary CSVs with slide-level rows are committed in this directory.")
     lines.append("")
     lines.append("## OOM / memory-risk / timeout")
-    for name in ["batch_R_sweep.csv", "break_even_shape_sweep.csv", "n_sensitivity_sweep.csv", "cpu_matched_baselines.csv"]:
-        path = out_dir / name
+    for name in ["batch_R_sweep", "break_even_shape_sweep", "n_sensitivity_sweep", "cpu_matched_baselines"]:
+        raw = out_dir / f"{name}.csv"
+        summary = out_dir / f"{name}_summary.csv"
+        path = raw if raw.exists() else summary
         if path.exists():
             df = pd.read_csv(path)
-            bad_cols = [c for c in ["winner", "cpu_timeout_status", "a100_status", "correctness_status"] if c in df]
+            bad_cols = [c for c in ["winner", "cpu_timeout_status", "a100_status", "correctness_status", "timing_note"] if c in df]
             bad = df[df[bad_cols].astype(str).apply(lambda s: s.str.contains("timeout|skipped|memory-risk|unavailable|oom|fail", case=False, regex=True)).any(axis=1)] if bad_cols else pd.DataFrame()
-            lines.append(f"- `{name}`: {len(bad)} timeout/skipped/memory-risk/unavailable/OOM/fail rows.")
+            lines.append(f"- `{path.name}`: {len(bad)} timeout/skipped/memory-risk/unavailable/OOM/fail rows.")
     (out_dir / "README.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 

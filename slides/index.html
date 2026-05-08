@@ -173,17 +173,133 @@
     .kpi.warn strong { color: var(--gold); }
     .kpi.good strong { color: var(--green); }
 
-    .decision-tree { margin-top: 24px; display: grid; grid-template-columns: 1fr; gap: 14px; }
-    .tree-root { justify-self: center; width: 390px; background: var(--ink); color: #fff; border-radius: 16px; padding: 18px 24px; text-align: center; font-size: 27px; line-height: 1.12; font-weight: 900; box-shadow: var(--shadow); }
-    .tree-branches { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; margin-top: 10px; }
-    .tree-leaf { background: #fffdf8; border: 1px solid var(--line); border-top: 7px solid var(--blue); border-radius: 14px; padding: 16px 14px; min-height: 145px; box-shadow: var(--shadow); }
-    .tree-leaf:nth-child(2) { border-top-color: var(--gold); }
-    .tree-leaf:nth-child(3) { border-top-color: var(--green); }
-    .tree-leaf:nth-child(4) { border-top-color: var(--berry); }
-    .tree-leaf:nth-child(5) { border-top-color: var(--teal); }
-    .tree-leaf:nth-child(6) { border-top-color: var(--purple); }
-    .tree-leaf strong { display: block; color: var(--ink); font-size: 20px; line-height: 1.1; margin-bottom: 8px; }
-    .tree-leaf span { display: block; color: var(--muted); font-size: 15px; line-height: 1.18; }
+    .decision-guide-layout { margin-top: 14px; padding-bottom: 66px; }
+    .process-ribbon {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 28px minmax(0, 1fr) 28px minmax(0, 1fr) 28px minmax(0, 1fr);
+      gap: 7px;
+      align-items: center;
+      margin-top: 12px;
+      padding: 0 3px;
+    }
+    .process-step {
+      position: relative;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      border: 2px solid rgba(43, 91, 140, 0.38);
+      border-radius: 999px;
+      background: #fffdf8;
+      color: var(--ink);
+      font-size: 18px;
+      line-height: 1.05;
+      font-weight: 900;
+      text-align: center;
+      white-space: nowrap;
+      box-shadow: 0 8px 18px rgba(21, 32, 43, 0.055);
+    }
+    .process-step:nth-child(3) { border-color: rgba(181, 117, 24, 0.43); }
+    .process-step:nth-child(5) { border-color: rgba(57, 127, 91, 0.43); }
+    .process-step:nth-child(7) {
+      border-color: rgba(167, 75, 84, 0.55);
+      background: #fff7e9;
+    }
+    .process-index {
+      display: inline-flex;
+      width: 26px;
+      height: 26px;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      background: var(--blue);
+      color: white;
+      font-size: 14px;
+      font-weight: 950;
+      line-height: 1;
+    }
+    .process-step:nth-child(3) .process-index { background: var(--gold); }
+    .process-step:nth-child(5) .process-index { background: var(--green); }
+    .process-step:nth-child(7) .process-index { background: var(--berry); }
+    .process-arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 34px;
+      color: #4d6070;
+      font-size: 30px;
+      font-weight: 950;
+      line-height: 1;
+    }
+    .decision-card-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-top: 17px;
+    }
+    .decision-card {
+      display: flex;
+      flex-direction: column;
+      min-height: 150px;
+      padding: 14px 16px 12px;
+      border: 1px solid var(--line);
+      border-top: 6px solid var(--blue);
+      border-radius: 10px;
+      background: rgba(255, 253, 248, 0.96);
+      box-shadow: 0 8px 18px rgba(21, 32, 43, 0.045);
+    }
+    .decision-card:nth-child(2) { border-top-color: var(--gold); }
+    .decision-card:nth-child(3) { border-top-color: var(--green); }
+    .decision-card:nth-child(4) { border-top-color: var(--teal); }
+    .decision-card:nth-child(5) { border-top-color: var(--berry); }
+    .decision-card:nth-child(6) { border-top-color: var(--purple); }
+    .decision-card h3 {
+      color: var(--ink);
+      font-size: 23px;
+      line-height: 1.08;
+      margin-bottom: 9px;
+      letter-spacing: 0;
+    }
+    .decision-fields { display: grid; gap: 6px; }
+    .decision-field { display: grid; grid-template-columns: 48px 1fr; gap: 8px; align-items: baseline; }
+    .decision-label {
+      color: var(--blue);
+      font-size: 11px;
+      line-height: 1;
+      letter-spacing: 0.01em;
+      font-weight: 950;
+      white-space: nowrap;
+    }
+    .decision-card:nth-child(2) .decision-label { color: var(--gold); }
+    .decision-card:nth-child(3) .decision-label { color: var(--green); }
+    .decision-card:nth-child(4) .decision-label { color: var(--teal); }
+    .decision-card:nth-child(5) .decision-label { color: var(--berry); }
+    .decision-card:nth-child(6) .decision-label { color: var(--purple); }
+    .decision-text {
+      color: var(--ink);
+      font-size: 14.5px;
+      line-height: 1.14;
+    }
+    .evidence-chip {
+      align-self: flex-start;
+      margin-top: auto;
+      padding: 4px 9px;
+      border: 1px solid rgba(223, 211, 192, 0.9);
+      border-radius: 999px;
+      background: #fff7e9;
+      color: var(--muted);
+      font-size: 10.5px;
+      line-height: 1;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+    .decision-guide-takeaway {
+      font-size: 22px;
+      line-height: 1.12;
+      padding: 12px 18px;
+      border-left-width: 8px;
+    }
 
     .ladder { display: grid; grid-template-columns: 1fr 38px 1fr 38px 1fr; gap: 14px; align-items: stretch; margin-top: 30px; }
     .arrow { display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 34px; font-weight: 900; }
@@ -261,6 +377,22 @@
     .figure-box.short { height: 418px; }
     .figure-box img { display: block; width: 100%; height: 100%; object-fit: contain; border-radius: 10px; }
     .figure-only { margin-top: 22px; height: 510px; }
+    .local-gate-slide .subtitle { font-size: 20px; margin-top: 8px; max-width: 1120px; }
+    .local-gate-layout { display: grid; grid-template-columns: minmax(0, 34%) minmax(0, 66%); gap: 18px; margin-top: 14px; align-items: stretch; padding-bottom: 82px; }
+    .local-gate-cards { display: grid; gap: 12px; align-content: start; min-width: 0; }
+    .local-gate-card { background: #fffdf8; border: 1px solid var(--line); border-left: 8px solid var(--blue); border-radius: 12px; padding: 15px 16px 13px; min-height: 108px; box-shadow: none; }
+    .local-gate-card:nth-child(2) { border-left-color: var(--green); }
+    .local-gate-card:nth-child(3) { border-left-color: var(--gold); }
+    .local-gate-card h3 { color: var(--ink); font-size: 22px; line-height: 1.05; margin-bottom: 7px; letter-spacing: 0; }
+    .local-gate-card p { color: var(--muted); font-size: 17px; line-height: 1.22; }
+    .gate-chip { display: inline-block; margin-top: 10px; padding: 4px 9px; border: 1px solid var(--line); border-radius: 999px; background: #fff7e9; color: var(--blue); font-size: 13px; line-height: 1; font-weight: 900; text-transform: uppercase; letter-spacing: 0.06em; }
+    .local-gate-card:nth-child(2) .gate-chip { color: var(--green); }
+    .local-gate-card:nth-child(3) .gate-chip { color: var(--gold); }
+    .local-gate-right { min-width: 0; }
+    .local-gate-figure { height: 382px; padding: 4px; background: rgba(255, 253, 248, 0.95); border: 1px solid var(--line); border-radius: 14px; box-shadow: var(--shadow); display: flex; align-items: center; justify-content: center; min-width: 0; }
+    .local-gate-figure img { display: block; width: 100%; height: 100%; object-fit: contain; border-radius: 8px; }
+    .local-gate-right .caption { font-size: 15px; line-height: 1.18; margin-top: 8px; }
+    .local-gate-slide .bottom-takeaway { bottom: 28px; font-size: 20px; padding: 12px 16px; }
     .method-layout { display: grid; grid-template-columns: minmax(0, 0.76fr) minmax(230px, 0.24fr); gap: 24px; margin-top: 20px; align-items: stretch; }
     .method-video-box { height: 505px; padding: 8px; display: flex; align-items: center; justify-content: center; background: rgba(255,253,248,0.95); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); }
     .method-video,
@@ -310,6 +442,17 @@
     .gate-note { margin-top: 14px; color: var(--muted); font-size: 16px; line-height: 1.25; }
     .tolerance-caption { margin-top: 10px; color: var(--muted); font-size: 15px; line-height: 1.22; }
     .bottom-takeaway { position: absolute; left: 56px; right: 56px; bottom: 38px; padding: 14px 18px; border-left: 8px solid var(--orange); background: #fff3e6; color: var(--ink); font-size: 24px; line-height: 1.15; font-weight: 850; }
+
+    .decision-map-slide .subtitle { font-size: 20px; margin-top: 8px; max-width: 1120px; }
+    .decision-kpi-strip { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 10px; }
+    .decision-kpi { background: #fffdf8; border: 1px solid var(--line); border-left: 7px solid var(--blue); border-radius: 10px; padding: 10px 14px; min-height: 70px; box-shadow: none; }
+    .decision-kpi:nth-child(2) { border-left-color: var(--gold); }
+    .decision-kpi:nth-child(3) { border-left-color: var(--green); }
+    .decision-kpi strong { display: block; color: var(--ink); font-size: 17px; line-height: 1.05; margin-bottom: 6px; }
+    .decision-kpi span { display: block; color: var(--muted); font-size: 16px; line-height: 1.18; }
+    .decision-map-figure { margin-top: 12px; height: 390px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .decision-map-figure img { display: block; width: 100%; height: 100%; object-fit: contain; }
+    .decision-map-slide .bottom-takeaway { bottom: 24px; padding: 12px 16px; font-size: 20px; }
 
     .calibration-gate { display: grid; grid-template-columns: minmax(0, 39%) minmax(0, 57%); gap: 24px; margin-top: 18px; align-items: stretch; }
     .calibration-cards { display: grid; gap: 14px; align-content: start; min-width: 0; }
@@ -361,6 +504,72 @@
     .code-box { background: #15202b; color: #f8f4ec; padding: 22px; min-height: 250px; border-color: #15202b; }
     .code-box h3 { color: #fff; margin-bottom: 16px; }
     .code-box pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size: 22px; line-height: 1.36; color: #f8f4ec; white-space: pre-wrap; }
+    .code-shape-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 18px; }
+    .code-shape-card { background: #fffdf8; border: 1px solid var(--line); border-top: 7px solid var(--green); border-radius: 14px; box-shadow: var(--shadow); padding: 15px 16px 14px; min-width: 0; min-height: 420px; }
+    .code-shape-card:nth-child(2) { border-top-color: var(--blue); }
+    .code-shape-card:nth-child(3) { border-top-color: var(--berry); }
+    .code-shape-card h3 { color: var(--ink); font-size: 21px; line-height: 1.1; margin-bottom: 10px; }
+    .code-shape-card pre { margin: 0; background: #15202b; color: #f8f4ec; border-radius: 10px; padding: 12px 13px; min-height: 270px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size: 13px; line-height: 1.16; white-space: pre; overflow: hidden; }
+    .code-shape-card p { margin-top: 11px; color: var(--muted); font-size: 15px; line-height: 1.22; }
+
+    .ai-role-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 26px;
+      margin-top: 24px;
+      align-items: stretch;
+    }
+    .ai-role-card {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 0.58fr) minmax(210px, 0.42fr);
+      gap: 18px;
+      min-height: 366px;
+      padding: 24px;
+      overflow: hidden;
+      background: rgba(255, 253, 248, 0.96);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+    }
+    .ai-role-card::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      height: 8px;
+      background: var(--blue);
+    }
+    .ai-role-card.human-card::before { background: var(--green); }
+    .ai-role-text {
+      position: relative;
+      z-index: 2;
+      min-width: 0;
+      align-self: center;
+    }
+    .ai-role-text h3 {
+      color: var(--blue);
+      font-size: 27px;
+      line-height: 1.08;
+      margin-bottom: 12px;
+    }
+    .human-card .ai-role-text h3 { color: var(--green); }
+    .ai-role-text ul { margin-top: 12px; }
+    .ai-role-text li {
+      font-size: 20px;
+      line-height: 1.25;
+      margin-top: 9px;
+    }
+    .ai-duty-art {
+      align-self: center;
+      justify-self: center;
+      width: auto;
+      max-width: 100%;
+      max-height: 285px;
+      object-fit: contain;
+      border-radius: 14px;
+    }
 
     .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 28px; }
     .compare .card { min-height: 290px; }
@@ -440,13 +649,13 @@
     <div class="hero-title">
       <div class="kicker">PyCon US 2026 - 30 min</div>
       <h1>Breaking the Speed Limit</h1>
-      <p class="subtitle">Fast statistical models with Python 3.14, Numba, and JAX - told from the workflow of a statistician.</p>
+      <p class="subtitle">Fast statistical models with Python, Numba, and JAX — from a statistician’s workflow.</p>
       <p class="small" style="margin-top:20px;">Wenxin Jiang and Jian Yin - Department of Biostatistics, City University of Hong Kong</p>
     </div>
     <div class="hero-card">
-      <div class="metric"><strong>Trust → speed → scale</strong><span>Prove the statistic, accelerate the bottleneck, then test scale.</span></div>
-      <div class="metric"><strong>Simulation first</strong><span>Controlled truth before runtime charts.</span></div>
-      <div class="metric"><strong>Python interface</strong><span>NumPy, Numba, Python 3.14, and JAX/A100 solve different bottlenecks.</span></div>
+      <div class="metric"><strong>Make the statistic testable, then speed up the bottleneck.</strong><span>Specify the target, build answer keys, and preserve the result while optimizing.</span></div>
+      <div class="metric"><strong>Simulation first</strong><span>Controlled behavior before runtime charts.</span></div>
+      <div class="metric"><strong>Python interface</strong><span>NumPy, Numba, threads/workers, and JAX / A100 solve different bottlenecks.</span></div>
     </div>
   </div>
   <aside class="notes">Introduce the talk as a statistician's workflow, not a library benchmark.</aside>
@@ -454,71 +663,111 @@
 
 <section class="deck-slide">
   <div class="kicker">Why this talk</div>
-  <h2>For statisticians, speed is useful only after trust</h2>
-  <p class="subtitle">Optimization enters after reference behavior is defined, stressed, and checked.</p>
+  <h2>For statisticians, speed comes after validation</h2>
+  <p class="subtitle">Optimization starts after the scientific target is specified, made executable, and checked.</p>
   <div class="cards-3">
-    <div class="card"><h3>Statistical specification evolves</h3><p>Simulation exposes assumptions, hard cases, and stable outputs.</p></div>
-    <div class="card"><h3>Reference code is scientific specification</h3><p>Readable Python or NumPy defines the validation target.</p></div>
-    <div class="card"><h3>Acceleration is conditional</h3><p>Faster paths must answer the same statistical question on controlled scenarios.</p></div>
+    <div class="card"><h3>Statistical target comes first</h3><p>Specify the statistic, estimator, stopping rule, or calibration claim.</p></div>
+    <div class="card"><h3>Reference makes the target executable</h3><p>Readable Python or NumPy turns the target into something optimized code can match.</p></div>
+    <div class="card"><h3>Speed is conditional</h3><p>Optimized paths must answer the same statistical question across controlled scenarios.</p></div>
   </div>
-  <div class="callout"><p>A speedup only counts if the optimized code answers the same statistical question.</p></div>
+  <div class="callout"><p>Speed only counts when the statistic is preserved.</p></div>
   <aside class="notes">Use this as the governing rule for the whole talk. The longer explanation is that optimized code must preserve the scientific meaning of the computation: same data-generating setup, same statistic or estimator, same stopping rule when applicable, and same result within stated tolerance. If the output no longer answers the same statistical question, then it may be useful, but it is not evidence for this speedup claim.</aside>
 </section>
 
 <section class="deck-slide">
   <div class="kicker">Simulation as testing</div>
   <h2>Simulation creates an answer key</h2>
-  <p class="subtitle">In real biomedical data, ground truth is often unavailable.</p>
-  <div class="pipeline-2row">
-    <div class="pipeline-step"><strong>Target behavior</strong><span>What should be recovered, estimated, or calibrated?</span></div>
-    <div class="pipeline-arrow">→</div>
-    <div class="pipeline-step"><strong>Reference implementation</strong><span>Readable code close to the statistical definition.</span></div>
-    <div class="pipeline-arrow">→</div>
-    <div class="pipeline-step"><strong>Scenario grid</strong><span>Easy, null, alternative, and hard cases.</span></div>
-    <div class="pipeline-step"><strong>Validation checks</strong><span>Recovery, calibration, equivalence, tolerance.</span></div>
-    <div class="pipeline-arrow">→</div>
-    <div class="pipeline-step"><strong>Bottleneck</strong><span>Loops, algebra, repetition, memory, or device transfer.</span></div>
-    <div class="pipeline-arrow">→</div>
-    <div class="pipeline-step"><strong>Acceleration</strong><span>Only after what must stay true is visible.</span></div>
+  <p class="subtitle">Real data often lacks ground truth; simulation gives controlled behavior to check.</p>
+
+  <div style="position:relative; margin-top:34px;">
+    <div style="display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:0 70px; align-items:stretch;">
+      <div class="pipeline-step" style="position:relative; min-height:132px; border-top-color:var(--blue);">
+        <div style="position:absolute; top:14px; right:16px; color:var(--blue); font-size:17px; font-weight:950;">01</div>
+        <strong>Statistical target</strong>
+        <span>What should be estimated, recovered, preserved, or calibrated?</span>
+      </div>
+
+      <div class="pipeline-step" style="position:relative; min-height:132px; border-top-color:var(--teal);">
+        <div style="position:absolute; top:14px; right:16px; color:var(--teal); font-size:17px; font-weight:950;">02</div>
+        <strong>Simulation scenarios</strong>
+        <span>Null, alternative, easy, hard, and extreme cases.</span>
+      </div>
+
+      <div class="pipeline-step" style="position:relative; min-height:132px; border-top-color:var(--berry);">
+        <div style="position:absolute; top:14px; right:16px; color:var(--berry); font-size:17px; font-weight:950;">03</div>
+        <strong>Reference implementation</strong>
+        <span>Readable code that makes the target executable.</span>
+      </div>
+
+      <div style="grid-column:1 / -1; text-align:center; color:var(--muted); font-size:18px; font-weight:850; letter-spacing:0.08em; text-transform:uppercase; margin:22px 0 12px;">
+        then validate before timing
+      </div>
+
+      <div class="pipeline-step" style="position:relative; min-height:132px; border-top-color:var(--green);">
+        <div style="position:absolute; top:14px; right:16px; color:var(--green); font-size:17px; font-weight:950;">04</div>
+        <strong>Validation checks</strong>
+        <span>Recovery, calibration, equivalence, tolerance.</span>
+      </div>
+
+      <div class="pipeline-step" style="position:relative; min-height:132px; border-top-color:var(--gold);">
+        <div style="position:absolute; top:14px; right:16px; color:var(--gold); font-size:17px; font-weight:950;">05</div>
+        <strong>Bottleneck shape</strong>
+        <span>Loops, algebra, repetition, memory, or device transfer.</span>
+      </div>
+
+      <div class="pipeline-step" style="position:relative; min-height:132px; border-top-color:var(--orange);">
+        <div style="position:absolute; top:14px; right:16px; color:var(--orange); font-size:17px; font-weight:950;">06</div>
+        <strong>Acceleration</strong>
+        <span>Choose the smallest tool that preserves the checked result.</span>
+      </div>
+    </div>
+
+    <!-- row-one connectors -->
+    <div style="position:absolute; left:31.5%; top:51px; color:var(--muted); font-size:42px; font-weight:950;">→</div>
+    <div style="position:absolute; left:65.2%; top:51px; color:var(--muted); font-size:42px; font-weight:950;">→</div>
+
+    <!-- row-two connectors -->
+    <div style="position:absolute; left:31.5%; top:248px; color:var(--muted); font-size:42px; font-weight:950;">→</div>
+    <div style="position:absolute; left:65.2%; top:248px; color:var(--muted); font-size:42px; font-weight:950;">→</div>
   </div>
 </section>
 
 <section class="deck-slide">
   <div class="kicker">Programmer bridge</div>
-  <h2>Simulation-driven statistical computing is statistical CI</h2>
-  <p class="subtitle">The testing instinct is familiar; the oracle is statistical behavior rather than one expected scalar.</p>
+  <h2>Simulation turns statistical behavior into tests</h2>
+  <p class="subtitle">The testing instinct is familiar; the expected behavior is statistical, not one fixed scalar.</p>
   <div class="mapping-title">How simulation maps to software testing</div>
   <div class="mapping-2">
     <div>Unit tests</div><div>Fixed-seed reference equivalence.</div>
     <div>Property tests</div><div>Null invariants and calibration.</div>
     <div>Stress tests</div><div>Imbalance, outliers, high dimension.</div>
-    <div>Load tests</div><div>Scale N, d, K, p, R, workers, and batch sizes.</div>
-    <div>Regression tests</div><div>Acceptance criteria keep passing.</div>
+    <div>Load tests</div><div>Scale samples, features, repetitions, workers, and batch size.</div>
+    <div>Regression tests</div><div>Acceptance criteria continue to pass.</div>
   </div>
 </section>
 
 <section class="deck-slide">
   <div class="kicker">Why Python</div>
-  <h2>Python is the control plane; the hotspot can move to the right engine</h2>
-  <p class="subtitle">Keep the model readable, then move the measured hotspot into the smallest engine that preserves the validation target.</p>
+  <h2>Python stays the control plane</h2>
+  <p class="subtitle">Keep the statistic readable; move only the measured hotspot.</p>
   <div class="tool-flow">
-    <div class="tool-node"><strong>Python / NumPy reference</strong><span>Executable statistical definition.</span></div>
+    <div class="tool-node"><strong>Python / NumPy reference</strong><span>Reference makes the target executable.</span></div>
     <div class="arrow">→</div>
     <div class="tool-node"><strong>Validation checks</strong><span>Recovery, calibration, equivalence, and acceptance criteria.</span></div>
     <div class="arrow">→</div>
     <div class="tool-node"><strong>Hotspot shape</strong><span>Loops, dense algebra, repetition, or batched arrays.</span></div>
   </div>
   <div class="engine-grid">
-    <div class="engine-card"><strong>NumPy / BLAS</strong><span>Dense algebra and matrix identities.</span></div>
-    <div class="engine-card"><strong>Numba</strong><span>CPU numerical loops without giant temporaries.</span></div>
-    <div class="engine-card"><strong>Threads / Python 3.14</strong><span>Repeated work over shared arrays.</span></div>
+    <div class="engine-card"><strong>NumPy</strong><span>Dense algebra; matrix multiply is BLAS-backed.</span></div>
+    <div class="engine-card"><strong>Numba</strong><span>CPU numerical loops without giant temporary arrays.</span></div>
+    <div class="engine-card"><strong>Threads / workers</strong><span>Repeated work over shared arrays.</span></div>
     <div class="engine-card"><strong>JAX / A100</strong><span>Batched array programs after reformulation.</span></div>
   </div>
 </section>
 
 <section class="deck-slide">
   <div class="kicker">Why these two examples</div>
-  <h2>Two workloads, two statistical computing shapes</h2>
+  <h2>Two workloads, two bottleneck shapes</h2>
   <div class="workload-columns">
     <div class="workload-card">
       <h3>k-means = iterative model fitting</h3>
@@ -545,36 +794,35 @@
 
 <section class="deck-slide">
   <div class="kicker">Evidence ladder</div>
-  <h2>Evidence ladder: trust, scale, acceleration</h2>
+  <h2>Evidence ladder: validation, scale, acceleration</h2>
   <div class="ladder">
-    <div class="card"><h3 class="accent-blue">MacBook Air</h3><p>Trust tier: controlled simulation and reference equivalence.</p></div>
+    <div class="card"><h3 class="accent-blue">MacBook Air</h3><p>Can I trust the statistic and implementation?</p></div>
     <div class="arrow">→</div>
-    <div class="card"><h3 class="accent-green">Linux server CPU</h3><p>Scale tier: larger shapes, parallelism, and memory accounting.</p></div>
+    <div class="card"><h3 class="accent-green">Linux server CPU</h3><p>What scales with larger shapes and parallelism?</p></div>
     <div class="arrow">→</div>
-    <div class="card"><h3 class="accent-berry">A100 GPU</h3><p>Accelerator tier: only when the pipeline is batched and device-resident.</p></div>
+    <div class="card"><h3 class="accent-berry">A100 GPU</h3><p>Does the validated pipeline fit the accelerator?</p></div>
   </div>
-  <div class="cards-3" style="margin-top:30px;">
-    <div class="card"><h3>Correctness before runtime</h3><p>Every timing row carries a validation status.</p></div>
-    <div class="card"><h3>Warm timing plus memory</h3><p>Cold calls, warm medians, and RSS are logged separately.</p></div>
-    <div class="card"><h3>Unavailable is data</h3><p>JIT, GPU sync, and interpreter state are explicitly labeled.</p></div>
+  <div class="cards-2" style="margin-top:30px;">
+    <div class="card"><h3>No hidden wins</h3><p>Timeouts, OOMs, and skipped rows stay explicit.</p></div>
+    <div class="card"><h3>Not a hardware leaderboard</h3><p>Each environment answers a different question.</p></div>
   </div>
 </section>
 
 <section class="deck-slide">
   <div class="section-title">
     <div class="kicker">Workload 1</div>
-    <h1>k-means as iterative model-fitting pressure</h1>
+    <h1>k-means as iterative assignment-update pressure</h1>
     <div class="bar"></div>
-    <p class="subtitle">Same data and initialization; vary geometry and scale.</p>
+    <p class="subtitle">Same validation contract; vary geometry and scale.</p>
   </div>
 </section>
 
 <section class="deck-slide">
   <div class="kicker">Method visualization</div>
   <h2>How k-means moves</h2>
-  <p class="subtitle">Each flower is a point; k-means uses petal measurements to form 3 clusters.</p>
-  <div class="method-layout">
-    <div class="method-video-box">
+  <p class="subtitle">Each flower is a point; k-means is asked to form 3 clusters from petal length and petal width.</p>
+  <div class="method-layout" style="grid-template-columns:minmax(0, 0.68fr) minmax(340px, 0.32fr); margin-top:16px;">
+    <div class="method-video-box" style="height:488px; padding:0; border:0; border-radius:0; background:transparent; box-shadow:none;">
       <video class="method-video" autoplay muted loop playsinline preload="auto"
              poster="assets/posters/kmeans_animation_poster.png">
         <source src="assets/videos/kmeans_animation.webm" type="video/webm">
@@ -582,97 +830,141 @@
       </video>
       <img class="video-poster-fallback" src="assets/posters/kmeans_animation_poster.png" alt="k-means animation poster frame" />
     </div>
-    <div class="method-caption">
-      <h3>One Lloyd step</h3>
-      <ol>
-        <li>assign each flower to the nearest centroid</li>
-        <li>update centroids from assigned flowers</li>
-        <li>repeat until assignments stabilize</li>
-      </ol>
-      <p class="takeaway">Iteration t+1 depends on centroids from iteration t.</p>
+    <div class="method-caption" style="min-height:488px; padding:16px 18px;">
+      <h3 style="font-size:20px; line-height:1.05; margin-bottom:8px;">Fixed start, then Lloyd updates</h3>
+
+      <div style="display:grid; gap:10px; margin-top:10px;">
+        <div style="border-left:7px solid var(--berry); background:#fff7e9; padding:10px 13px; border-radius:10px;">
+          <strong style="display:block; color:var(--ink); font-size:17px;">1. Fixed initialization</strong>
+          <span style="display:block; color:var(--muted); font-size:15px; line-height:1.18; margin-top:4px;">3 starting centroids, not one per final group.</span>
+        </div>
+
+        <div style="border-left:7px solid var(--blue); background:#fff7e9; padding:10px 13px 12px; border-radius:10px;">
+          <strong style="display:block; color:var(--ink); font-size:17px;">2. One Lloyd run</strong>
+
+          <div style="display:grid; grid-template-columns:minmax(0, 1fr) 26px minmax(0, 1fr); gap:8px; align-items:stretch; margin-top:9px;">
+            <div style="border:1px solid var(--line); border-top:6px solid var(--blue); border-radius:11px; padding:10px 9px; background:#fffdf8;">
+              <strong style="display:block; color:var(--ink); font-size:16px; line-height:1.1;">Assign</strong>
+              <span style="display:block; color:var(--muted); font-size:13px; line-height:1.14; margin-top:5px;">nearest centroid</span>
+            </div>
+
+            <div style="display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:24px; font-weight:950;">→</div>
+
+            <div style="border:1px solid var(--line); border-top:6px solid var(--green); border-radius:11px; padding:10px 9px; background:#fffdf8;">
+              <strong style="display:block; color:var(--ink); font-size:16px; line-height:1.1;">Update</strong>
+              <span style="display:block; color:var(--muted); font-size:13px; line-height:1.14; margin-top:5px;">assigned mean</span>
+            </div>
+          </div>
+
+          <div style="margin-top:8px; text-align:center; color:var(--teal); font-size:14px; line-height:1.14; font-weight:850;">
+            Repeat until stable
+          </div>
+        </div>
+
+        <div style="border-left:7px solid var(--green); background:#fff7e9; padding:10px 13px; border-radius:10px;">
+          <strong style="display:block; color:var(--ink); font-size:17px;">3. Stop when stable</strong>
+          <span style="display:block; color:var(--muted); font-size:15px; line-height:1.18; margin-top:4px;">End when assignments stop changing.</span>
+        </div>
+      </div>
+
+      <p class="takeaway" style="margin-top:12px; font-size:15px; line-height:1.12;">Centroids move because each update depends on the previous assignments.</p>
+      <p class="tool-note" style="margin-top:9px; font-size:13px; line-height:1.14;">Species labels are context; k-means sees only petal length and petal width.</p>
     </div>
   </div>
-  <aside class="notes">We use petal length and petal width from Iris only as a visual method example. The species labels help the audience understand that there are three biological groups, but k-means only sees the two numerical measurements. Setosa separates easily; Versicolor and Virginica overlap, which makes the iteration more interesting than three clean toy groups. The assignment step depends on the current centroids, and the next centroids depend on the assignments. That dependency is why this example is useful for discussing loops, temporary arrays, and compiled kernels.</aside>
+  <aside class="notes">We use Iris petal length and petal width as a visual method example. The image inset reminds the audience what petal and sepal refer to biologically, but k-means only sees petal length and petal width. Species labels help the audience understand the context, but they are not model inputs. The animation starts at iteration 0 with fixed pedagogical starting centroids that are not one-per-final-cluster, so the movement is visible. Lloyd iterations alternate assignment and update steps until assignments stop changing.</aside>
 </section>
 
 <section class="deck-slide">
   <div class="kicker">Why k-means works here</div>
   <h2>Why k-means is a useful test case</h2>
-  <p class="subtitle">A simple algorithm exposes the same pressures we see in many iterative methods.</p>
-  <div style="display:grid; grid-template-columns:minmax(0, 0.50fr) minmax(0, 0.50fr); gap:26px; margin-top:24px; align-items:stretch;">
-    <div class="panel" style="min-height:480px; padding:24px;">
-      <h3 style="color:var(--ink); margin-bottom:18px;">Iterative loop</h3>
-      <svg viewBox="0 0 560 305" style="display:block; width:100%; height:305px;" role="img" aria-label="points assign to centroids update centroids repeat">
-        <defs>
-          <marker id="slide10-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-            <path d="M 0 0 L 10 5 L 0 10 z" fill="#52616d"></path>
-          </marker>
-        </defs>
-        <rect x="12" y="18" width="536" height="270" rx="14" fill="#fffaf2" stroke="#dfd3c0" stroke-width="2"></rect>
-        <g transform="translate(48 66)">
-          <circle cx="18" cy="28" r="6" fill="#2368ad"></circle>
-          <circle cx="45" cy="18" r="6" fill="#2368ad"></circle>
-          <circle cx="38" cy="52" r="6" fill="#e66a2c"></circle>
-          <circle cx="72" cy="40" r="6" fill="#2f7d32"></circle>
-          <text x="42" y="112" fill="#15202b" font-size="22" font-weight="850" text-anchor="middle">points</text>
-        </g>
-        <line x1="150" y1="118" x2="220" y2="118" stroke="#52616d" stroke-width="4" marker-end="url(#slide10-arrow)"></line>
-        <g transform="translate(235 62)">
-          <circle cx="20" cy="25" r="6" fill="#2368ad"></circle>
-          <circle cx="45" cy="18" r="6" fill="#2368ad"></circle>
-          <circle cx="38" cy="52" r="6" fill="#e66a2c"></circle>
-          <circle cx="78" cy="42" r="6" fill="#2f7d32"></circle>
-          <path d="M20 25 L52 30 M45 18 L52 30 M38 52 L52 30 M78 42 L52 30" stroke="#dfd3c0" stroke-width="2"></path>
-          <path d="M43 21 L61 39 M61 21 L43 39" stroke="#15202b" stroke-width="5" stroke-linecap="round"></path>
-          <text x="47" y="105" fill="#15202b" font-size="19" font-weight="850" text-anchor="middle">
-            <tspan x="47" dy="0">assign to</tspan>
-            <tspan x="47" dy="22">centroids</tspan>
-          </text>
-        </g>
-        <line x1="372" y1="118" x2="438" y2="118" stroke="#52616d" stroke-width="4" marker-end="url(#slide10-arrow)"></line>
-        <g transform="translate(448 66)">
-          <circle cx="18" cy="28" r="6" fill="#2368ad" opacity="0.65"></circle>
-          <circle cx="45" cy="18" r="6" fill="#2368ad" opacity="0.65"></circle>
-          <circle cx="38" cy="52" r="6" fill="#e66a2c" opacity="0.65"></circle>
-          <circle cx="72" cy="40" r="6" fill="#2f7d32" opacity="0.65"></circle>
-          <path d="M38 15 L56 33 M56 15 L38 33" stroke="#15202b" stroke-width="5" stroke-linecap="round"></path>
-          <path d="M52 36 L70 54 M70 36 L52 54" stroke="#15202b" stroke-width="5" stroke-linecap="round"></path>
-          <text x="43" y="105" fill="#15202b" font-size="19" font-weight="850" text-anchor="middle">
-            <tspan x="43" dy="0">update</tspan>
-            <tspan x="43" dy="22">centroids</tspan>
-          </text>
-        </g>
-        <path d="M478 215 C355 272, 185 270, 87 202" fill="none" stroke="#1f7a8c" stroke-width="4" marker-end="url(#slide10-arrow)"></path>
-        <text x="250" y="264" fill="#1f7a8c" font-size="23" font-weight="900" text-anchor="middle">repeat</text>
-      </svg>
-      <div style="margin-top:20px; border-left:9px solid var(--orange); background:#fff3e6; padding:17px 20px;">
-        <p style="font-size:25px; font-weight:900; color:var(--ink);">distance work per iteration</p>
-        <p style="font-size:28px; font-weight:900; color:var(--blue); margin-top:4px;">roughly scales with N × K × d</p>
+  <p class="subtitle">A simple algorithm exposes the same pressures we see in many iterative statistical methods.</p>
+
+  <div style="display:grid; grid-template-columns:minmax(0, 0.48fr) minmax(0, 0.52fr); gap:24px; margin-top:18px; align-items:stretch;">
+    <div class="panel" style="padding:20px 24px; min-height:388px;">
+      <h3 style="color:var(--ink); margin-bottom:12px;">Iterative assignment-update shape</h3>
+
+      <div style="display:grid; grid-template-columns:1fr 34px 1fr 34px 1fr; gap:9px; align-items:stretch; margin-top:14px;">
+        <div style="border:1px solid var(--line); border-top:7px solid var(--blue); border-radius:13px; padding:13px 12px; background:#fffaf2; min-height:118px;">
+          <strong style="display:block; font-size:20px; line-height:1.1;">assign</strong>
+          <span style="display:block; color:var(--muted); font-size:16px; line-height:1.18; margin-top:8px;">nearest centroid for each point</span>
+        </div>
+        <div style="display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:32px; font-weight:950;">→</div>
+        <div style="border:1px solid var(--line); border-top:7px solid var(--green); border-radius:13px; padding:13px 12px; background:#fffaf2; min-height:118px;">
+          <strong style="display:block; font-size:20px; line-height:1.1;">update</strong>
+          <span style="display:block; color:var(--muted); font-size:16px; line-height:1.18; margin-top:8px;">recompute centroids from assigned points</span>
+        </div>
+        <div style="display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:32px; font-weight:950;">→</div>
+        <div style="border:1px solid var(--line); border-top:7px solid var(--orange); border-radius:13px; padding:13px 12px; background:#fffaf2; min-height:118px;">
+          <strong style="display:block; font-size:20px; line-height:1.1;">repeat</strong>
+          <span style="display:block; color:var(--muted); font-size:16px; line-height:1.18; margin-top:8px;">stop when assignments stabilize</span>
+        </div>
+      </div>
+
+      <div style="margin-top:18px; border-left:9px solid var(--orange); background:#fff3e6; padding:15px 20px;">
+        <p style="font-size:22px; font-weight:900; color:var(--ink); line-height:1.12;">Distance work repeats every iteration</p>
+        <p style="font-size:33px; font-weight:950; color:var(--blue); line-height:1.0; margin-top:8px;">N × K × d</p>
+        <p style="font-size:17px; color:var(--muted); line-height:1.2; margin-top:7px;">samples × clusters × dimensions</p>
+      </div>
+
+      <div style="margin-top:14px; display:grid; grid-template-columns:30px 1fr; gap:10px; align-items:start;">
+        <span style="color:var(--teal); font-size:25px; font-weight:950;">↻</span>
+        <p style="font-size:18px; line-height:1.22; color:var(--ink);">Each iteration depends on the previous centroids, so the computational shape is visible.</p>
       </div>
     </div>
-    <div style="display:grid; gap:15px; align-content:stretch;">
-      <div class="panel" style="padding:20px 22px; border-left:9px solid var(--blue);">
-        <h3>What must stay true</h3>
+
+    <div style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:14px; align-content:stretch;">
+      <div class="panel" style="padding:18px 20px; border-left:9px solid var(--blue); min-height:178px;">
+        <h3>Validation contract</h3>
         <p>same data<br>same initial centroids<br>same stopping rule<br>comparable final inertia</p>
       </div>
-      <div class="panel" style="padding:20px 22px; border-left:9px solid var(--gold);">
-        <h3>Harder data settings</h3>
-        <p>overlapping clusters<br>imbalanced clusters<br>outliers<br>higher dimension</p>
+
+      <div class="panel" style="padding:18px 20px; border-left:9px solid var(--gold); min-height:178px;">
+        <h3>Harder scenarios</h3>
+        <p>overlap<br>imbalance<br>outliers<br>higher dimension</p>
       </div>
-      <div class="panel" style="padding:20px 22px; border-left:9px solid var(--green);">
-        <h3>Why Python tools matter</h3>
-        <p>Numba: explicit loops<br>NumPy/BLAS: distance algebra<br>JAX/A100: large regular array work</p>
+
+      <div class="panel" style="padding:18px 20px; border-left:9px solid var(--green); min-height:178px;">
+        <h3>Bottleneck shapes</h3>
+        <p>explicit loops<br>dense algebra<br>regular array work</p>
+      </div>
+
+      <div class="panel" style="padding:18px 20px; border-left:9px solid var(--berry); min-height:178px;">
+        <h3>Why it generalizes</h3>
+        <p>Assignment-update pressure appears in broader iterative methods.</p>
       </div>
     </div>
   </div>
+
+  <div class="bottom-takeaway">The main computational pressure is repeated distance work: N × K × d every iteration.</div>
+  <aside class="notes">k-means is not the most advanced model, but it is a useful test case because the statistical and computational pressures are easy to see. The validation contract is fixed: same data, same initial centroids, same stopping rule, and comparable final inertia. The algorithm also becomes harder under overlap, imbalance, outliers, and higher dimension. Computationally, the repeated distance work scales with N times K times d every iteration. That lets us explain bottleneck shapes without turning Numba, NumPy, and JAX / A100 into a ranking.</aside>
 </section>
 
 <section class="deck-slide">
   <div class="kicker">Simulation result before speed result</div>
-  <h2>First ask: did k-means recover the simulated clusters?</h2>
-  <div class="figure-box" style="height:535px;"><img src="../experiments/results/macbook_air_long/latest/figures/kmeans_recovery_difficulty_map.png" alt="k-means ARI recovery difficulty heatmap" /></div>
-  <p class="caption">ARI = 1 is perfect recovery; near 0 is random-like. Low ARI means the method did not recover the simulated truth in that scenario.</p>
-  <div class="bottom-takeaway">Do not use speed as a success claim where statistical recovery is poor.</div>
+  <h2>First ask: did k-means recover the known simulated groups?</h2>
+  <p class="subtitle" style="margin-top:8px; font-size:21px;">Simulation gives the answer key: which points were generated from which group.</p>
+
+  <div style="display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:12px; margin-top:12px;">
+    <div class="note-card" style="padding:10px 13px; border-left-width:7px;">
+      <strong style="font-size:18px; margin-bottom:3px;">ARI recovery score</strong>
+      <span style="font-size:15.5px; line-height:1.17;">1 = perfect; 0 ≈ random-like</span>
+    </div>
+    <div class="note-card" style="padding:10px 13px; border-left-width:7px;">
+      <strong style="font-size:18px; margin-bottom:3px;">Scenario stressors</strong>
+      <span style="font-size:15.5px; line-height:1.17;">separation, dimension, outliers, imbalance</span>
+    </div>
+    <div class="note-card" style="padding:10px 13px; border-left-width:7px;">
+      <strong style="font-size:18px; margin-bottom:3px;">Before timing</strong>
+      <span style="font-size:15.5px; line-height:1.17;">poor recovery means speed is not evidence of success</span>
+    </div>
+  </div>
+
+  <div style="height:390px; margin-top:10px; display:flex; align-items:center; justify-content:center; border:1px solid rgba(21, 32, 43, 0.16); background:#fff;">
+    <img src="../experiments/results/macbook_air_long/latest/figures/kmeans_recovery_slide_heatmap.svg" alt="large k-means ARI recovery heatmap by scenario" style="display:block; width:100%; height:100%; object-fit:contain;" />
+  </div>
+
+  <div class="bottom-takeaway" style="font-size:21px; padding:12px 16px;">Read this as a scenario difficulty summary, not a monotone law.</div>
+  <aside class="notes">This slide is about statistical recovery, not runtime. Because the data are simulated, we know the true generating group for each point. ARI summarizes agreement between fitted clusters and simulated groups. High ARI means k-means recovered the simulated grouping; low ARI means the scenario is statistically hard for k-means. Low ARI is not an implementation bug by itself. Read this as a finite scenario difficulty summary, not a monotone law: the plotted clean high-d row at separation 4 and the outlier row values were verified from the source medians. Poor recovery means speed is not evidence of success.</aside>
 </section>
 
 <section class="deck-slide">
@@ -687,9 +979,9 @@
         <div class="flow-box" style="min-height:72px; padding:14px 16px;"><strong>same stopping rule</strong></div>
       </div>
       <div style="text-align:center; color:var(--muted); font-size:28px; line-height:1; font-weight:900; margin:9px 0 6px;">↓</div>
-      <div class="flow-box" style="min-height:72px; padding:15px 22px; border-top-color:var(--gold);"><strong>readable reference implementation</strong><span>the validation target before any speed claim</span></div>
+      <div class="flow-box" style="min-height:72px; padding:15px 22px; border-top-color:var(--gold);"><strong>readable reference implementation</strong><span>executable oracle for the fixed-init comparison</span></div>
       <div style="text-align:center; color:var(--muted); font-size:28px; line-height:1; font-weight:900; margin:9px 0 6px;">↓</div>
-      <div class="flow-box" style="min-height:72px; padding:15px 22px; border-top-color:var(--green);"><strong>Numba / NumPy distance algebra / JAX candidates</strong><span>optimized paths must preserve the same fixed-init result</span></div>
+      <div class="flow-box" style="min-height:72px; padding:15px 22px; border-top-color:var(--green);"><strong>Numba / NumPy distance algebra / JAX candidates</strong><span>optimized paths must preserve the fixed-init comparison</span></div>
       <div style="text-align:center; color:var(--muted); font-size:28px; line-height:1; font-weight:900; margin:9px 0 6px;">↓</div>
       <div class="flow-box" style="min-height:72px; padding:15px 22px; border-top-color:var(--berry);"><strong>compare final inertia</strong><span>relative difference must stay below tolerance</span></div>
     </div>
@@ -706,8 +998,72 @@
 </section>
 
 <section class="deck-slide">
+  <div class="kicker">Implementation shape</div>
+  <h2>The same distance step can be expressed three ways</h2>
+  <p class="subtitle">Same validation contract; three ways to express the distance computation.</p>
+
+  <div style="display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:18px; margin-top:18px; align-items:stretch;">
+    <div class="panel" style="padding:18px 18px; border-top:8px solid var(--green); min-height:360px;">
+      <h3 style="color:var(--ink);">Numba</h3>
+      <p class="caption" style="margin-top:6px;">Keep the assignment step as explicit loops.</p>
+
+      <pre style="margin-top:12px; padding:12px 14px; background:#fffaf2; border:1px solid var(--line); border-radius:12px; color:var(--ink); font-size:15px; line-height:1.26; white-space:pre-wrap;"><code style="display:block; white-space:pre-wrap;">@njit(parallel=True)
+for i in prange(n):
+    best = inf
+
+    for k in range(K):
+        dist = sqdist(X[i], C[k])
+        if dist &lt; best:
+            best = dist
+            labels[i] = k</code></pre>
+
+      <div style="margin-top:12px; border-left:7px solid var(--green); background:#f2f8ef; padding:10px 12px;">
+        <p style="font-size:16px; line-height:1.2;"><strong>Shape:</strong> loop-heavy CPU work without Python loop overhead.</p>
+      </div>
+    </div>
+
+    <div class="panel" style="padding:18px 18px; border-top:8px solid var(--blue); min-height:360px;">
+      <h3 style="color:var(--ink);">NumPy</h3>
+      <p class="caption" style="margin-top:6px;">Rewrite distances as dense matrix algebra.</p>
+
+      <pre style="margin-top:12px; padding:12px 14px; background:#fffaf2; border:1px solid var(--line); border-radius:12px; color:var(--ink); font-size:15px; line-height:1.26; white-space:pre-wrap;"><code style="display:block; white-space:pre-wrap;">x2 = sumsq(X)[:, None]
+c2 = sumsq(C)[None, :]
+
+dist2 = x2 + c2 - 2 * (X @ C.T)
+
+labels = argmin(dist2, axis=1)</code></pre>
+
+      <div style="margin-top:12px; border-left:7px solid var(--blue); background:#eef5fb; padding:10px 12px;">
+        <p style="font-size:16px; line-height:1.2;"><strong>Shape:</strong> readable array expression; heavy matrix multiply is BLAS-backed.</p>
+      </div>
+    </div>
+
+    <div class="panel" style="padding:18px 18px; border-top:8px solid var(--berry); min-height:360px;">
+      <h3 style="color:var(--ink);">JAX / A100</h3>
+      <p class="caption" style="margin-top:6px;">Use the same array expression on device.</p>
+
+      <pre style="margin-top:12px; padding:12px 14px; background:#fffaf2; border:1px solid var(--line); border-radius:12px; color:var(--ink); font-size:15px; line-height:1.26; white-space:pre-wrap;"><code style="display:block; white-space:pre-wrap;">@jax.jit
+def assign(X, C):
+    x2 = sumsq(X)[:, None]
+    c2 = sumsq(C)[None, :]
+
+    dist2 = x2 + c2 - 2 * (X @ C.T)
+    return jnp.argmin(dist2, axis=1)</code></pre>
+
+      <div style="margin-top:12px; border-left:7px solid var(--berry); background:#fbedf3; padding:10px 12px;">
+        <p style="font-size:16px; line-height:1.2;"><strong>Shape:</strong> large regular array work, only useful after validation and enough scale.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-takeaway">Same data. Same initialization. Same stopping rule. Then choose the expression that matches the bottleneck.</div>
+  <aside class="notes">This slide is not about teaching full k-means syntax. It is here to make the benchmark interpretable. Numba keeps the assignment step close to explicit loops and removes Python loop overhead. NumPy rewrites the distance computation as dense matrix algebra; the code is NumPy, while the heavy matrix multiply is BLAS-backed underneath. JAX / A100 uses nearly the same array expression on the accelerator, but it is only useful after validation and enough scale. The validation contract is unchanged: same data, same initial centroids, same stopping rule, and comparable final inertia.</aside>
+</section>
+
+<section class="deck-slide">
   <div class="kicker">Scale tier</div>
   <h2>Server k-means: the best engine depends on the shape</h2>
+  <p class="subtitle" style="margin-top:8px; font-size:20px;">Representative validated warm rows; not a hardware leaderboard.</p>
   <div style="display:grid; gap:14px; margin-top:22px;">
     <div class="panel" style="padding:18px 22px; display:grid; grid-template-columns:270px 1fr 310px; gap:20px; align-items:center; border-left:9px solid var(--green);">
       <div>
@@ -715,11 +1071,11 @@
         <p class="caption" style="margin-top:6px;">N=100k, d=10, K=5</p>
       </div>
       <div style="display:grid; gap:8px;">
-        <div style="display:grid; grid-template-columns:105px 1fr 58px; gap:10px; align-items:center;"><span style="font-size:17px; font-weight:850;">Numba</span><div style="height:18px; background:#e6f0e4;"><div style="width:98%; height:100%; background:var(--green);"></div></div><strong>0.49s</strong></div>
-        <div style="display:grid; grid-template-columns:105px 1fr 58px; gap:10px; align-items:center;"><span style="font-size:17px; font-weight:850;">BLAS</span><div style="height:18px; background:#e4edf7;"><div style="width:100%; height:100%; background:var(--blue);"></div></div><strong>0.50s</strong></div>
-        <div style="display:grid; grid-template-columns:105px 1fr 58px; gap:10px; align-items:center;"><span style="font-size:17px; font-weight:850;">A100</span><div style="height:18px; background:#f5e1eb;"><div style="width:84%; height:100%; background:var(--berry);"></div></div><strong>0.42s</strong></div>
+        <div style="display:grid; grid-template-columns:122px 1fr 58px; gap:10px; align-items:center;"><span style="font-size:17px; font-weight:850;">Numba</span><div style="height:18px; background:#e6f0e4;"><div style="width:98%; height:100%; background:var(--green);"></div></div><strong>0.49s</strong></div>
+        <div style="display:grid; grid-template-columns:122px 1fr 58px; gap:10px; align-items:center;"><span style="font-size:17px; font-weight:850;">NumPy</span><div style="height:18px; background:#e4edf7;"><div style="width:100%; height:100%; background:var(--blue);"></div></div><strong>0.50s</strong></div>
+        <div style="display:grid; grid-template-columns:122px 1fr 58px; gap:10px; align-items:center;"><span style="font-size:17px; font-weight:850;">JAX / A100</span><div style="height:18px; background:#f5e1eb;"><div style="width:84%; height:100%; background:var(--berry);"></div></div><strong>0.42s</strong></div>
       </div>
-      <p style="font-size:18px; line-height:1.22; color:var(--muted);">all close; acceleration is not worth over-interpreting</p>
+      <p style="font-size:18px; line-height:1.22; color:var(--muted);">all close; do not over-interpret the winner</p>
     </div>
     <div class="panel" style="padding:18px 22px; display:grid; grid-template-columns:270px 1fr 310px; gap:20px; align-items:center; border-left:9px solid var(--blue);">
       <div>
@@ -727,11 +1083,11 @@
         <p class="caption" style="margin-top:6px;">N=1M, d=256, K=50</p>
       </div>
       <div style="display:grid; gap:8px;">
-        <div style="display:grid; grid-template-columns:105px 1fr 58px; gap:10px; align-items:center;"><span style="font-size:17px; font-weight:850;">Numba</span><div style="height:18px; background:#e6f0e4;"><div style="width:100%; height:100%; background:var(--green);"></div></div><strong>65s</strong></div>
-        <div style="display:grid; grid-template-columns:105px 1fr 58px; gap:10px; align-items:center;"><span style="font-size:17px; font-weight:850;">BLAS</span><div style="height:18px; background:#e4edf7;"><div style="width:49%; height:100%; background:var(--blue);"></div></div><strong>32s</strong></div>
-        <div style="display:grid; grid-template-columns:105px 1fr 58px; gap:10px; align-items:center;"><span style="font-size:17px; font-weight:850;">A100</span><div style="height:18px; background:#f5e1eb;"><div style="width:57%; height:100%; background:var(--berry);"></div></div><strong>37s</strong></div>
+        <div style="display:grid; grid-template-columns:122px 1fr 58px; gap:10px; align-items:center;"><span style="font-size:17px; font-weight:850;">Numba</span><div style="height:18px; background:#e6f0e4;"><div style="width:100%; height:100%; background:var(--green);"></div></div><strong>65s</strong></div>
+        <div style="display:grid; grid-template-columns:122px 1fr 58px; gap:10px; align-items:center;"><span style="font-size:17px; font-weight:850;">NumPy</span><div style="height:18px; background:#e4edf7;"><div style="width:49%; height:100%; background:var(--blue);"></div></div><strong>32s</strong></div>
+        <div style="display:grid; grid-template-columns:122px 1fr 58px; gap:10px; align-items:center;"><span style="font-size:17px; font-weight:850;">JAX / A100</span><div style="height:18px; background:#f5e1eb;"><div style="width:57%; height:100%; background:var(--berry);"></div></div><strong>37s</strong></div>
       </div>
-      <p style="font-size:18px; line-height:1.22; color:var(--muted);">BLAS/A100 can help when distance computation maps to dense array work</p>
+      <p style="font-size:18px; line-height:1.22; color:var(--muted);">BLAS-backed NumPy wins here; A100 is not automatic.</p>
     </div>
     <div class="panel" style="padding:18px 22px; display:grid; grid-template-columns:270px 1fr 310px; gap:20px; align-items:center; border-left:9px solid var(--berry);">
       <div>
@@ -739,26 +1095,27 @@
         <p class="caption" style="margin-top:6px;">N=5M, d=64, K=20</p>
       </div>
       <div style="display:grid; gap:8px;">
-        <div style="display:grid; grid-template-columns:105px 1fr 58px; gap:10px; align-items:center;"><span style="font-size:17px; font-weight:850;">Numba</span><div style="height:18px; background:#e6f0e4;"><div style="width:100%; height:100%; background:var(--green);"></div></div><strong>120s</strong></div>
-        <div style="display:grid; grid-template-columns:105px 1fr 58px; gap:10px; align-items:center;"><span style="font-size:17px; font-weight:850;">BLAS</span><div style="height:18px; background:#e4edf7;"><div style="width:76%; height:100%; background:var(--blue);"></div></div><strong>91s</strong></div>
-        <div style="display:grid; grid-template-columns:105px 1fr 58px; gap:10px; align-items:center;"><span style="font-size:17px; font-weight:850;">A100</span><div style="height:18px; background:#f5e1eb;"><div style="width:28%; height:100%; background:var(--berry);"></div></div><strong>33s</strong></div>
+        <div style="display:grid; grid-template-columns:122px 1fr 58px; gap:10px; align-items:center;"><span style="font-size:17px; font-weight:850;">Numba</span><div style="height:18px; background:#e6f0e4;"><div style="width:100%; height:100%; background:var(--green);"></div></div><strong>120s</strong></div>
+        <div style="display:grid; grid-template-columns:122px 1fr 58px; gap:10px; align-items:center;"><span style="font-size:17px; font-weight:850;">NumPy</span><div style="height:18px; background:#e4edf7;"><div style="width:76%; height:100%; background:var(--blue);"></div></div><strong>91s</strong></div>
+        <div style="display:grid; grid-template-columns:122px 1fr 58px; gap:10px; align-items:center;"><span style="font-size:17px; font-weight:850;">JAX / A100</span><div style="height:18px; background:#f5e1eb;"><div style="width:28%; height:100%; background:var(--berry);"></div></div><strong>33s</strong></div>
       </div>
-      <p style="font-size:18px; line-height:1.22; color:var(--muted);">A100 wins here because there is enough regular array work</p>
+      <p style="font-size:18px; line-height:1.22; color:var(--muted);">JAX / A100 wins here because there is enough regular array work.</p>
     </div>
   </div>
   <div class="bottom-takeaway">These are representative validated rows, not a universal ranking.</div>
+  <aside class="notes">This is a representative-shape comparison, not a universal ranking or hardware leaderboard. These are validated warm rows. The slide labels should describe what the statistician writes: Numba, NumPy, and JAX / A100. NumPy is the user-facing code path; for dense distance algebra, its matrix multiply is BLAS-backed. JAX / A100 means the JAX implementation running on A100 hardware. Numba can be slower than NumPy on dense algebra because explicit compiled loops do not automatically become a highly optimized GEMM. BLAS uses cache blocking, SIMD, threading, and mature matrix-multiply kernels. Numba is still useful when the bottleneck is loop-shaped or when avoiding giant temporary arrays matters. The point is shape matching: Numba for explicit loops, NumPy for dense algebra, and JAX / A100 for large regular device-friendly work.</aside>
 </section>
 
 <section class="deck-slide">
   <div class="kicker">k-means takeaway</div>
   <h2>The tool choice follows the simulation signal</h2>
   <div class="rule-grid">
-    <div class="rule-card"><strong>Unstable recovery</strong><span>Do not optimize yet; the validation target is not ready.</span></div>
+    <div class="rule-card"><strong>Poor recovery</strong><span>Do not optimize yet; first interpret the method and scenario.</span></div>
     <div class="rule-card"><strong>Scalar loops</strong><span>Use Numba to compile explicit CPU kernels.</span></div>
-    <div class="rule-card"><strong>Dense distance algebra</strong><span>Use NumPy/BLAS when the rewrite removes large temporaries.</span></div>
-    <div class="rule-card"><strong>Huge regular work</strong><span>Use JAX/A100 only after enough batched work exists.</span></div>
+    <div class="rule-card"><strong>Dense distance algebra</strong><span>Use NumPy when the rewrite removes large temporaries; its matrix multiply is BLAS-backed.</span></div>
+    <div class="rule-card"><strong>Large regular work</strong><span>Use JAX / A100 only after enough regular array work exists.</span></div>
   </div>
-  <div class="callout"><p>k-means stands in for a large class of iterative statistical algorithms: EM, coordinate descent, optimization loops, and simulation-based estimators.</p></div>
+  <div class="callout"><p>The same pressure appears in EM, coordinate descent, optimization loops, and simulation-based estimators.</p></div>
 </section>
 
 <section class="deck-slide">
@@ -766,7 +1123,7 @@
     <div class="kicker">Workload 2</div>
     <h1>Permutation tests as resampling inference pressure</h1>
     <div class="bar"></div>
-    <p class="subtitle">A simple inference procedure becomes expensive when we need thousands of null draws across a high-dimensional features matrix.</p>
+    <p class="subtitle">A simple inference procedure becomes expensive when null resampling meets many features.</p>
   </div>
 </section>
 
@@ -788,18 +1145,18 @@
       <ol>
         <li>shuffle group labels</li>
         <li>compute feature-wise group differences</li>
-        <li>repeat to form the null distribution</li>
+        <li>repeat to build the null</li>
       </ol>
-      <p class="takeaway">The repetitions are independent; the pipeline is not free.</p>
+      <p class="takeaway">Independent repetitions still create real work.</p>
     </div>
   </div>
-  <aside class="notes">This animation shows the ordinary permutation test first: shuffle labels, recompute feature-wise group differences, and repeat to form the null distribution. Then introduce the implementation view: repeated permutations can become contrast rows W, and W @ X computes batches of feature statistics. The thread/process, Numba, and JAX/A100 discussion belongs here verbally, not as slide text.</aside>
+  <aside class="notes">This animation should stay at the method level: shuffle labels, recompute feature-wise group differences, and repeat to form the null distribution. The main point is that independent repetitions are statistically simple but computationally real. Save the implementation rewrite for the next code-shape slide.</aside>
 </section>
 
 <section class="deck-slide">
   <div class="kicker">Scale driver</div>
   <h2>Why this becomes expensive</h2>
-  <p class="subtitle">R permutations across p features means R × p null statistics.</p>
+  <p class="subtitle">The work scales like R × p, even when the optimized path streams results down to p counts.</p>
   <div style="display:grid; grid-template-columns:0.34fr 70px 0.25fr 70px 0.33fr; gap:0; margin-top:28px; align-items:center;">
     <div class="panel" style="padding:24px; min-height:405px;">
       <h3 style="color:var(--ink);">X matrix</h3>
@@ -833,17 +1190,17 @@
     </div>
     <div style="font-size:46px; color:var(--muted); font-weight:900; text-align:center;">→</div>
     <div class="panel" style="padding:24px; min-height:405px;">
-      <h3 style="color:var(--ink);">R × p null statistics</h3>
+      <h3 style="color:var(--ink);">R × p potential null statistics</h3>
       <p class="caption" style="margin-top:6px;">or p exceedance counts after streamed reduction</p>
       <div style="display:grid; grid-template-columns:repeat(12, 1fr); gap:5px; margin-top:26px;">
         <span style="height:18px; background:var(--berry);"></span><span style="height:18px; background:var(--teal);"></span><span style="height:18px; background:var(--berry);"></span><span style="height:18px; background:var(--teal);"></span><span style="height:18px; background:var(--berry);"></span><span style="height:18px; background:var(--teal);"></span><span style="height:18px; background:var(--berry);"></span><span style="height:18px; background:var(--teal);"></span><span style="height:18px; background:var(--berry);"></span><span style="height:18px; background:var(--teal);"></span><span style="height:18px; background:var(--berry);"></span><span style="height:18px; background:var(--teal);"></span>
         <span style="height:18px; background:var(--teal);"></span><span style="height:18px; background:var(--berry);"></span><span style="height:18px; background:var(--teal);"></span><span style="height:18px; background:var(--berry);"></span><span style="height:18px; background:var(--teal);"></span><span style="height:18px; background:var(--berry);"></span><span style="height:18px; background:var(--teal);"></span><span style="height:18px; background:var(--berry);"></span><span style="height:18px; background:var(--teal);"></span><span style="height:18px; background:var(--berry);"></span><span style="height:18px; background:var(--teal);"></span><span style="height:18px; background:var(--berry);"></span>
         <span style="height:18px; background:var(--berry);"></span><span style="height:18px; background:var(--berry);"></span><span style="height:18px; background:var(--teal);"></span><span style="height:18px; background:var(--teal);"></span><span style="height:18px; background:var(--berry);"></span><span style="height:18px; background:var(--berry);"></span><span style="height:18px; background:var(--teal);"></span><span style="height:18px; background:var(--teal);"></span><span style="height:18px; background:var(--berry);"></span><span style="height:18px; background:var(--berry);"></span><span style="height:18px; background:var(--teal);"></span><span style="height:18px; background:var(--teal);"></span>
       </div>
-      <div class="callout" style="margin-top:28px;"><p style="font-size:25px; font-weight:900;">Small statistic, large repetition.</p></div>
+      <div class="callout" style="margin-top:28px;"><p style="font-size:25px; font-weight:900;">Simple statistic, large repeated workload.</p></div>
     </div>
   </div>
-  <aside class="notes">Use this slide to make the computational size explicit: the input is n samples by p features, then R shuffled label vectors create R by p potential null statistics. In practice the optimized path can stream this down to p exceedance counts, but the work still scales with the repetition. Examples: samples are patients, features are genes, biomarkers, or voxels, and R is the number of null draws.</aside>
+  <aside class="notes">Use this slide to make the computational size explicit: the input is n samples by p features, then R shuffled label vectors create R by p potential null statistics. The full R by p matrix does not have to be materialized; the optimized path can stream results down to p exceedance counts. The work still scales like R times p. Examples: samples are patients, features are genes, biomarkers, or voxels, and R is the number of null draws.</aside>
 </section>
 
 <section class="deck-slide">
@@ -858,55 +1215,109 @@
     stat[r, :] = group_difference(X, labels_r)</pre>
     </div>
     <div class="panel" style="padding:26px; min-height:360px;">
-      <h3 style="color:var(--ink);">Batched / streamed path</h3>
+      <h3 style="color:var(--ink);">Optimized path</h3>
       <pre style="margin-top:20px; padding:24px; background:#fffaf2; border:1px solid var(--line); border-radius:12px; color:var(--ink); font-size:17.5px; line-height:1.58; white-space:pre;"><span style="color:var(--berry); font-weight:850;">for</span> W_batch <span style="color:var(--berry); font-weight:850;">in</span> contrast_batches(
         same_permutation_stream):
     T = W_batch @ X
     counts += abs(T) >= abs(T_obs)</pre>
     </div>
   </div>
-  <div class="callout" style="margin-top:28px;"><p>Same permutation stream. Same p-value definition. Less materialized output.</p></div>
-  <aside class="notes">The optimized path does not change the statistical question. It avoids materializing the full R × p null matrix by streaming exceedance counts.</aside>
+  <div style="display:flex; gap:12px; margin-top:18px; flex-wrap:wrap;">
+    <span class="evidence-chip" style="font-size:15px; padding:8px 12px;">W_batch: batch_R × n</span>
+    <span class="evidence-chip" style="font-size:15px; padding:8px 12px;">X: n × p</span>
+    <span class="evidence-chip" style="font-size:15px; padding:8px 12px;">T: batch_R × p</span>
+  </div>
+  <div class="callout" style="margin-top:18px;"><p>Same permutation stream and p-value definition; the streamed path avoids the full R × p null matrix.</p></div>
+  <aside class="notes">The optimized path does not change the statistical question: same simulated data, same permutation stream, and same p-value definition. The shape chips explain the batched matrix view: W_batch is batch_R by n, X is n by p, and T is batch_R by p. The streamed path avoids materializing the full R by p null matrix.</aside>
 </section>
 
 <section class="deck-slide">
   <div class="kicker">Correctness gate 1</div>
   <h2>Equivalence check: loop reference vs matrix formulation</h2>
-  <p class="subtitle">Same simulated data, same permutation stream, same p-value definition.</p>
-  <div class="cards-3" style="margin-top:18px;">
-    <div class="card"><h3>Context</h3><p>18 workloads × 5 seeds</p></div>
-    <div class="card"><h3>Reference</h3><p>readable loop formulation</p></div>
-    <div class="card"><h3>Candidate</h3><p>matrix formulation</p></div>
+  <p class="subtitle">Before timing the faster path, check that it answers the same statistical question.</p>
+
+  <div style="display:grid; grid-template-columns:minmax(0, 0.48fr) minmax(0, 0.52fr); gap:28px; margin-top:14px; align-items:stretch;">
+    <div style="display:grid; gap:10px; align-content:start;">
+      <div class="panel" style="padding:17px 24px; border-left:9px solid var(--blue); min-height:110px;">
+        <h3 style="color:var(--ink);">Same inputs</h3>
+        <p>same simulated data<br>same permutation stream<br>same p-value definition</p>
+      </div>
+      <div class="panel" style="padding:17px 24px; border-left:9px solid var(--gold); min-height:110px;">
+        <h3 style="color:var(--ink);">Reference</h3>
+        <p>readable loop formulation<br>one permutation at a time</p>
+      </div>
+      <div class="panel" style="padding:17px 24px; border-left:9px solid var(--green); min-height:110px;">
+        <h3 style="color:var(--ink);">Optimized path</h3>
+        <p>matrix formulation<br>same stream, batched computation</p>
+      </div>
+    </div>
+
+    <div class="panel" style="padding:22px 30px; min-height:390px;">
+      <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:20px;">
+        <div>
+          <p style="font-size:18px; color:var(--muted); font-weight:850; text-transform:uppercase; letter-spacing:0.08em;">validation result</p>
+          <p style="font-size:68px; line-height:0.95; color:var(--green); font-weight:950; margin-top:12px;">PASS</p>
+        </div>
+        <div style="text-align:right;">
+          <p style="font-size:18px; color:var(--muted); font-weight:850; text-transform:uppercase; letter-spacing:0.08em;">validation grid</p>
+          <p style="font-size:36px; line-height:1.0; color:var(--blue); font-weight:950; margin-top:12px;">18 × 5</p>
+          <p style="font-size:17px; color:var(--muted); margin-top:7px;">workloads × seeds</p>
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:13px; margin-top:22px;">
+        <div class="kpi good" style="min-height:96px;">
+          <strong>0.0</strong>
+          <span>max |p diff|</span>
+        </div>
+        <div class="kpi" style="min-height:96px;">
+          <strong style="font-size:30px;">9.4e-16</strong>
+          <span>max |stat diff|</span>
+        </div>
+        <div class="kpi good" style="min-height:96px;">
+          <strong>1e-6</strong>
+          <span>validation tolerance</span>
+        </div>
+      </div>
+
+      <div style="margin-top:20px; border-top:1px solid var(--line); padding-top:16px;">
+        <h3 style="color:var(--ink); margin-bottom:10px;">Acceptance criteria</h3>
+        <div style="display:grid; gap:6px;">
+          <div style="display:grid; grid-template-columns:28px 1fr; gap:10px; align-items:start;">
+            <span style="color:var(--green); font-size:22px; font-weight:950;">✓</span>
+            <p style="font-size:18px; line-height:1.2;">p-values agree under the same permutation stream</p>
+          </div>
+          <div style="display:grid; grid-template-columns:28px 1fr; gap:10px; align-items:start;">
+            <span style="color:var(--green); font-size:22px; font-weight:950;">✓</span>
+            <p style="font-size:18px; line-height:1.2;">test statistics differ only at floating-point roundoff scale</p>
+          </div>
+          <div style="display:grid; grid-template-columns:28px 1fr; gap:10px; align-items:start;">
+            <span style="color:var(--green); font-size:22px; font-weight:950;">✓</span>
+            <p style="font-size:18px; line-height:1.2;">optimized path is allowed into runtime comparison</p>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
-  <div class="kpi-strip">
-    <div class="kpi good"><strong>0.0</strong><span>max |p diff|</span></div>
-    <div class="kpi"><strong>9.4e-16</strong><span>max |stat diff|</span></div>
-    <div class="kpi good"><strong>1e-6</strong><span>validation tolerance</span></div>
-  </div>
-  <div class="bottom-takeaway">Admitted to runtime comparison.</div>
-  <aside class="notes">This slide is a gate. Before timing the matrix formulation, we check it against the readable reference loop using the same permutation stream. The p-values match exactly in the recorded results, and the test-statistic differences are around 1e-15, far below the 1e-6 tolerance. That is why the matrix path is allowed into the benchmark. In this correctness tier, the JAX rows are CPU/x64.</aside>
+
+  <div class="bottom-takeaway">Same question. Same result. Then faster code.</div>
+  <aside class="notes">This slide is a correctness gate, not a runtime result. Before timing the optimized path, we check it against the readable reference loop using the same simulated data, the same permutation stream, and the same p-value definition. The p-values match exactly in the recorded results, and the test-statistic differences are around floating-point roundoff scale, far below the validation tolerance. That is why the optimized path is allowed into the benchmark. In this correctness tier, the JAX rows are CPU/x64.</aside>
 </section>
 
 <section class="deck-slide">
-  <div class="kicker">Correctness gate 2</div>
-  <h2>Null calibration gate: type-I error stays near alpha</h2>
-  <p class="subtitle">Under the null, the type-I error should stay close to nominal alpha = 0.05.</p>
+  <div class="kicker">CORRECTNESS GATE 2</div>
+  <h2>Null calibration check: p-values still behave under the null</h2>
+  <p class="subtitle">In this local null calibration check, type-I error should stay close to nominal alpha = 0.05.</p>
   <div class="calibration-gate">
     <div class="calibration-cards">
-      <div class="calibration-card"><strong>Why calibration matters</strong><span>Equivalence checks implementation. Calibration checks statistical behavior.</span></div>
-      <div class="calibration-card"><strong>Observed check</strong><span>Observed type-I error = 0.051 at nominal alpha 0.050.</span></div>
-      <div class="calibration-card"><strong>What this unlocks</strong><span>Now runtime comparisons become meaningful.</span></div>
+      <div class="calibration-card"><strong>Why calibration matters</strong><span>Equivalence checks implementation; calibration checks inference.</span></div>
+      <div class="calibration-card"><strong>Observed check</strong><span>Observed type-I error estimate ≈ 0.051 in this local null calibration check.</span></div>
+      <div class="calibration-card"><strong>Before scaling</strong><span>The null behavior is acceptable enough to ask a scale question.</span></div>
     </div>
     <div class="calibration-dashboard">
       <div class="calibration-top">
         <div class="calibration-pass" style="font-size:40px;">calibrated</div>
         <div class="calibration-rate"><strong>0.051</strong><span>observed type-I error estimate</span></div>
-      </div>
-      <div class="calibration-metrics">
-        <div class="calibration-metric"><strong>0.050</strong><span>nominal alpha</span></div>
-        <div class="calibration-metric"><strong>100</strong><span>null replicates</span></div>
-        <div class="calibration-metric"><strong>500</strong><span>n</span></div>
-        <div class="calibration-metric"><strong>1,000</strong><span>p and R</span></div>
       </div>
       <div class="calibration-ruler-card">
         <div class="calibration-ruler-title">Calibration ruler</div>
@@ -919,116 +1330,240 @@
           <div class="calibration-axis"><span>0.025</span><span>0.035</span><span>0.045</span><span>0.055</span><span>0.065</span><span>0.075</span></div>
         </div>
         <div class="calibration-legend">
-          <span><strong>Dashed:</strong> nominal 0.05</span>
+          <span><strong>Dashed:</strong> nominal alpha 0.050</span>
           <span><strong>Dot:</strong> observed mean 0.051</span>
         </div>
-        <p class="gate-note">Band is feature-level binomial variation: 0.05 +/- 1.96 * sqrt(0.05 * 0.95 / 1000).</p>
+        <p class="gate-note">Calibration checks inference behavior, not implementation equivalence.</p>
       </div>
     </div>
   </div>
-  <div class="bottom-takeaway">Fast code is useful only if null calibration remains correct.</div>
-  <aside class="notes">This slide is the second correctness gate. The previous gate checked that the matrix path matched the reference implementation using the same permutations. This gate checks statistical behavior under the null. For a valid permutation test, the rejection rate at alpha 0.05 should be close to 0.05. In this run, the mean replicate-level estimate is 0.051, so the optimized path passes the calibration check. The 0.036-0.064 band is based on feature-level binomial variation per null replicate, not a confidence interval for the mean across replicates. I am showing this before timing because a fast permutation test with broken null behavior would be scientifically useless.</aside>
+  <div class="bottom-takeaway">Equivalence checks code; calibration checks inference.</div>
+  <aside class="notes">This slide checks statistical behavior under the null. Equivalence is necessary but not enough; p-values must also be calibrated. The observed type-I error estimate is approximately 0.051 in this local null calibration check, near alpha = 0.05. This is still validation, not performance, and it is not a universal calibration guarantee. The 0.036-0.064 band is based on feature-level binomial variation per null replicate, not a confidence interval for the mean across replicates. Equivalence checks code; calibration checks inference.</aside>
 </section>
 
-<section class="deck-slide">
-  <div class="kicker">Local validation scale</div>
-  <h2>Local validation scale: methods are close enough</h2>
-  <div class="figure-layout wide-left">
-    <div class="figure-notes">
-      <div class="note-card"><strong>Scope</strong><span>MacBook CPU validation tier; not a server/GPU leaderboard.</span></div>
-      <div class="note-card"><strong>Same permutations</strong><span>Compared only after p-value equivalence checks.</span></div>
-      <div class="note-card"><strong>Practical rule</strong><span>At validation scale, readability and correctness should dominate.</span></div>
+<section class="deck-slide local-gate-slide">
+  <div class="kicker">LOCAL SCALE SIGNAL</div>
+  <h2>Where does permutation runtime start to bend?</h2>
+  <p class="subtitle">Local MacBook timing uses the validated batched NumPy path; p and R reveal the bottleneck shape.</p>
+  <div class="local-gate-layout">
+    <div class="local-gate-cards">
+      <div class="local-gate-card">
+        <h3>Same statistic</h3>
+        <p>same stream / same p-value definition</p>
+        <span class="gate-chip">equivalence passed</span>
+      </div>
+      <div class="local-gate-card">
+        <h3>Local runtime path</h3>
+        <p>MacBook Air · batched NumPy matrix · n=500</p>
+        <span class="gate-chip">warm median</span>
+      </div>
+      <div class="local-gate-card">
+        <h3>Scale question</h3>
+        <p>where do p and R make runtime bend?</p>
+        <span class="gate-chip">local runtime scaling</span>
+      </div>
     </div>
-    <div>
-      <div class="figure-box"><img src="../experiments/results/macbook_air_long/latest/figures/permutation_runtime_scaling_extended.png" alt="MacBook permutation validation runtime comparison" /></div>
-      <p class="caption">MacBook CPU validation tier; not a server/GPU leaderboard.</p>
+    <div class="local-gate-right">
+      <div class="local-gate-figure">
+        <img src="../experiments/results/macbook_air_long/latest/figures/permutation_local_runtime_signal.svg" alt="Local permutation runtime scaling signal by p features and R permutations" />
+      </div>
+      <p class="caption"><strong>MacBook Air local tier · NumPy batched matrix · n=500 · warm median.</strong> This is a bottleneck-shape signal, not a server/GPU leaderboard.</p>
     </div>
   </div>
-  <div class="bottom-takeaway">At validation scale, choose the clearest correct implementation; optimize after the bottleneck is real.</div>
+  <div class="bottom-takeaway">Local validation makes the statistic safe; local runtime scaling shows why the next question moves to server/A100.</div>
+  <aside class="notes">This plot is MacBook Air local-tier evidence, not server or A100 evidence. The plotted implementation is the validated batched NumPy matrix path. n is fixed at 500; p and R vary, and warm median runtime is shown. The goal is not to compare hardware or tools here. The goal is to show that the local validated computation has a bottleneck shape. The next slides ask whether server CPU or A100 handles that shape better. Do not compare these MacBook runtimes directly with server or A100 speedups.</aside>
 </section>
 
-<section class="deck-slide">
-  <div class="kicker">Decision map</div>
+<section class="deck-slide decision-map-slide">
+  <div class="kicker">DECISION MAP</div>
   <h2>When does GPU help for permutation tests?</h2>
-  <p class="subtitle" style="font-size:20px; margin-top:8px; max-width:1120px;">A100 wins only after the permutation pipeline becomes large, batched, and device-resident enough.</p>
-  <div style="display:grid; grid-template-columns:minmax(0, 1.48fr) minmax(290px, 0.52fr); gap:18px; margin-top:12px; align-items:stretch;">
-    <div>
-      <div class="figure-box" style="height:400px; padding:4px;">
-        <img src="../experiments/results/presentation_figures/cpu_vs_a100_break_even_map.png" alt="CPU vs A100 permutation break-even map" />
-      </div>
-      <p class="caption" style="font-size:15px;">speedup = matched CPU matrix baseline / A100 streamed full end-to-end.</p>
-    </div>
-    <div class="figure-notes" style="gap:12px;">
-      <div class="note-card" style="padding:13px 14px;"><strong>Timing scope</strong><span>Compile excluded; transfer included; kernel-only excluded.</span></div>
-      <div class="note-card" style="padding:13px 14px;"><strong>Largest win</strong><span>Largest slide-level measured speedup: 8.54x at n=5,000, p=500,000, R=5,000.</span></div>
-      <div class="note-card" style="padding:13px 14px;"><strong>A100 can win when</strong><span>R x p is large, batch_R fits memory, streamed reduction avoids collecting R x p, and work stays on device.</span></div>
-    </div>
+  <p class="subtitle">Only after R × p is large enough and the streamed batch fits the device.</p>
+  <div class="decision-kpi-strip">
+    <div class="decision-kpi"><strong>Scope</strong><span>speedup = matched CPU matrix baseline / A100 streamed full e2e</span></div>
+    <div class="decision-kpi"><strong>Break-even starts</strong><span>p=10k · R=5k · batch_R=8192 · 1.5×</span></div>
+    <div class="decision-kpi"><strong>OOM cells explicit</strong><span>p=500k high-R rows are unavailable, not CPU wins</span></div>
   </div>
-  <div class="bottom-takeaway" style="font-size:19px;">A100 becomes faster in the streamed-reduction grid at n=5,000, p=10,000, R=5,000, batch_R=8,192.</div>
-  <aside class="notes">This is the practical GPU question. The old matched slice at n=5,000, p=50,000, batch_R=512 was negative: the CPU matrix path was faster. The follow-up did not change the statistic; it changed the pipeline to streamed reduction, larger batch_R, and a broader shape sweep. The point is not whether A100 is good or bad. The point is whether this statistical computation has the right shape for A100. CPU/A100 speedup is scoped as matched CPU matrix baseline / A100 streamed full end-to-end; compile is excluded, transfer is included, and kernel-only timing is deliberately excluded from the decision map. A100 becomes faster in the streamed-reduction grid at n=5,000, p=10,000, R=5,000, batch_R=8,192. Largest slide-level measured speedup: 8.54x at n=5,000, p=500,000, R=5,000. Two high-R p=500,000 cells are A100 OOM/unavailable, not CPU wins.</aside>
+  <div class="decision-map-figure">
+    <img src="../experiments/results/presentation_figures/a100_decision_map_slide.svg" alt="A100 permutation decision map by p features and R permutations" />
+  </div>
+  <div class="bottom-takeaway">A100 helps only after validation, batching, and streamed reduction make the full pipeline win.</div>
+  <aside class="notes">This slide answers where A100 wins. Speedup means matched CPU matrix baseline divided by A100 streamed full end-to-end. Compile is excluded, transfer is included, and kernel-only timing is excluded. Break-even starts at the smallest-p A100 win shown here: p=10k, R=5k, batch_R=8192; that batch_R came from the measured batch-size sweep. The largest slide-level measured speedup is 8.54x at p=500k, R=5k. The two high-R p=500k cells are A100 OOM/unavailable, not CPU wins. Some speedups are lightweight slide-level summaries; raw CPU/A100 timing pairs are not committed for every cell.</aside>
 </section>
 
 <section class="deck-slide">
-  <div class="kicker">Pipeline decomposition</div>
-  <h2>Where does A100 time go?</h2>
-  <p class="subtitle" style="font-size:20px; margin-top:8px; max-width:1080px;">Full-scenario streamed path; compile excluded, transfer included.</p>
-  <div class="figure-box" style="height:468px; margin-top:10px; padding:4px;">
-    <img src="../experiments/results/presentation_figures/a100_pipeline_decomposition_representative.png" alt="A100 permutation pipeline decomposition representative shapes" />
-  </div>
-  <div class="bottom-takeaway" style="font-size:21px;">A fast kernel is not enough; the full pipeline decides.</div>
-  <aside class="notes">This slide decomposes the A100 streamed path for the two representative rows committed in decomposition_representative_shapes_summary.csv. The raw four-row representative decomposition CSV is not committed in this repository snapshot, so do not claim four categories from the committed evidence. The point is not simply that the GPU is slow or fast; it is where the full scenario time goes. Read the timing semantics precisely: compile excluded, transfer included, streamed reduction, no kernel-only comparison. The named stages are reconciled to the recorded total with an explicit other-overhead segment, and each row reports total time plus the W @ X share.</aside>
-</section>
-
-<section class="deck-slide">
-  <div class="kicker">Parallelism</div>
-  <h2>CPU parallelism must be measured under resource constraints</h2>
-  <p class="subtitle" style="font-size:20px; margin-top:8px; max-width:1120px;">Linux server CPU, controlled 1/4/16/64/128 sweep; high counts are shared-server evidence.</p>
+  <div class="kicker">PARALLELISM</div>
+  <h2>More parallelism helps—until returns flatten</h2>
+  <p class="subtitle" style="font-size:20px; margin-top:8px; max-width:1120px;">Measure total time and marginal gain, not just the largest worker count.</p>
   <div class="cards-3" style="grid-template-columns: repeat(3, minmax(0, 1fr)); gap:12px; margin-top:10px;">
-    <div class="note-card" style="padding:11px 14px;"><strong>k-means</strong><span>Numba kept improving through 128 in this shared-server run.</span></div>
-    <div class="note-card" style="padding:11px 14px;"><strong>permutation</strong><span>Best runtime was at 16; memory rose to about 58 GiB at 128.</span></div>
-    <div class="note-card" style="padding:11px 14px;"><strong>128 caveat</strong><span>Affinity: 512 CPUs; no exclusive allocation.</span></div>
+    <div class="note-card" style="padding:10px 13px; min-height:92px; display:flex; flex-direction:column; gap:4px;">
+      <strong style="font-size:18px; margin-bottom:0;">Total time drops</strong>
+      <span style="font-size:17px; line-height:1.14; color:var(--muted);">More parallelism helped early.</span>
+      <span class="evidence-chip" style="margin-top:auto;">runtime</span>
+    </div>
+    <div class="note-card" style="padding:10px 13px; min-height:92px; display:flex; flex-direction:column; gap:4px;">
+      <strong style="font-size:18px; margin-bottom:0;">Returns flatten</strong>
+      <span style="font-size:17px; line-height:1.14; color:var(--muted);">The biggest gains came early; later jumps gave smaller improvement.</span>
+      <span class="evidence-chip" style="margin-top:auto;">marginal gain</span>
+    </div>
+    <div class="note-card" style="padding:10px 13px; min-height:92px; display:flex; flex-direction:column; gap:4px;">
+      <strong style="font-size:18px; margin-bottom:0;">Memory still matters</strong>
+      <span style="font-size:17px; line-height:1.14; color:var(--muted);">Permutation workers used much more memory at high counts.</span>
+      <span class="evidence-chip" style="margin-top:auto;">memory</span>
+    </div>
   </div>
-  <div class="figure-box" style="height:340px; margin-top:12px; padding:3px;"><img src="../experiments/results/presentation_figures/server_cpu_parallelism_expanded.png" alt="Linux server CPU expanded parallelism sweep" /></div>
-  <div class="bottom-takeaway">High worker counts on a shared server are hard to interpret without CPU affinity and load checks.</div>
-  <aside class="notes">This is Linux server CPU evidence, not MacBook evidence. The 128-worker point is only interpretable if the process had access to 128 CPUs and the server was not heavily loaded. Here affinity exposed 512 CPUs, but there was no exclusive scheduler allocation, so high-count rows are shared-server evidence. They may reflect shared-server contention, NUMA placement, memory bandwidth, scheduler effects, or nested thread conflicts.</aside>
+  <div class="figure-box" style="height:326px; margin-top:10px; padding:3px;"><img src="../experiments/results/presentation_figures/server_cpu_parallelism_simple.png" alt="CPU parallelism sweep showing total time and diminishing marginal runtime gains" /></div>
+  <div class="bottom-takeaway">Use enough parallelism to capture most of the speedup.</div>
+  <aside class="notes">This slide is about diminishing returns. Total time went down when we added parallelism, especially early. But each jump gave less benefit than the previous jump. For permutation workers, high counts also increased memory substantially. The practical rule is to use enough parallelism to capture most of the speedup, then stop when the curve flattens. Keep the shared-server caveat verbal: these high-count rows were measured on a shared server, so do not treat exact 64/128 behavior as a universal scaling law.</aside>
 </section>
 
 <section class="deck-slide">
   <div class="kicker">Connecting the tools</div>
-  <h2>What each tool did in this talk</h2>
-  <div class="cards-4">
-    <div class="card"><h3 class="accent-green">Numba</h3><p>k-means assignment/update loops</p></div>
-    <div class="card"><h3 class="accent-blue">NumPy/BLAS</h3><p>distance algebra</p></div>
-    <div class="card"><h3 class="accent-teal">Threads/Python 3.14</h3><p>repeated work over shared arrays</p></div>
-    <div class="card"><h3 class="accent-berry">JAX/A100</h3><p>streamed W @ X after validation</p></div>
+  <h2>What each tool solved in this talk</h2>
+  <p class="subtitle">Not a ranking; each tool matched a different bottleneck shape.</p>
+
+  <div class="cards-4" style="margin-top:34px;">
+    <div class="card" style="border-top:8px solid var(--green); min-height:252px; padding:24px 20px;">
+      <h3 class="accent-green" style="font-size:22px; margin-bottom:8px;">Numba</h3>
+      <p style="font-size:18px; line-height:1.25;"><strong>Bottleneck:</strong><br>explicit CPU loops</p>
+      <p class="caption" style="font-size:16px; line-height:1.22; margin-top:18px;">Solved here: k-means assignment/update.</p>
+    </div>
+
+    <div class="card" style="border-top:8px solid var(--blue); min-height:252px; padding:24px 20px;">
+      <h3 class="accent-blue" style="font-size:22px; margin-bottom:8px;">NumPy / BLAS</h3>
+      <p style="font-size:18px; line-height:1.25;"><strong>Bottleneck:</strong><br>dense matrix algebra</p>
+      <p class="caption" style="font-size:16px; line-height:1.22; margin-top:18px;">Solved here: distance identity and W @ X on CPU.</p>
+    </div>
+
+    <div class="card" style="border-top:8px solid var(--teal); min-height:252px; padding:24px 20px;">
+      <h3 class="accent-teal" style="font-size:22px; margin-bottom:8px;">Threads / workers</h3>
+      <p style="font-size:18px; line-height:1.25;"><strong>Bottleneck:</strong><br>repeated work over shared data</p>
+      <p class="caption" style="font-size:16px; line-height:1.22; margin-top:18px;">Solved here: permutation worker sweep.</p>
+    </div>
+
+    <div class="card" style="border-top:8px solid var(--berry); min-height:252px; padding:24px 20px;">
+      <h3 class="accent-berry" style="font-size:22px; margin-bottom:8px;">JAX / A100</h3>
+      <p style="font-size:18px; line-height:1.25;"><strong>Bottleneck:</strong><br>large regular device-resident batches</p>
+      <p class="caption" style="font-size:16px; line-height:1.22; margin-top:18px;">Solved here: streamed W @ X after validation.</p>
+    </div>
   </div>
-  <div class="callout"><p>Choose runtime after simulation identifies the bottleneck.</p></div>
+
+  <div class="bottom-takeaway" style="font-size:24px;">Same statistic, different bottleneck, different tool.</div>
+  <aside class="notes">Use this slide as tool roles, not another decision guide. Numba is not always faster; it helped the explicit CPU loop shape in k-means assignment/update. NumPy is not just plain Python; BLAS-backed dense matrix algebra helped distance identities and W @ X on CPU. Threads/workers are not automatically better; they help repeated work over shared data only when memory, scheduling, affinity, and server load are measured. JAX / A100 is not a free win; it helped only when the validated permutation pipeline became large, regular, streamed, batched, and device-resident enough for full end-to-end time to win.</aside>
 </section>
 
 <section class="deck-slide">
   <div class="kicker">AI coding tools</div>
-  <h2>Codex can generate variants; the statistician owns the claims</h2>
-  <div class="compare">
-    <div class="card"><h3>Automation layer</h3><ul><li>implementation variants</li><li>scenario-grid runners</li><li>environment metadata</li><li>plot regeneration</li><li>README/result manifests</li></ul></div>
-    <div class="card"><h3>Statistician-owned layer</h3><ul><li>statistical target</li><li>null model</li><li>validation criteria</li><li>interpretation of hard cases</li><li>scientific claims</li></ul></div>
+  <h2>Codex scales the workflow; statisticians own the claims</h2>
+  <div class="ai-role-grid">
+    <div class="ai-role-card ai-card">
+      <div class="ai-role-text">
+        <h3>What AI can automate</h3>
+        <ul>
+          <li>implementation variants</li>
+          <li>scenario-grid runners</li>
+          <li>metadata capture</li>
+          <li>plot regeneration</li>
+          <li>result manifests</li>
+        </ul>
+      </div>
+      <img class="ai-duty-art" src="assets/AI_duty.png" alt="AI assistant automating experiment tasks" />
+    </div>
+    <div class="ai-role-card human-card">
+      <div class="ai-role-text">
+        <h3>Scientific judgment</h3>
+        <ul>
+          <li>statistical target</li>
+          <li>data-generating assumptions</li>
+          <li>validation criteria</li>
+          <li>hard-case interpretation</li>
+          <li>scientific claims</li>
+        </ul>
+      </div>
+      <img class="ai-duty-art" src="assets/human_duty.png" alt="Statistician making scientific decisions" />
+    </div>
   </div>
-  <div class="callout"><p>AI can automate experiment hygiene; it cannot define statistical truth.</p></div>
+  <div class="callout"><p>AI can automate the workflow; statistical judgment decides what can be claimed.</p></div>
+  <aside class="notes">Codex is useful for multiplying workflow variants: implementation variants, scenario grids, metadata capture, plots, and manifests. But the scientific responsibility does not move to the model. The statistician still owns the statistical target, data-generating assumptions, validation criteria, hard-case interpretation, and claims.</aside>
 </section>
 
 <section class="deck-slide">
-  <div class="kicker">Decision guide</div>
-  <h2>What did the simulation reveal?</h2>
-  <div class="decision-tree">
-    <div class="tree-root">Start from the validation result</div>
-    <div class="tree-branches">
-      <div class="tree-leaf"><strong>Result not trustworthy</strong><span>keep reference / fix method</span></div>
-      <div class="tree-leaf"><strong>Hot scalar loop</strong><span>Numba</span></div>
-      <div class="tree-leaf"><strong>Dense matrix identity</strong><span>NumPy/BLAS</span></div>
-      <div class="tree-leaf"><strong>Repeated shared-array work</strong><span>threads / Python 3.14</span></div>
-      <div class="tree-leaf"><strong>Large batched device-resident work</strong><span>JAX/A100</span></div>
-      <div class="tree-leaf"><strong>Giant temporary</strong><span>algebraic rewrite</span></div>
+  <div class="kicker">DECISION GUIDE</div>
+  <h2>From simulation evidence to the next tool</h2>
+  <p class="subtitle">Validate the result, then follow the bottleneck—not the logo.</p>
+  <div class="decision-guide-layout">
+    <div class="process-ribbon" aria-label="simulation decision process">
+      <div class="process-step"><span class="process-index">1</span>Simulate</div>
+      <div class="process-arrow" aria-hidden="true">→</div>
+      <div class="process-step"><span class="process-index">2</span>Validate</div>
+      <div class="process-arrow" aria-hidden="true">→</div>
+      <div class="process-step"><span class="process-index">3</span>Find the bottleneck</div>
+      <div class="process-arrow" aria-hidden="true">→</div>
+      <div class="process-step"><span class="process-index">4</span>Pick the smallest tool</div>
+    </div>
+    <div class="decision-card-grid">
+      <div class="decision-card">
+        <h3>Validation fails</h3>
+        <div class="decision-fields">
+          <div class="decision-field"><span class="decision-label">Signal</span><span class="decision-text">recovery / calibration / equivalence fails</span></div>
+          <div class="decision-field"><span class="decision-label">Limit</span><span class="decision-text">statistic, assumptions, or reference need work</span></div>
+          <div class="decision-field"><span class="decision-label">Move</span><span class="decision-text">debug before optimizing</span></div>
+        </div>
+        <div class="evidence-chip">k-means recovery</div>
+      </div>
+      <div class="decision-card">
+        <h3>Hot loop</h3>
+        <div class="decision-fields">
+          <div class="decision-field"><span class="decision-label">Signal</span><span class="decision-text">matches reference; loop dominates</span></div>
+          <div class="decision-field"><span class="decision-label">Limit</span><span class="decision-text">Python loop overhead</span></div>
+          <div class="decision-field"><span class="decision-label">Move</span><span class="decision-text">Numba</span></div>
+        </div>
+        <div class="evidence-chip">k-means loops</div>
+      </div>
+      <div class="decision-card">
+        <h3>Matrix algebra</h3>
+        <div class="decision-fields">
+          <div class="decision-field"><span class="decision-label">Signal</span><span class="decision-text">statistic becomes matrix operations</span></div>
+          <div class="decision-field"><span class="decision-label">Limit</span><span class="decision-text">dense numerical kernel</span></div>
+          <div class="decision-field"><span class="decision-label">Move</span><span class="decision-text">NumPy / BLAS</span></div>
+        </div>
+        <div class="evidence-chip">distance identity</div>
+      </div>
+      <div class="decision-card">
+        <h3>Repeat work</h3>
+        <div class="decision-fields">
+          <div class="decision-field"><span class="decision-label">Signal</span><span class="decision-text">many repeats over shared data</span></div>
+          <div class="decision-field"><span class="decision-label">Limit</span><span class="decision-text">scheduling / copies / memory</span></div>
+          <div class="decision-field"><span class="decision-label">Move</span><span class="decision-text">tune threads or workers</span></div>
+        </div>
+        <div class="evidence-chip">permutation workers</div>
+      </div>
+      <div class="decision-card">
+        <h3>Device batch</h3>
+        <div class="decision-fields">
+          <div class="decision-field"><span class="decision-label">Signal</span><span class="decision-text">large batches fit the device</span></div>
+          <div class="decision-field"><span class="decision-label">Limit</span><span class="decision-text">large regular array work</span></div>
+          <div class="decision-field"><span class="decision-label">Move</span><span class="decision-text">JAX / A100</span></div>
+        </div>
+        <div class="evidence-chip">A100 batch_R</div>
+      </div>
+      <div class="decision-card">
+        <h3>Memory blow-up</h3>
+        <div class="decision-fields">
+          <div class="decision-field"><span class="decision-label">Signal</span><span class="decision-text">temporary array becomes huge</span></div>
+          <div class="decision-field"><span class="decision-label">Limit</span><span class="decision-text">memory shape, not FLOPs</span></div>
+          <div class="decision-field"><span class="decision-label">Move</span><span class="decision-text">rewrite or stream</span></div>
+        </div>
+        <div class="evidence-chip">streamed reduction</div>
+      </div>
     </div>
   </div>
+  <div class="bottom-takeaway decision-guide-takeaway">Validate the result; then move the bottleneck.</div>
+  <aside class="notes">
+    This slide is the synthesis of the talk: simulate, validate, diagnose the bottleneck, then pick the smallest tool or strategy that addresses it.<br />
+    The audience does not need every system detail here; they need the evidence pattern and the next move.<br />
+    This slide is not saying every validation failure is a bug. A failed recovery or calibration check may mean the target, assumptions, or scenario need work before optimization.<br />
+    Once validation passes, the bottleneck pattern determines the next move: Numba for hot loops, BLAS for dense algebra, tuned workers for repeated shared-data work, JAX / A100 for large device-resident batches, and rewrite/streaming for memory blow-ups.
+  </aside>
 </section>
 
 <section class="deck-slide">
@@ -1036,65 +1571,136 @@
     <div class="kicker">Close</div>
     <h1>Make the statistic testable.<br />Then make the bottleneck fast.</h1>
     <div class="bar"></div>
-    <p class="subtitle">Clear enough to trust. Fast enough to scale.</p>
-    <p class="small" style="margin-top:16px;"><code>github.com/lucajiang/FastStatisticalModels4Python</code></p>
+    <p class="subtitle">Clear enough to validate. Fast enough to scale.</p>
   </div>
 </section>
 
 <section class="deck-slide">
-  <div class="section-title">
-    <div class="kicker">Thank you</div>
-    <h1>Thank you</h1>
-    <div class="bar"></div>
-    <p class="subtitle">Questions?</p>
-    <p class="subtitle" style="margin-top:18px;">Clear enough to trust. Fast enough to scale.</p>
-    <p class="small" style="margin-top:18px;"><code>github.com/LucaJiang/FastStatisticalModels4Python</code></p>
+  <div style="display:grid; grid-template-columns:minmax(0, 0.68fr) minmax(260px, 0.32fr); gap:42px; align-items:center; height:100%;">
+    <div class="section-title" style="height:auto;">
+      <div class="kicker">Thank you</div>
+      <h1>Questions?</h1>
+      <div class="bar"></div>
+      <p class="subtitle" style="margin-top:18px;">Slides + reproducible artifacts</p>
+      <p class="small" style="margin-top:18px;"><code>github.com/LucaJiang/FastStatisticalModels4Python</code></p>
+    </div>
+    <div style="justify-self:center; text-align:center;">
+      <img src="../poster/assets/repo_qr.png" alt="QR code for slides and reproducible artifacts repository" style="display:block; width:244px; height:244px; object-fit:contain; background:#fff; border:1px solid var(--line); border-radius:14px; padding:12px; box-shadow:var(--shadow);" />
+      <p class="caption" style="margin-top:14px; font-size:18px;">Slides + reproducible artifacts</p>
+    </div>
   </div>
 </section>
 
 <section class="deck-slide">
-  <div class="backup-label">Backup</div>
+  <div class="backup-label">Backup: evidence scope</div>
   <h2>Evidence map: each environment answers a different question</h2>
+  <p class="subtitle">Q: why use three environments instead of one leaderboard?</p>
   <div class="cards-3">
-    <div class="card"><h3 class="accent-blue">MacBook = validation</h3><p>k-means equivalence, recovery surfaces, permutation p-value equivalence, calibration, and power.</p></div>
-    <div class="card"><h3 class="accent-green">Server CPU = scale and parallelism</h3><p>k-means shape scaling, Numba thread sweep, permutation R/p scaling, worker and memory sweeps.</p></div>
-    <div class="card"><h3 class="accent-berry">A100 = accelerator-shaped pipeline</h3><p>JAX k-means break-even and streamed W @ X permutation follow-up.</p></div>
+    <div class="card"><h3 class="accent-blue">MacBook Air = validation</h3><p>k-means equivalence and recovery; permutation equivalence, null calibration, local runtime shape, and power.</p></div>
+    <div class="card"><h3 class="accent-green">Server CPU = scale and parallelism</h3><p>k-means shape scaling, Numba thread sweep, permutation R × p scaling, worker and memory sweeps.</p></div>
+    <div class="card"><h3 class="accent-berry">A100 = accelerator-shaped pipeline</h3><p>JAX / A100 k-means break-even evidence and streamed-reduction permutation break-even evidence.</p></div>
   </div>
   <div class="callout"><p>Detailed row counts, skips, and status bookkeeping live in the result READMEs and speaker notes.</p></div>
+  <aside class="notes">Use if someone asks why evidence appears across MacBook, server CPU, and A100. The answer is scope: MacBook establishes local validation and local shape signals; server CPU asks scaling and parallelism questions; A100 asks whether a validated, streamed, accelerator-shaped pipeline wins. This is not a hardware leaderboard.</aside>
 </section>
 
 <section class="deck-slide">
-  <div class="backup-label">Backup</div>
-  <h2>Shape stress: K and d become the bottleneck</h2>
-  <div class="figure-layout" style="grid-template-columns:260px 1fr;">
-    <div class="card" style="margin-top:22px; height:510px;">
-      <h3>Definitions</h3>
-      <p><strong>N</strong> = number of samples</p>
-      <p style="margin-top:18px;"><strong>d</strong> = number of features / dimensions</p>
-      <p style="margin-top:18px;"><strong>K</strong> = number of clusters</p>
+  <div class="backup-label">Backup: local validation</div>
+  <h2>Backup: local permutation validation inventory</h2>
+  <p class="subtitle">Equivalence checks code; calibration checks inference; runtime shape motivates scale evidence.</p>
+  <div class="figure-only figure-box" style="height:470px;">
+    <img src="../experiments/results/macbook_air_long/latest/figures/permutation_local_gate_slide.svg" alt="Local permutation validation inventory with equivalence, null calibration, and runtime scaling" />
+  </div>
+  <aside class="notes">Use if someone asks what local permutation checks were run before scaling. This combines the main-path equivalence, calibration, and local runtime-shape slides into one inventory. It is local MacBook evidence, not server or A100 evidence.</aside>
+</section>
+
+<section class="deck-slide">
+  <div class="backup-label">Backup: k-means loop shape</div>
+  <h2>Backup: Numba wins when k-means stays loop-shaped</h2>
+  <div class="figure-layout" style="grid-template-columns:250px 1fr;">
+    <div class="card" style="margin-top:22px; height:420px;">
+      <h3>Q&A scope</h3>
+      <p><strong>Question:</strong> when does Numba win?</p>
+      <p style="margin-top:18px;"><strong>Local tier:</strong> MacBook CPU validation-scale runs.</p>
+      <p style="margin-top:18px;"><strong>Answer:</strong> when explicit loop work dominates and the validated result is preserved.</p>
     </div>
     <div>
-      <div class="figure-only figure-box"><img src="../experiments/results/macbook_air_long/latest/figures/kmeans_shape_stress_runtime.png" alt="k-means shape stress" /></div>
-      <p class="caption">Extra MacBook evidence: 1,164 shape-stress rows, all pass.</p>
+      <div class="figure-only figure-box" style="height:430px;"><img src="../experiments/results/macbook_air_long/latest/figures/kmeans_shape_stress_runtime.png" alt="k-means shape stress" /></div>
     </div>
   </div>
+  <div class="bottom-takeaway" style="font-size:20px;">Numba wins when explicit loops dominate; BLAS or JAX / A100 can win when dense algebra or device-friendly scale dominates.</div>
+  <aside class="notes">Use if someone asks why a local backup shows Numba winning while the main server k-means slide shows shape-dependent results. This backup is local MacBook shape-stress evidence: 1,164 shape-stress rows, all passing. It does not contradict the server representative rows. On larger server shapes, dense distance algebra can favor NumPy / BLAS, and sufficiently large regular workloads can favor JAX / A100.</aside>
 </section>
 
 <section class="deck-slide">
-  <div class="backup-label">Backup</div>
+  <div class="backup-label">Backup: statistical power</div>
   <h2>Power increases with effect size</h2>
-  <div class="figure-only figure-box"><img src="../experiments/results/macbook_air_long/latest/figures/permutation_power_extended.png" alt="permutation power curve" /></div>
-  <p class="caption">Backup statistical sanity check: weak effects need denser evidence; larger effects reach high power in this local curve.</p>
+  <p class="subtitle">Q: do the simulated permutation tests detect stronger signals more easily?</p>
+  <div class="figure-only figure-box" style="height:455px;"><img src="../experiments/results/macbook_air_long/latest/figures/permutation_power_extended.png" alt="permutation power curve showing stronger simulated signals are easier to detect" /></div>
+  <div class="bottom-takeaway" style="font-size:20px;">Weak effects have low power; stronger simulated effects reach high power in this local curve.</div>
+  <aside class="notes">Use if someone asks for statistical validation beyond null calibration. This is a local simulated power curve, not a speed result. The intended reading is simple: stronger simulated signals are easier to detect.</aside>
 </section>
 
 <section class="deck-slide">
-  <div class="backup-label">Backup</div>
+  <div class="backup-label">Backup: why batch_R=8192?</div>
+  <div class="kicker">BACKUP: A100 TUNING</div>
+  <h2>Why did the A100 map use batch_R=8192?</h2>
+  <p class="subtitle" style="font-size:20px; margin-top:8px; max-width:1120px;">The decision map uses the best measured batch size from the committed sweep.</p>
+
+  <div style="display:grid; grid-template-columns:minmax(0, 0.58fr) minmax(0, 0.42fr); gap:18px; margin-top:12px; align-items:start;">
+    <div>
+      <div class="figure-box" style="height:398px; padding:3px;">
+        <img src="../experiments/results/presentation_figures/a100_batch_R_tuning.png" alt="A100 batch_R tuning with full end-to-end time and CPU over A100 speedup" />
+      </div>
+      <p class="caption" style="font-size:14px; margin-top:7px;">Measured slice: n=5k, p=50k, R=10k. Larger batch_R improved full e2e timing in this committed slice.</p>
+    </div>
+    <div style="display:grid; gap:12px; margin-top:16px;">
+      <div class="note-card" style="min-height:100px; padding:16px 18px;">
+        <strong style="font-size:21px;">Same statistic</strong>
+        <span style="display:block; margin-top:8px; font-size:17px; line-height:1.18; color:var(--muted);">batch_R changes scheduling, not the p-value definition.</span>
+      </div>
+      <div class="note-card" style="min-height:100px; padding:16px 18px;">
+        <strong style="font-size:21px;">Fewer batches</strong>
+        <span style="display:block; margin-top:8px; font-size:17px; line-height:1.18; color:var(--muted);">Larger batch_R reduces repeated streamed-batch overhead.</span>
+      </div>
+      <div class="note-card" style="min-height:100px; padding:16px 18px;">
+        <strong style="font-size:21px;">Full e2e decides</strong>
+        <span style="display:block; margin-top:8px; font-size:17px; line-height:1.18; color:var(--muted);">Compile excluded; transfer included; kernel-only excluded.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-takeaway" style="font-size:20px;">batch_R is a tuning choice for the A100 pipeline, not a new statistical method.</div>
+  <aside class="notes">Use if someone asks why the A100 decision map used batch_R=8192. This is a tuning detail for Q&A, not part of the main statistical narrative. The committed sweep shows 8192 as the best measured batch_R for the decision-map setting; phrase it as a measured tuning choice, not a new statistical method. Full end-to-end timing remains the criterion: compile excluded, transfer included, kernel-only excluded.</aside>
+</section>
+
+<section class="deck-slide">
+  <div class="backup-label">Backup: A100 accounting</div>
+  <h2>Backup: A100 stage accounting</h2>
+  <p class="subtitle" style="font-size:20px; margin-top:8px; max-width:1120px;">Mechanism evidence only; use it to explain full-scenario timing, not the decision boundary.</p>
+  <div style="display:grid; grid-template-columns:minmax(0, 0.66fr) minmax(260px, 0.34fr); gap:18px; margin-top:14px; align-items:stretch;">
+    <div class="figure-box" style="height:430px; padding:3px;">
+      <img src="../experiments/results/presentation_figures/a100_pipeline_decomposition_representative.png" alt="A100 representative stage accounting rows" />
+    </div>
+    <div style="display:grid; gap:12px; align-content:start;">
+      <div class="note-card" style="padding:16px 18px;"><strong style="font-size:21px;">Full scenario</strong><span style="display:block; margin-top:8px; font-size:17px; line-height:1.18; color:var(--muted);">Use full end-to-end timing, not a kernel-only story.</span></div>
+      <div class="note-card" style="padding:16px 18px;"><strong style="font-size:21px;">W @ X is one stage</strong><span style="display:block; margin-top:8px; font-size:17px; line-height:1.18; color:var(--muted);">Batching, reduction, transfer, and overhead also matter.</span></div>
+      <div class="note-card" style="padding:16px 18px;"><strong style="font-size:21px;">Limited rows</strong><span style="display:block; margin-top:8px; font-size:17px; line-height:1.18; color:var(--muted);">Representative accounting, not the break-even map.</span></div>
+    </div>
+  </div>
+  <aside class="notes">Use this only if someone asks how full-stage accounting reconciles. The committed representative decomposition summary is limited, so do not use this slide to set the A100 decision boundary. The canonical decision boundary remains the break-even map based on matched CPU matrix baseline divided by A100 streamed full end-to-end timing.</aside>
+</section>
+
+<section class="deck-slide">
+  <div class="backup-label">Backup: Codex workflow</div>
   <h2>What the coding agent automated</h2>
   <div class="cards-3">
     <div class="card"><h3>Experiment orchestration</h3><p>Built resumable runners, scenario grids, environment capture, and result manifests.</p></div>
     <div class="card"><h3>Visualization surface</h3><p>Regenerated figures from CSVs and removed charts that looked precise but were unreadable.</p></div>
     <div class="card"><h3>Repository surface</h3><p>Kept reproducible commands, result summaries, and QA notes together.</p></div>
   </div>
+  <div class="bottom-takeaway" style="font-size:20px;">Automation widened the experiment surface; the statistical claims stayed human-owned.</div>
+  <aside class="notes">Use if someone asks about the repository or Codex workflow. This is backup detail for the AI/Codex slide: automation widened implementation variants, scenario grids, figures, manifests, and QA artifacts, while the statistician retained ownership of target, assumptions, validation criteria, interpretation, and claims.</aside>
 </section>
 
   </div>

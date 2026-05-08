@@ -1,18 +1,19 @@
 # k-means MacBook Evidence
 
-This directory contains the local correctness/evidence implementation used by
-`experiments.run_macbook_long` and `experiments.run_macbook_evidence_extra`.
+This directory contains the shared k-means implementations used by the local
+MacBook evidence runs and the Linux server/A100 orchestration.
 
 ## Active Files
 
 | File | Role |
 | --- | --- |
-| `data_generation.py` | Gaussian mixture scenarios with known labels. |
+| `data_generation.py` | Gaussian mixture scenarios with known labels, including `KMeansScenario` for server runs. |
 | `kmeans_reference.py` | Readable fixed-init reference implementation. |
 | `kmeans_numpy.py` | Naive broadcast and matmul NumPy variants. |
 | `kmeans_numpy_broadcast.py` | Explicit broadcast-path helper. |
 | `kmeans_numpy_matmul.py` | Explicit matmul-distance helper. |
 | `kmeans_numba.py` | Numba Lloyd implementation. |
+| `kmeans_jax.py` | JAX implementation used by server/A100 runs. |
 | `validate_kmeans.py` | ARI, inertia, and equivalence summaries. |
 | `run_mac_validation.py` | Full MacBook validation grid and local diagnostic figures. |
 
