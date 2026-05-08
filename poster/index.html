@@ -208,7 +208,7 @@
 
     .ribbon {
       display: grid;
-      grid-template-columns: 0.95fr 0.10fr 1fr 0.10fr 1.42fr 0.10fr 1.68fr;
+      grid-template-columns: 0.95fr 0.10fr 1fr 0.10fr 1.42fr 0.10fr 1.2fr;
       gap: 0.36cqw;
       align-items: center;
     }
@@ -223,8 +223,8 @@
       border-radius: 999px;
       background: #fffdf8;
       color: var(--blue);
-      font-size: 0.78cqw;
-      line-height: 1;
+      font-size: 1cqw;
+      line-height: 1.2;
       font-weight: 950;
       white-space: nowrap;
       box-shadow: 0 0.25cqw 0.55cqw rgba(21, 32, 43, 0.04);
@@ -235,14 +235,14 @@
     .ribbon-step:nth-child(7) { color: var(--berry); }
 
     .dot {
-      width: 1.24cqw;
-      height: 1.24cqw;
+      width: 1.68cqw;
+      height: 1.68cqw;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       border-radius: 999px;
       color: white;
-      font-size: 0.62cqw;
+      font-size: 0.9cqw;
       font-weight: 950;
       flex: 0 0 auto;
     }
@@ -825,18 +825,18 @@
     <div class="poster">
       <header class="masthead">
         <div>
-          <img class="cityu-logo" src="assets/cityu_logo.png" alt="City University of Hong Kong logo" />
+          <img class="cityu-logo" src="assets/cityu_logo.png" alt="City University of Hong Kong logo" style="transform: scale(0.95);" />
         </div>
         <div class="title-block">
           <h1>Breaking the Speed Limit</h1>
-          <p class="subtitle">Fast statistical models with Python 3.14, Numba, and JAX</p>
-          <p class="tagline">From a statistician's workflow: validate first, then accelerate the bottleneck.</p>
-          <p class="control-plane">Keep the statistical workflow readable in Python; accelerate only the proven bottlenecks.</p>
-          <p class="authors">Wenxin Jiang &nbsp;&middot;&nbsp; Jian Yin</p>
-          <p class="institute">Department of Biostatistics, City University of Hong Kong &nbsp;&middot;&nbsp; PyCon US 2026</p>
+          <p class="subtitle" style="font-size: 2.1cqb; margin-top: 1cqb;">Fast statistical models with Python 3.14, Numba, and JAX</p>
+          <p class="tagline" style="font-size: 1.8cqb; margin-top: 1cqb;">From a statistician's workflow: validate first, then accelerate the bottleneck.</p>
+          <!-- <p class="control-plane">Keep the statistical workflow readable in Python; accelerate only the proven bottlenecks.</p> -->
+          <p class="authors" style="font-size: 2cqb;">Wenxin Jiang &nbsp;&middot;&nbsp; Jian Yin</p>
+          <!-- <p class="institute">Department of Biostatistics, City University of Hong Kong &nbsp;&middot;&nbsp; PyCon US 2026</p> -->
         </div>
         <div class="pycon">
-          <img src="assets/pyconus_logo.png" alt="PyCon US 2026 logo" />
+          <img src="assets/pyconus_logo.png" alt="PyCon US 2026 logo" style="transform: scale(1.3);" />
         </div>
         <div class="qr">
           <img src="assets/github_qr.png" alt="QR code for slides and reproducible artifacts" />
@@ -846,7 +846,7 @@
       <section class="thesis" aria-label="Main poster rule">
         <p class="thesis-main">
           <strong>Make the statistical task testable; then accelerate the measured bottleneck.</strong>
-          <span>Set the target, validate the output, and specifically speed up the bottleneck.</span>
+          <!-- <span>Set the target, validate the output, and specifically speed up the bottleneck.</span> -->
         </p>
         <div class="ribbon" aria-label="Workflow">
           <div class="ribbon-step"><b class="dot">1</b>Simulate</div>
@@ -855,7 +855,7 @@
           <div class="arrow">➜</div>
           <div class="ribbon-step"><b class="dot">3</b>Find bottleneck</div>
           <div class="arrow">➜</div>
-          <div class="ribbon-step"><b class="dot">4</b>Pick the simplest tool</div>
+          <div class="ribbon-step"><b class="dot">4</b>Pick tools</div>
         </div>
       </section>
 
@@ -863,16 +863,16 @@
         <div class="col">
           <section>
             <div class="section-title blue"><b class="dot">1</b><h2>Simulation Defines "Correct"</h2></div>
-            <p class="lead">Real biomedical data rarely provides ground truth. Simulation creates a controlled setting to test recovery, calibration, and agreement.</p>
+            <p class="lead">Real data rarely provides ground truth. Simulation creates a controlled setting to test power, calibration, and agreement.</p>
             <div class="workflow">
               <article class="workflow-card card blue"><span class="num">01</span><strong>Define Target</strong><p>what to estimate, recover, preserve</p></article>
-              <article class="workflow-card card teal"><span class="num">02</span><strong>Build Scenarios</strong><p>null, alternative, hard cases</p></article>
+              <article class="workflow-card card teal"><span class="num">02</span><strong>Build Scenarios</strong><p>null, alternative, hard or extremecases</p></article>
               <article class="workflow-card card gold"><span class="num">03</span><strong>Establish Reference</strong><p>readable Python/NumPy implementation</p></article>
-              <article class="workflow-card card green"><span class="num">04</span><strong>Verify Behavior</strong><p>recovery, calibration, agreement</p></article>
-              <article class="workflow-card card gold"><span class="num">05</span><strong>Analyze Workload</strong><p>loops, algebra, repetition, memory</p></article>
-              <article class="workflow-card card berry"><span class="num">06</span><strong>Select Tool</strong><p>the minimum sufficient tool</p></article>
+              <article class="workflow-card card green"><span class="num">04</span><strong>Verify Behavior</strong><p>power, calibration, agreement</p></article>
+              <article class="workflow-card card gold"><span class="num">05</span><strong>Analyze Workload</strong><p>data flow, loops, algebra, repetition, memory</p></article>
+              <article class="workflow-card card berry"><span class="num">06</span><strong>Select Tool</strong><p>suitable for your task</p></article>
             </div>
-            <div class="gate">Rule: Do not optimize until validation passes.</div>
+            <div class="gate">Rule: Do not optimize until ALL validations pass.</div>
           </section>
 
           <section>
@@ -880,7 +880,7 @@
             <table class="decision-table card">
               <thead><tr><th>Question</th><th>Decision before measuring speed</th></tr></thead>
               <tbody>
-                <tr><td>Statistical target</td><td>estimator, test statistic, or stopping rule</td></tr>
+                <tr><td>Statistical target</td><td>estimator, test statistic, or stopping criterion</td></tr>
                 <tr><td>Simulated truth</td><td>labels, effect size, or nominal alpha</td></tr>
                 <tr><td>Acceptance criteria</td><td>exact match, numerical tolerance, or calibration</td></tr>
                 <tr><td>Failure mode</td><td>code bug, method breakdown, or out-of-memory (OOM)</td></tr>
@@ -894,10 +894,10 @@
             <article class="validation-gate card">
               <h3>Speedup results verified using these criteria:</h3>
               <div class="gate-list">
-                <div class="gate-row"><b>✓</b><span><strong>K-means agreement:</strong> max relative inertia difference is 3.1e-14 (well below the 1e-8 tolerance).</span></div>
-                <div class="gate-row"><b>✓</b><span><strong>Permutation equivalence:</strong> same test statistic, same p-value definition, same resampling stream; max |p diff| = 0.0.</span></div>
-                <div class="gate-row"><b>✓</b><span><strong>Statistic difference:</strong> max |stat diff| = 9.4e-16 across the validation grid.</span></div>
-                <div class="gate-row"><b>✓</b><span><strong>Null calibration:</strong> estimated type-I error 0.051 aligns with nominal alpha 0.05.</span></div>
+                <div class="gate-row"><b>✓</b><span><strong>K-means agreement:</strong> max relative inertia difference well below the 1e-8 tolerance.</span></div>
+                <div class="gate-row"><b>✓</b><span><strong>Permutation equivalence:</strong> same test statistic, same p-value definition, same resampling stream; max |p diff| < tolerance.</span></div>
+                <div class="gate-row"><b>✓</b><span><strong>Statistic difference:</strong> max |stat diff| < tolerance across the validation grid.</span></div>
+                <div class="gate-row"><b>✓</b><span><strong>Null calibration:</strong> estimated type-I error aligns with nominal alpha 0.05.</span></div>
               </div>
             </article>
           </section>
@@ -908,29 +908,30 @@
               <article class="ai-card card teal">
                 <div>
                   <strong>AI Automates Execution</strong>
-                  <ul>
-                    <li>Code variants</li>
-                    <li>Scenario grids</li>
-                    <li>Metadata tracking</li>
-                    <li>Plot regeneration</li>
-                    <li>Result manifests</li>
+                  <ul style="font-size: 0.6cqb;">
+                    <li>Algorithmic implementation</li>
+                    <li>Scenario-grid orchestration</li>
+                    <li>Automated metadata capture</li>
+                    <li>Visual synthesis of results</li>
+                    <li>Curation of research artifacts</li>
                   </ul>
                 </div>
-                <img class="duty-art" src="assets/ai_duty_thumb.png" alt="Automation layer illustration" />
+                <img class="duty-art" src="assets/ai_duty_thumb.png" alt="Automation layer illustration" style="transform: translate(-8px, 8px) scale(1.3);"/>
                 <p class="role-caption">AI assistant automating experiment tasks</p>
               </article>
               <article class="ai-card card green">
                 <div>
                   <strong>Statistician Owns Inference</strong>
-                  <ul>
-                    <li>Statistical target</li>
-                    <li>Data assumptions</li>
+                  <ul style="font-size: 0.6cqb;">
+                    <li>Defining estimands & objectives</li>
+                    <li>Validating distributional assumptions</li>
                     <li>Validation criteria</li>
-                    <li>Hard-case interpretation</li>
-                    <li>Scientific claims</li>
+                    <li>Establishing rigorous benchmarks</li>
+                    <li>Deciphering edge cases & outliers</li>
+                    <li>Authoring scientific conclusions</li>
                   </ul>
                 </div>
-                <img class="duty-art" src="assets/human_duty_thumb.png" alt="Statistician judgment illustration" />
+                <img class="duty-art" src="assets/human_duty_thumb.png" alt="Statistician judgment illustration" style="transform: translate(-8px, 8px) scale(1.3);"/>
                 <p class="role-caption">Statistician making scientific decisions</p>
               </article>
             </div>
@@ -944,22 +945,22 @@
               <article class="workload blue">
                 <h3>K-means = Iterative Fitting</h3>
                 <div class="figure card">
-                  <img src="figures/kmeans_illustration.png" alt="k-means iterative fitting illustration" />
-                  <div class="chips"><span class="chip">distance loops</span><span class="chip">temporaries</span><span class="chip">compiled kernels</span></div>
+                  <img src="figures/kmeans_illustration.png" alt="k-means iterative fitting illustration" style="transform: scale(0.91);"/>
+                  <div class="chips"><span class="chip">Sequential state</span><span class="chip">Pairwise metrics</span><span class="chip">Memory allocations</span></div>
                 </div>
               </article>
               <article class="workload green">
                 <h3>Permutation = Resampling Inference</h3>
                 <div class="figure card">
                   <img src="figures/permutation_task_schematic.png" alt="permutation-test workflow schematic" />
-                  <div class="chips"><span class="chip">shared arrays</span><span class="chip">batching</span><span class="chip">W @ X</span></div>
+                  <div class="chips"><span class="chip" style="font-size: 0.55cqb;">Shared-memory concurrency</span><span class="chip" style="font-size: 0.55cqb;">Vectorized resampling</span><span class="chip" style="font-size: 0.55cqb;">Linear algebra</span></div>
                 </div>
               </article>
             </div>
-            <div class="contract" style="font-size: 1cqb;">
+            <div class="contract" style="font-size: 1.2cqb;">
             <strong>Validation criteria:</strong> 
-            <b>K-means</b> keeps same data, initialization, and stopping rule. 
-            <b>Permutation</b> keeps same resampling stream and p-value definition.
+            <b>K-means</b> Match cluster assignments by fixing seeds and convergence thresholds.
+            <b>Permutation</b> Guarantee null distribution consistency via deterministic resampling seeds.
           </div>
           </section>
 
@@ -973,21 +974,21 @@
             <div class="evidence-grid">
               <article class="plot-card card">
                 <h3>K-means: Workload Shape Determines the Tool</h3>
-                <ul class="shape-notes">
-                  <li><strong>Loop-dominated:</strong> Numba, NumPy, and GPU tie.</li>
-                  <li><strong>Dense algebra:</strong> NumPy / BLAS dominates.</li>
-                  <li><strong>Large regular batches:</strong> JAX / GPU wins.</li>
+                <ul style="font-size: 1cqb; list-style-type: none; padding-left: 0;">
+                  <li>• <b>Scalar-heavy loops:</b> Numba excels via LLVM-compiled execution.</li>
+                  <li>• <b>Dense algebra:</b> NumPy dominates via optimized BLAS kernels.</li>
+                  <li>• <b>Massive data batches:</b> JAX/GPU wins on SIMT throughput.</li>
                 </ul>
-                <img src="figures/kmeans_evidence_rows_cropped.png" alt="Server k-means evidence showing implementation choice depends on workload structure" />
+                <img src="figures/kmeans_evidence_rows_cropped.png" alt="Server k-means evidence showing implementation choice depends on workload structure" style="margin-top: -2.2cqb;" />
               </article>
               <article class="plot-card card">
-                <h3>Permutation: GPU Demands Batching and Streaming</h3>
-                <ul class="shape-notes">
-                  <li><strong>GPU prerequisite:</strong> batching and streamed reduction</li>
-                  <li><strong>Validated speedup:</strong> peaks at 8.54×</li>
-                  <li><strong>Memory limits:</strong> OOM configurations remain explicit</li>
+                <h3>Permutation: GPU Scaling via Vectorized Batching</h3>
+                <ul style="font-size: 1cqb; list-style-type: none; padding-left: 0; margin-bottom: -1cqb;">
+                  <li><strong>Infrastructure Requirement:</strong> High-concurrency batching and fused reductions</li>
+                  <li><strong>Validated Speedup:</strong> Peaks at 8.54× vs. optimized multi-core CPU</li>
+                  <li><strong>Operational Boundaries:</strong> Explicit OOM profiling for high-dimensional tensors</li>
                 </ul>
-                <img src="figures/gpu_permutation_decision_map.png" alt="GPU permutation decision map" />
+                <img src="figures/gpu_permutation_decision_map.png" alt="GPU permutation decision map" style="margin-top: -0.1cqb;"/>
               </article>
             </div>
           </section>
@@ -995,66 +996,76 @@
 
         <div class="col">
           <section>
-            <div class="section-title berry"><b class="dot">6</b><h2>Bottleneck Signal → Smallest Move</h2></div>
+            <div class="section-title berry"><b class="dot">6</b>
+              <h2>Diagnostic & Intervention</h2>
+            </div>
             <article class="diagnostic-guide card">
-              <h3>Diagnostic Guide: Signal vs. Action</h3>
-              <div class="diagnostic-row"><strong>Validation Failure</strong><span>Revisit the Statistic or Implementation</span></div>
-              <div class="diagnostic-row"><strong>Loop-Dominated Python</strong><span>Numba</span></div>
-              <div class="diagnostic-row"><strong>Dense Array Algebra</strong><span>NumPy / BLAS</span></div>
-              <div class="diagnostic-row"><strong>Repeated Independent Work</strong><span>Threads / Workers</span></div>
-              <div class="diagnostic-row"><strong>Large Regular Batches</strong><span>JAX / GPU</span></div>
-              <div class="diagnostic-row"><strong>Memory-Bound Workload</strong><span>Streamed Reduction</span></div>
+              <h3>Diagnostic Matrix: Profiling Signature vs. Solution</h3>
+              <div class="diagnostic-row"><strong>Validation Failure</strong><span>Audit target & numerical stability</span></div>
+              <div class="diagnostic-row"><strong>Scalar-Heavy Loops</strong><span>JIT Compilation (Numba)</span></div>
+              <div class="diagnostic-row"><strong>Dense Matrix Operations</strong><span>Vectorized BLAS (NumPy)</span></div>
+              <div class="diagnostic-row"><strong>Embarrassingly Parallel Tasks</strong><span>Shared-Memory Threading</span></div>
+              <div class="diagnostic-row"><strong>Massive Tensor Batches</strong><span>SIMT Acceleration (JAX/GPU)</span></div>
+              <div class="diagnostic-row"><strong>Bandwidth-Bound Workload</strong><span>Fused & Streamed Reductions</span></div>
             </article>
           </section>
 
           <section>
-            <div class="section-title berry"><b class="dot">7</b><h2>Tool Choices in This Talk</h2></div>
-            <p class="lead">Mapping validated bottlenecks to tools. Not a hardware ranking.</p>
+            <div class="section-title berry"><b class="dot">7</b>
+              <h2>Validated Tool Mapping</h2>
+            </div>
+            <p class="lead">Aligning identified computational bottlenecks with targeted software frameworks, independent of
+              hardware benchmarking.</p>
             <div class="tool-grid">
               <article class="tool card green">
                 <strong>Numba</strong>
-                <b>Explicit CPU Loops</b>
-                <em>K-means Assignment / Update</em>
+                <b>Scalar-Heavy CPU Loops</b>
+                <em>K-means Assignment & Update</em>
               </article>
               <article class="tool card blue">
                 <strong>NumPy / BLAS</strong>
                 <b>Dense Matrix Algebra</b>
-                <em>Distance Identity and W @ X (CPU)</em>
+                <em>Distance Identity & W @ X (CPU)</em>
               </article>
               <article class="tool card teal">
-                <strong>Threads / workers</strong>
-                <b>Shared-Data Repetition</b>
-                <em>Permutation Worker Sweep</em>
+                <strong>Thread Pools</strong>
+                <b>Concurrent Shared-Memory Tasks</b>
+                <em>Permutation Worker Sweeps</em>
               </article>
               <article class="tool card berry">
                 <strong>JAX / GPU</strong>
-                <b>Large Regular Batches</b>
-                <em>Streamed W @ X (After Validation)</em>
+                <b>Massive Tensor Batching</b>
+                <em>Streamed W @ X (Post-Validation)</em>
               </article>
             </div>
           </section>
 
-          <section>
-            <div class="section-title orange"><b class="dot">8</b><h2>Report Every Speed Claim</h2></div>
-            <article class="report-card card">
-              <div class="checks">
-                <div><b>✓</b><span><strong>Validation Criteria:</strong> target and acceptance threshold</span></div>
-                <div><b>✓</b><span><strong>Compute Tier:</strong> local validation, server CPU, or GPU</span></div>
-                <div><b>✓</b><span><strong>Timing State:</strong> cold/warm execution and compilation handling</span></div>
-                <div><b>✓</b><span><strong>Memory Overhead:</strong> transfer, allocation, and collection costs</span></div>
-                <div><b>✓</b><span><strong>Failure Modes:</strong> OOM and unavailable configurations remain explicit</span></div>
-                <div><b>✓</b><span><strong>Tool Selection:</strong> simplest tool preserving the statistic</span></div>
-              </div>
-              <div class="gate">Timing semantics: compilation excluded; data transfer included; kernel-only timings not reported.</div>
-            </article>
-          </section>
-
+      <section>
+        <div class="section-title orange"><b class="dot">8</b>
+          <h2>Standardized Reporting</h2>
         </div>
+        <article class="report-card card">
+          <div class="checks">
+            <div><b>✓</b><span><strong>Validation Criteria:</strong> Explicit statistical targets and acceptance
+                thresholds</span></div>
+            <div><b>✓</b><span><strong>Compute Environment:</strong> Local prototyping vs. server-grade CPU / GPU</span></div>
+            <div><b>✓</b><span><strong>Execution State:</strong> Transparent reporting of cold starts, warm runs, and JIT
+                compilation</span></div>
+            <div><b>✓</b><span><strong>Memory Overhead:</strong> Accounting for data transfer, allocation, and garbage
+                collection</span></div>
+            <div><b>✓</b><span><strong>Failure Modes:</strong> Explicit documentation of OOM events and hardware
+                incompatibilities</span></div>
+            <div><b>✓</b><span><strong>Tool Parsimony:</strong> Deploying the simplest framework that preserves the target
+                statistic</span></div>
+          </div>
+          <!-- <div class="gate">Timing semantics: excludes compilation overhead; includes data transfer latency; omits kernel-only
+            metrics.</div> -->
+        </article>
       </section>
 
       <footer class="footer">
         <!-- <span>Breaking the Speed Limit · PyCon US 2026 · Department of Biostatistics, City University of Hong Kong</span> -->
-        <code style="text-align: right; font-size: 1.2cqb; margin-right: -2cqb;">github.com/LucaJiang/FastStatisticalModels4Python</code>
+        <code style="text-align: right; font-size: 1.15cqb; margin-right: -2cqb;">github.com/LucaJiang/FastStatisticalModels4Python</code>
       </footer>
     </div>
   </main>

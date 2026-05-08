@@ -65,9 +65,9 @@ Explain why same initialization matters: k-means can legitimately differ when in
 
 This slide is not about teaching full k-means syntax. It is here to make the benchmark interpretable. Numba keeps the assignment step close to explicit loops and removes Python loop overhead. NumPy rewrites the distance computation as dense matrix algebra; the code is NumPy, while the heavy matrix multiply is BLAS-backed underneath. JAX / A100 uses nearly the same array expression on the accelerator, but it is only useful after validation and enough scale. The validation contract is unchanged: same data, same initial centroids, same stopping rule, and comparable final inertia.
 
-## Slide 14 - Server k-means
+## Slide 14 - k-means workload shape
 
-This is a representative-shape comparison, not a universal ranking or hardware leaderboard. These are validated warm rows. The slide labels should describe what the statistician writes: Numba, NumPy, and JAX / A100. NumPy is the user-facing code path; for dense distance algebra, its matrix multiply is BLAS-backed. JAX / A100 means the JAX implementation running on A100 hardware. Numba can be slower than NumPy on dense algebra because explicit compiled loops do not automatically become a highly optimized GEMM. BLAS uses cache blocking, SIMD, threading, and mature matrix-multiply kernels. Numba is still useful when the bottleneck is loop-shaped or when avoiding giant temporary arrays matters. The point is shape matching: Numba for explicit loops, NumPy for dense algebra, and JAX / A100 for large regular device-friendly work.
+Do not present this as a hardware leaderboard. Full Lloyd at N=100k, d=10, K=5 gave Numba 0.09s versus NumPy matmul 0.26s with identical inertia; the matched JAX/GPU row in the committed A100 CSV is 0.42s. For the dense distance row, the matched committed CSV medians at N=1M, d=256, K=50 are Numba 65.27s, NumPy 31.52s, and JAX/GPU 36.87s. Use these as sanity checks for the shape rule: Numba for scalar-heavy loops, NumPy/BLAS for dense algebra when it really becomes BLAS-shaped, and JAX / A100 only when the validated workload is large, regular, and device-friendly enough.
 
 ## Slide 15 - k-means takeaway
 

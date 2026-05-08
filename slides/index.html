@@ -1062,20 +1062,20 @@ def assign(X, C):
 
 <section class="deck-slide">
   <div class="kicker">Scale tier</div>
-  <h2>Server k-means: the best engine depends on the shape</h2>
-  <p class="subtitle" style="margin-top:8px; font-size:20px;">Representative validated warm rows; not a hardware leaderboard.</p>
+  <h2>K-means: the best engine depends on the shape</h2>
+  <p class="subtitle" style="margin-top:8px; font-size:20px;">Representative warm timings; read the workload shape, not a universal ranking.</p>
   <div style="display:grid; gap:14px; margin-top:22px;">
     <div class="panel" style="padding:18px 22px; display:grid; grid-template-columns:270px 1fr 310px; gap:20px; align-items:center; border-left:9px solid var(--green);">
       <div>
-        <h3 style="color:var(--ink);">small / loop overhead</h3>
+        <h3 style="color:var(--ink);">scalar-heavy loops</h3>
         <p class="caption" style="margin-top:6px;">N=100k, d=10, K=5</p>
       </div>
       <div style="display:grid; gap:8px;">
-        <div style="display:grid; grid-template-columns:122px 1fr 58px; gap:10px; align-items:center;"><span style="font-size:17px; font-weight:850;">Numba</span><div style="height:18px; background:#e6f0e4;"><div style="width:98%; height:100%; background:var(--green);"></div></div><strong>0.49s</strong></div>
-        <div style="display:grid; grid-template-columns:122px 1fr 58px; gap:10px; align-items:center;"><span style="font-size:17px; font-weight:850;">NumPy</span><div style="height:18px; background:#e4edf7;"><div style="width:100%; height:100%; background:var(--blue);"></div></div><strong>0.50s</strong></div>
-        <div style="display:grid; grid-template-columns:122px 1fr 58px; gap:10px; align-items:center;"><span style="font-size:17px; font-weight:850;">JAX / A100</span><div style="height:18px; background:#f5e1eb;"><div style="width:84%; height:100%; background:var(--berry);"></div></div><strong>0.42s</strong></div>
+        <div style="display:grid; grid-template-columns:122px 1fr 58px; gap:10px; align-items:center;"><span style="font-size:17px; font-weight:850;">Numba</span><div style="height:18px; background:#e6f0e4;"><div style="width:21%; height:100%; background:var(--green);"></div></div><strong>0.09s</strong></div>
+        <div style="display:grid; grid-template-columns:122px 1fr 58px; gap:10px; align-items:center;"><span style="font-size:17px; font-weight:850;">NumPy</span><div style="height:18px; background:#e4edf7;"><div style="width:62%; height:100%; background:var(--blue);"></div></div><strong>0.26s</strong></div>
+        <div style="display:grid; grid-template-columns:122px 1fr 58px; gap:10px; align-items:center;"><span style="font-size:17px; font-weight:850;">JAX / GPU</span><div style="height:18px; background:#f5e1eb;"><div style="width:100%; height:100%; background:var(--berry);"></div></div><strong>0.42s</strong></div>
       </div>
-      <p style="font-size:18px; line-height:1.22; color:var(--muted);">all close; do not over-interpret the winner</p>
+      <p style="font-size:18px; line-height:1.22; color:var(--muted);">Numba wins this loop-heavy shape.</p>
     </div>
     <div class="panel" style="padding:18px 22px; display:grid; grid-template-columns:270px 1fr 310px; gap:20px; align-items:center; border-left:9px solid var(--blue);">
       <div>
@@ -1084,26 +1084,25 @@ def assign(X, C):
       </div>
       <div style="display:grid; gap:8px;">
         <div style="display:grid; grid-template-columns:122px 1fr 58px; gap:10px; align-items:center;"><span style="font-size:17px; font-weight:850;">Numba</span><div style="height:18px; background:#e6f0e4;"><div style="width:100%; height:100%; background:var(--green);"></div></div><strong>65s</strong></div>
-        <div style="display:grid; grid-template-columns:122px 1fr 58px; gap:10px; align-items:center;"><span style="font-size:17px; font-weight:850;">NumPy</span><div style="height:18px; background:#e4edf7;"><div style="width:49%; height:100%; background:var(--blue);"></div></div><strong>32s</strong></div>
-        <div style="display:grid; grid-template-columns:122px 1fr 58px; gap:10px; align-items:center;"><span style="font-size:17px; font-weight:850;">JAX / A100</span><div style="height:18px; background:#f5e1eb;"><div style="width:57%; height:100%; background:var(--berry);"></div></div><strong>37s</strong></div>
+        <div style="display:grid; grid-template-columns:122px 1fr 58px; gap:10px; align-items:center;"><span style="font-size:17px; font-weight:850;">NumPy</span><div style="height:18px; background:#e4edf7;"><div style="width:48%; height:100%; background:var(--blue);"></div></div><strong>32s</strong></div>
+        <div style="display:grid; grid-template-columns:122px 1fr 58px; gap:10px; align-items:center;"><span style="font-size:17px; font-weight:850;">JAX / GPU</span><div style="height:18px; background:#f5e1eb;"><div style="width:56%; height:100%; background:var(--berry);"></div></div><strong>37s</strong></div>
       </div>
-      <p style="font-size:18px; line-height:1.22; color:var(--muted);">BLAS-backed NumPy wins here; A100 is not automatic.</p>
+      <p style="font-size:18px; line-height:1.22; color:var(--muted);">BLAS-backed NumPy wins; GPU is not automatic.</p>
     </div>
     <div class="panel" style="padding:18px 22px; display:grid; grid-template-columns:270px 1fr 310px; gap:20px; align-items:center; border-left:9px solid var(--berry);">
       <div>
-        <h3 style="color:var(--ink);">large regular workload</h3>
-        <p class="caption" style="margin-top:6px;">N=5M, d=64, K=20</p>
+        <h3 style="color:var(--ink);">massive regular batches</h3>
+        <p class="caption" style="margin-top:6px;">large, regular array work</p>
       </div>
       <div style="display:grid; gap:8px;">
-        <div style="display:grid; grid-template-columns:122px 1fr 58px; gap:10px; align-items:center;"><span style="font-size:17px; font-weight:850;">Numba</span><div style="height:18px; background:#e6f0e4;"><div style="width:100%; height:100%; background:var(--green);"></div></div><strong>120s</strong></div>
-        <div style="display:grid; grid-template-columns:122px 1fr 58px; gap:10px; align-items:center;"><span style="font-size:17px; font-weight:850;">NumPy</span><div style="height:18px; background:#e4edf7;"><div style="width:76%; height:100%; background:var(--blue);"></div></div><strong>91s</strong></div>
-        <div style="display:grid; grid-template-columns:122px 1fr 58px; gap:10px; align-items:center;"><span style="font-size:17px; font-weight:850;">JAX / A100</span><div style="height:18px; background:#f5e1eb;"><div style="width:28%; height:100%; background:var(--berry);"></div></div><strong>33s</strong></div>
+        <div style="display:grid; grid-template-columns:122px 1fr 58px; gap:10px; align-items:center;"><span style="font-size:17px; font-weight:850;">CPU paths</span><div style="height:18px; background:#e4edf7;"><div style="width:100%; height:100%; background:var(--blue);"></div></div><strong>base</strong></div>
+        <div style="display:grid; grid-template-columns:122px 1fr 58px; gap:10px; align-items:center;"><span style="font-size:17px; font-weight:850;">JAX / GPU</span><div style="height:18px; background:#f5e1eb;"><div style="width:38%; height:100%; background:var(--berry);"></div></div><strong>faster</strong></div>
       </div>
-      <p style="font-size:18px; line-height:1.22; color:var(--muted);">JAX / A100 wins here because there is enough regular array work.</p>
+      <p style="font-size:18px; line-height:1.22; color:var(--muted);">GPU wins only when the batch is large, regular, and device-friendly.</p>
     </div>
   </div>
-  <div class="bottom-takeaway">These are representative validated rows, not a universal ranking.</div>
-  <aside class="notes">This is a representative-shape comparison, not a universal ranking or hardware leaderboard. These are validated warm rows. The slide labels should describe what the statistician writes: Numba, NumPy, and JAX / A100. NumPy is the user-facing code path; for dense distance algebra, its matrix multiply is BLAS-backed. JAX / A100 means the JAX implementation running on A100 hardware. Numba can be slower than NumPy on dense algebra because explicit compiled loops do not automatically become a highly optimized GEMM. BLAS uses cache blocking, SIMD, threading, and mature matrix-multiply kernels. Numba is still useful when the bottleneck is loop-shaped or when avoiding giant temporary arrays matters. The point is shape matching: Numba for explicit loops, NumPy for dense algebra, and JAX / A100 for large regular device-friendly work.</aside>
+  <div class="bottom-takeaway">Workload shape determines the tool.</div>
+  <aside class="notes">Keep the original bar-row visual language, but avoid presenting one hardware leaderboard. Full Lloyd at N=100k, d=10, K=5 gave Numba 0.09s versus NumPy matmul 0.26s, with identical inertia; the matched JAX/GPU row in the committed A100 CSV is 0.42s. For the dense distance row, the matched committed CSV medians at N=1M, d=256, K=50 are Numba 65.27s, NumPy 31.52s, and JAX/GPU 36.87s. The point is shape-based: Numba for scalar-heavy loops, NumPy/BLAS for dense algebra when it really becomes BLAS-shaped, and JAX/GPU only when the validated workload is large, regular, and device-friendly enough.</aside>
 </section>
 
 <section class="deck-slide">

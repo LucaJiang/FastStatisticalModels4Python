@@ -2,6 +2,16 @@
 
 This repository contains the PyCon US 2026 deck and reproducibility artifacts for **Breaking the Speed Limit: Python 3.14, Numba, and JAX in Statistical Computing**.
 
+## Public pages
+
+The GitHub Pages version is the easiest way to view the talk materials:
+
+| Material | Open online | Source |
+| --- | --- | --- |
+| Slides | [View slides](https://lucajiang.github.io/FastStatisticalModels4Python/slides/) | [`slides/index.html`](slides/index.html) |
+| Poster | [View poster](https://lucajiang.github.io/FastStatisticalModels4Python/poster/) | [`poster/index.html`](poster/index.html) |
+| Slides print mode | [Open print/PDF view](https://lucajiang.github.io/FastStatisticalModels4Python/slides/index.html?print-pdf) | [`slides/README.md`](slides/README.md) |
+
 Core thesis:
 
 - simulation is how statisticians write tests;
@@ -9,7 +19,7 @@ Core thesis:
 - Python remains the scientific interface;
 - Numba, JAX, Python 3.14, threads, processes, and A100 solve different bottlenecks.
 
-## View the slides
+## Local preview
 
 Use the project conda environment by default:
 
@@ -18,17 +28,11 @@ conda activate py312
 python -m http.server 8000
 ```
 
-Open:
+Open the local pages:
 
-```text
-http://localhost:8000/slides/index.html
-```
-
-PDF/print mode:
-
-```text
-http://localhost:8000/slides/index.html?print-pdf
-```
+- Slides: <http://localhost:8000/slides/>
+- Poster: <http://localhost:8000/poster/>
+- Slides print/PDF mode: <http://localhost:8000/slides/index.html?print-pdf>
 
 The canonical deck is [`slides/index.html`](slides/index.html). Current structure is 36 slides total: 29 main-path slides and 7 backup slides. Slides 9 and 17 are video method-transition slides.
 
