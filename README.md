@@ -73,4 +73,4 @@ python -m experiments.server.a100_permutation_break_even plot \
 
 ## Deck QA
 
-Latest review screenshots are written under [`slides/review/screenshots/`](slides/review/screenshots/) by `python scripts/screenshot_slides_only.py`. The QA pass checks browser mode, video poster fallbacks, broken media URLs, clipping, overlap, console errors, and A100 pending/experimental wording.
+Review screenshots are local generated artifacts under `slides/review/screenshots/`. The QA pass checks browser mode, video poster fallbacks, broken media URLs, clipping, overlap, console errors, and A100 pending/experimental wording.

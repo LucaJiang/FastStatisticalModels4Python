@@ -40,19 +40,7 @@ PDF export should show 36 non-blank pages. Video slides use MP4/WebM in browser 
 
 ## Review screenshots
 
-The canonical current review screenshots live in [`review/screenshots/`](review/screenshots/).
-
-Use the lightweight screenshot helper:
-
-```bash
-python scripts/screenshot_slides_only.py
-```
-
-For fuller browser/PDF review artifacts:
-
-```bash
-python scripts/export_slide_screenshots.py
-```
+Review screenshots live in `review/screenshots/` as local generated artifacts and are not part of the committed deck source.
 
 ## Regenerate figures
 
