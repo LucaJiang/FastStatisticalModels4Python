@@ -10,8 +10,18 @@ slides/review/
 # Poster drafts and generated poster assets are local for now.
 poster/**
 !poster/**/
+!poster/index.html
 !poster/**/*.sty
 !poster/**/*.ttf
+!poster/assets/ai_duty_thumb.png
+!poster/assets/cityu_logo.png
+!poster/assets/github_qr.png
+!poster/assets/human_duty_thumb.png
+!poster/assets/pyconus_logo.png
+!poster/figures/gpu_permutation_decision_map.png
+!poster/figures/kmeans_evidence_rows_cropped.png
+!poster/figures/kmeans_illustration.png
+!poster/figures/permutation_task_schematic.png
 poster_icons_pack/
 poster_icons_pack_with_readme.zip
 experiments/results/presentation_figures/poster_*

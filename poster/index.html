@@ -1,0 +1,1058 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Breaking the Speed Limit - A0 Poster</title>
+  <style>
+    @font-face {
+      font-family: "DINPoster";
+      src: url("DINBold.ttf") format("truetype");
+      font-weight: 900;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    :root {
+      --paper: #fbf6ec;
+      --paper2: #fffdf8;
+      --ink: #15202b;
+      --muted: #52616d;
+      --line: #dfd3c0;
+      --blue: #2368ad;
+      --gold: #d7961c;
+      --green: #2f7d32;
+      --berry: #b51e59;
+      --orange: #e66a2c;
+      --teal: #1f7a8c;
+      --purple: #7046a1;
+      --maroon: #981b49;
+      --soft-blue: #eaf2fb;
+      --soft-gold: #fff3dc;
+      --soft-green: #eaf6ea;
+      --soft-berry: #f8e7ef;
+      --soft-teal: #e8f6f5;
+      --shadow: 0 0.75mm 0 rgba(139, 108, 61, 0.16), 1.4mm 1.8mm 0 rgba(139, 108, 61, 0.10);
+    }
+
+    @page {
+      size: A0 landscape;
+      margin: 0;
+    }
+
+    * { box-sizing: border-box; }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      background: #e7e2d8;
+      color: var(--ink);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    body {
+      display: grid;
+      place-items: center;
+      padding: 18px;
+    }
+
+    .sheet {
+      width: min(calc(100vw - 36px), calc((100vh - 36px) * 1.41421356));
+      aspect-ratio: 1.41421356 / 1;
+      background: linear-gradient(180deg, #fffdf8 0%, var(--paper) 100%);
+      box-shadow: 0 18px 42px rgba(21, 32, 43, 0.18);
+      overflow: hidden;
+      container-type: inline-size;
+    }
+
+    .poster {
+      width: 100%;
+      height: 100%;
+      padding: 2.2cqw 2.6cqw 1.45cqw;
+      display: grid;
+      grid-template-rows: 15.6% 8.6% 1fr 3.0%;
+      gap: 1.05cqw;
+    }
+
+    .masthead {
+      display: grid;
+      grid-template-columns: 21% 1fr 8.2% 12.5%;
+      gap: 1.45cqw;
+      align-items: center;
+      border-bottom: 0.18cqw solid var(--maroon);
+      padding-bottom: 1.55cqw;
+    }
+
+    .cityu-logo {
+      width: 118%;
+      display: block;
+    }
+
+    .title-block {
+      text-align: center;
+      min-width: 0;
+      transform: translateX(-0.35cqw);
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      color: var(--berry);
+      font-family: "DINPoster", Inter, ui-sans-serif, sans-serif;
+      font-size: 3.42cqw;
+      line-height: 0.92;
+      letter-spacing: 0;
+      font-weight: 900;
+    }
+
+    .subtitle {
+      margin-top: 0.34cqw;
+      font-size: 1.22cqw;
+      line-height: 1.05;
+      font-weight: 950;
+    }
+
+    .tagline {
+      margin-top: 0.24cqw;
+      color: var(--muted);
+      font-size: 0.72cqw;
+      line-height: 1.15;
+      font-style: italic;
+    }
+
+    .control-plane {
+      margin-top: 0.18cqw;
+      color: var(--blue);
+      font-size: 0.54cqw;
+      line-height: 1.12;
+      font-weight: 850;
+    }
+
+    .authors {
+      margin-top: 0.34cqw;
+      color: var(--berry);
+      font-size: 0.88cqw;
+      line-height: 1;
+      font-weight: 950;
+    }
+
+    .institute {
+      margin-top: 0.18cqw;
+      color: #b01117;
+      font-size: 0.55cqw;
+      line-height: 1.1;
+      font-weight: 650;
+    }
+
+    .pycon {
+      align-self: center;
+      text-align: center;
+      min-width: 0;
+      transform: translateX(-0.18cqw);
+    }
+
+    .pycon img {
+      width: 112%;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .qr {
+      align-self: center;
+      text-align: center;
+      min-width: 0;
+    }
+
+    .qr img {
+      width: 64%;
+      display: block;
+      margin: 0 auto;
+      background: #fff;
+      padding: 0.26cqw;
+    }
+
+    .thesis {
+      display: grid;
+      grid-template-columns: 1.02fr 1.28fr;
+      gap: 1.55cqw;
+      align-items: center;
+      border: 1px solid rgba(224, 117, 65, 0.38);
+      border-radius: 0.75cqw;
+      background: #fffaf2;
+      padding: 0.85cqw 1.15cqw;
+    }
+
+    .thesis-main strong {
+      display: block;
+      color: var(--blue);
+      font-size: 1.62cqw;
+      line-height: 1.04;
+      font-weight: 950;
+    }
+
+    .thesis-main span {
+      display: block;
+      margin-top: 0.25cqw;
+      color: var(--muted);
+      font-size: 0.84cqw;
+      line-height: 1.16;
+    }
+
+    .ribbon {
+      display: grid;
+      grid-template-columns: 0.95fr 0.10fr 1fr 0.10fr 1.42fr 0.10fr 1.68fr;
+      gap: 0.36cqw;
+      align-items: center;
+    }
+
+    .ribbon-step {
+      min-height: 2.82cqw;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.40cqw;
+      border: 0.14cqw solid currentColor;
+      border-radius: 999px;
+      background: #fffdf8;
+      color: var(--blue);
+      font-size: 0.78cqw;
+      line-height: 1;
+      font-weight: 950;
+      white-space: nowrap;
+      box-shadow: 0 0.25cqw 0.55cqw rgba(21, 32, 43, 0.04);
+    }
+
+    .ribbon-step:nth-child(3) { color: var(--gold); }
+    .ribbon-step:nth-child(5) { color: var(--green); }
+    .ribbon-step:nth-child(7) { color: var(--berry); }
+
+    .dot {
+      width: 1.24cqw;
+      height: 1.24cqw;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      color: white;
+      font-size: 0.62cqw;
+      font-weight: 950;
+      flex: 0 0 auto;
+    }
+
+    .ribbon-step .dot { background: var(--blue); }
+    .ribbon-step:nth-child(3) .dot { background: var(--gold); }
+    .ribbon-step:nth-child(5) .dot { background: var(--green); }
+    .ribbon-step:nth-child(7) .dot { background: var(--berry); }
+
+    .arrow {
+      color: var(--muted);
+      font-size: 1.75cqw;
+      line-height: 1;
+      font-weight: 950;
+      text-align: center;
+    }
+
+    .columns {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 29.5% 41% 25.5%;
+      gap: 1.85cqw;
+    }
+
+    .col {
+      display: grid;
+      gap: 0.95cqw;
+      min-width: 0;
+      align-content: start;
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 0.48cqw;
+      padding-bottom: 0.34cqw;
+      border-bottom: 0.085cqw solid currentColor;
+      color: var(--ink);
+    }
+
+    .section-title .dot {
+      color: inherit;
+      background: currentColor;
+      width: 0.8cqw;
+      height: 0.8cqw;
+      font-size: 0.68cqw;
+    }
+
+    .section-title h2 {
+      font-size: 1.2cqw;
+      line-height: 1.04;
+      font-weight: 950;
+      letter-spacing: 0;
+    }
+
+    .section-title.blue { color: var(--blue); }
+    .section-title.gold { color: var(--gold); }
+    .section-title.teal { color: var(--teal); }
+    .section-title.green { color: var(--green); }
+    .section-title.berry { color: var(--berry); }
+    .section-title.orange { color: var(--orange); }
+    .section-title.purple { color: var(--purple); }
+
+    .lead {
+      margin-top: 0.55cqw;
+      color: var(--muted);
+      font-size: 0.72cqw;
+      line-height: 1.22;
+    }
+
+    .card,
+    .callout {
+      background: rgba(255, 253, 248, 0.96);
+      border: 1px solid var(--line);
+      border-radius: 0.42cqw;
+      box-shadow: var(--shadow);
+      min-width: 0;
+    }
+
+    .workflow {
+      margin-top: 0.68cqw;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.52cqw;
+    }
+
+    .workflow-card {
+      min-height: 3.55cqw;
+      padding: 0.58cqw 0.6cqw;
+      border-top: 0.18cqw solid currentColor;
+      position: relative;
+    }
+
+    .workflow-card strong {
+      display: block;
+      color: var(--ink);
+      font-size: 0.72cqw;
+      line-height: 1.06;
+      font-weight: 950;
+      padding-right: 1cqw;
+    }
+
+    .workflow-card p {
+      margin-top: 0.26cqw;
+      color: var(--muted);
+      font-size: 0.54cqw;
+      line-height: 1.15;
+    }
+
+    .workflow-card .num {
+      position: absolute;
+      top: 0.58cqw;
+      right: 0.55cqw;
+      color: currentColor;
+      font-size: 0.58cqw;
+      font-weight: 950;
+    }
+
+    .blue { color: var(--blue); }
+    .gold { color: var(--gold); }
+    .green { color: var(--green); }
+    .berry { color: var(--berry); }
+    .teal { color: var(--teal); }
+    .orange { color: var(--orange); }
+    .purple { color: var(--purple); }
+
+    .gate {
+      margin-top: 0.56cqw;
+      border-left: 0.2cqw solid var(--orange);
+      background: #fff3e6;
+      padding: 0.52cqw 0.66cqw;
+      color: var(--ink);
+      font-size: 0.7cqw;
+      line-height: 1.12;
+      font-weight: 900;
+      box-shadow: none;
+    }
+
+    .decision-table {
+      margin-top: 0.62cqw;
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      font-size: 0.62cqw;
+      line-height: 1.14;
+    }
+
+    .decision-table th,
+    .decision-table td {
+      padding: 0.36cqw 0.48cqw;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+
+    .decision-table th {
+      color: var(--maroon);
+      text-align: left;
+      font-weight: 950;
+      border-bottom: 0.085cqw solid rgba(21, 32, 43, 0.5);
+    }
+
+    .decision-table tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .decision-table td:first-child {
+      width: 34%;
+      color: var(--ink);
+      font-weight: 900;
+    }
+
+    .workload-grid {
+      margin-top: 0.62cqw;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.8cqw;
+    }
+
+    .workload h3 {
+      color: currentColor;
+      font-size: 0.9cqw;
+      line-height: 1.06;
+      font-weight: 950;
+      margin-bottom: 0.34cqw;
+    }
+
+    .figure {
+      border-top: 0.2cqw solid currentColor;
+      overflow: hidden;
+      background: #fffaf2;
+    }
+
+    .figure img {
+      display: block;
+      width: 100%;
+      height: 9.0cqw;
+      object-fit: contain;
+      padding: 0.28cqw;
+      background: #fffaf2;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.24cqw;
+      padding: 0 0.46cqw 0.46cqw;
+    }
+
+    .chip {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fff7e9;
+      padding: 0.18cqw 0.34cqw;
+      color: var(--ink);
+      font-size: 0.5cqw;
+      line-height: 1;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    .contract {
+      margin-top: 0.6cqw;
+      padding: 0.56cqw 0.66cqw;
+      border-left: 0.2cqw solid var(--green);
+      background: var(--soft-green);
+      color: var(--ink);
+      font-size: 0.64cqw;
+      line-height: 1.18;
+      box-shadow: none;
+    }
+
+    .contract strong {
+      color: var(--maroon);
+      font-weight: 950;
+    }
+
+    .takeaway-strip {
+      padding: 1.08cqw 1.22cqw;
+      border: 1px solid rgba(47, 125, 50, 0.35);
+      border-left: 0.42cqw solid var(--green);
+      background: var(--soft-green);
+      box-shadow: none;
+    }
+
+    .takeaway-strip strong {
+      display: block;
+      color: var(--green);
+      font-size: 1.42cqw;
+      line-height: 1.05;
+      font-weight: 950;
+    }
+
+    .takeaway-strip span {
+      display: block;
+      margin-top: 0.46cqw;
+      color: var(--ink);
+      font-size: 0.80cqw;
+      line-height: 1.15;
+      font-weight: 850;
+    }
+
+    .validation-gate {
+      margin-top: 0.62cqw;
+      padding: 0.68cqw 0.76cqw;
+      border-top: 0.2cqw solid var(--green);
+    }
+
+    .validation-gate h3 {
+      color: var(--green);
+      font-size: 0.72cqw;
+      line-height: 1.05;
+      font-weight: 950;
+      margin-bottom: 0.45cqw;
+    }
+
+    .gate-list {
+      display: grid;
+      gap: 0.36cqw;
+    }
+
+    .gate-row {
+      display: grid;
+      grid-template-columns: 0.75cqw 1fr;
+      gap: 0.34cqw;
+      align-items: start;
+      color: var(--ink);
+      font-size: 0.58cqw;
+      line-height: 1.16;
+    }
+
+    .gate-row b {
+      color: var(--green);
+      font-size: 0.68cqw;
+      line-height: 1;
+    }
+
+    .gate-row strong {
+      color: var(--ink);
+      font-weight: 950;
+    }
+
+    .evidence-grid {
+      margin-top: 0.62cqw;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.72cqw;
+    }
+
+    .plot-card {
+      padding: 0.64cqw;
+      min-height: 14.4cqw;
+    }
+
+    .plot-card h3 {
+      font-size: 0.86cqw;
+      line-height: 1.05;
+      font-weight: 950;
+      margin-bottom: 0.32cqw;
+    }
+
+    .plot-card p {
+      color: var(--muted);
+      font-size: 0.56cqw;
+      line-height: 1.15;
+    }
+
+    .shape-notes {
+      margin: 0.28cqw 0 0;
+      padding-left: 0.82cqw;
+      color: var(--ink);
+      font-size: 0.50cqw;
+      line-height: 1.13;
+    }
+
+    .shape-notes li {
+      margin-top: 0.14cqw;
+    }
+
+    .plot-card img {
+      display: block;
+      width: 100%;
+      height: 10.7cqw;
+      object-fit: contain;
+      margin-top: 0.34cqw;
+      background: #fffaf2;
+    }
+
+    .tool-grid {
+      margin-top: 0.62cqw;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.58cqw;
+    }
+
+    .tool {
+      min-height: 6.1cqw;
+      padding: 0.62cqw;
+      border-top: 0.18cqw solid currentColor;
+    }
+
+    .tool strong {
+      display: block;
+      color: var(--blue);
+      font-size: 0.88cqw;
+      line-height: 1.05;
+      font-weight: 950;
+    }
+
+    .tool b {
+      display: block;
+      margin-top: 0.5cqw;
+      color: var(--ink);
+      font-size: 0.64cqw;
+      line-height: 1.08;
+      font-weight: 950;
+    }
+
+    .tool span,
+    .tool em {
+      display: block;
+      color: var(--ink);
+      font-size: 0.58cqw;
+      line-height: 1.12;
+      font-style: normal;
+    }
+
+    .tool em {
+      margin-top: 0.54cqw;
+    }
+
+    .diagnostic-guide {
+      margin-top: 0.62cqw;
+      padding: 0.78cqw 0.84cqw;
+    }
+
+    .diagnostic-guide h3 {
+      color: var(--berry);
+      font-size: 0.94cqw;
+      line-height: 1.05;
+      font-weight: 950;
+      margin-bottom: 0.42cqw;
+    }
+
+    .diagnostic-row {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      gap: 0.56cqw;
+      padding: 0.31cqw 0;
+      border-top: 1px solid rgba(223, 211, 192, 0.92);
+      color: var(--ink);
+      font-size: 0.62cqw;
+      line-height: 1.12;
+    }
+
+    .diagnostic-row:first-of-type {
+      border-top: 0;
+    }
+
+    .diagnostic-row strong {
+      color: var(--muted);
+      font-weight: 900;
+    }
+
+    .report-card {
+      margin-top: 0.62cqw;
+      padding: 0.68cqw 0.76cqw;
+    }
+
+    .checks {
+      display: grid;
+      gap: 0.3cqw;
+      font-size: 0.62cqw;
+      line-height: 1.12;
+    }
+
+    .checks div {
+      display: grid;
+      grid-template-columns: 0.76cqw 1fr;
+      gap: 0.32cqw;
+    }
+
+    .checks b {
+      color: var(--green);
+    }
+
+    .workflow-note {
+      margin-top: 0.62cqw;
+      padding: 0.66cqw 0.76cqw;
+      box-shadow: none;
+    }
+
+    .workflow-note {
+      background: var(--soft-teal);
+      border-color: rgba(31, 122, 140, 0.30);
+    }
+
+    .workflow-note strong {
+      display: block;
+      font-size: 0.84cqw;
+      line-height: 1.05;
+      margin-bottom: 0.36cqw;
+      font-weight: 950;
+    }
+
+    .workflow-note strong { color: var(--teal); }
+
+    .workflow-note p {
+      color: var(--ink);
+      font-size: 0.62cqw;
+      line-height: 1.18;
+    }
+
+    .ai-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.46cqw;
+      margin-top: 0.46cqw;
+    }
+
+    .ai-card {
+      min-height: 5.2cqw;
+      padding: 0.38cqw 0.42cqw;
+      border-top: 0.16cqw solid currentColor;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 2.75cqw;
+      gap: 0.28cqw;
+      align-items: start;
+    }
+
+    .ai-card strong {
+      display: block;
+      color: currentColor;
+      font-size: 0.56cqw;
+      line-height: 1.06;
+      font-weight: 950;
+      margin-bottom: 0.24cqw;
+    }
+
+    .ai-card ul {
+      margin: 0;
+      padding-left: 0.68cqw;
+      color: var(--ink);
+      font-size: 0.40cqw;
+      line-height: 1.08;
+    }
+
+    .ai-card li {
+      margin: 0.11cqw 0 0;
+    }
+
+    .duty-art {
+      width: 2.75cqw;
+      height: 2.75cqw;
+      border-radius: 0.26cqw;
+      object-fit: cover;
+      border: 1px solid rgba(223, 211, 192, 0.9);
+      align-self: start;
+      opacity: 0.9;
+    }
+
+    .role-caption {
+      display: none;
+      margin-top: 0.5cqw;
+      color: var(--muted);
+      font-size: 0.48cqw;
+      line-height: 1.15;
+      font-weight: 800;
+    }
+
+    .footer {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: end;
+      gap: 1cqw;
+      color: var(--muted);
+      font-size: 0.58cqw;
+      line-height: 1.1;
+      font-weight: 650;
+    }
+
+    .footer code {
+      color: var(--ink);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.58cqw;
+      background: transparent;
+      font-weight: 900;
+    }
+
+    @media print {
+      html,
+      body {
+        width: 1189mm;
+        height: 841mm;
+        padding: 0;
+        background: var(--paper);
+      }
+
+      .sheet {
+        width: 1189mm;
+        height: 841mm;
+        box-shadow: none;
+      }
+    }
+
+    @media screen and (min-width: 3000px) {
+      body {
+        padding: 0;
+        background: var(--paper);
+      }
+
+      .sheet {
+        width: 100vw;
+        box-shadow: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="sheet" aria-label="A0 landscape poster">
+    <div class="poster">
+      <header class="masthead">
+        <div>
+          <img class="cityu-logo" src="assets/cityu_logo.png" alt="City University of Hong Kong logo" />
+        </div>
+        <div class="title-block">
+          <h1>Breaking the Speed Limit</h1>
+          <p class="subtitle">Fast statistical models with Python 3.14, Numba, and JAX</p>
+          <p class="tagline">From a statistician's workflow: validate first, then accelerate the bottleneck.</p>
+          <p class="control-plane">Python stays the control plane; only the validated computational hotspot is accelerated.</p>
+          <p class="authors">Wenxin Jiang &nbsp;&middot;&nbsp; Jian Yin</p>
+          <p class="institute">Department of Biostatistics, City University of Hong Kong &nbsp;&middot;&nbsp; PyCon US 2026</p>
+        </div>
+        <div class="pycon">
+          <img src="assets/pyconus_logo.png" alt="PyCon US 2026 logo" />
+        </div>
+        <div class="qr">
+          <img src="assets/github_qr.png" alt="QR code for slides and reproducible artifacts" />
+        </div>
+      </header>
+
+      <section class="thesis" aria-label="Main poster rule">
+        <p class="thesis-main">
+          <strong>Make the statistical task testable; then accelerate the measured bottleneck.</strong>
+          <span>Define the target, check agreement, then accelerate only the measured computational hotspot.</span>
+        </p>
+        <div class="ribbon" aria-label="Workflow">
+          <div class="ribbon-step"><b class="dot">1</b>Simulate</div>
+          <div class="arrow">➜</div>
+          <div class="ribbon-step"><b class="dot">2</b>Validate</div>
+          <div class="arrow">➜</div>
+          <div class="ribbon-step"><b class="dot">3</b>Find bottleneck</div>
+          <div class="arrow">➜</div>
+          <div class="ribbon-step"><b class="dot">4</b>Pick the smallest tool</div>
+        </div>
+      </section>
+
+      <section class="columns">
+        <div class="col">
+          <section>
+            <div class="section-title blue"><b class="dot">1</b><h2>Simulation Provides the Test Harness</h2></div>
+            <p class="lead">Real biomedical data rarely provide known truth. Simulation creates a controlled setting for checking recovery, calibration, and agreement.</p>
+            <div class="workflow">
+              <article class="workflow-card card blue"><span class="num">01</span><strong>Statistical target</strong><p>what to estimate, recover, preserve</p></article>
+              <article class="workflow-card card teal"><span class="num">02</span><strong>Scenario grid</strong><p>null, alternative, hard cases</p></article>
+              <article class="workflow-card card gold"><span class="num">03</span><strong>Reference implementation</strong><p>readable Python/NumPy implementation</p></article>
+              <article class="workflow-card card green"><span class="num">04</span><strong>Validation checks</strong><p>recovery, calibration, agreement</p></article>
+              <article class="workflow-card card gold"><span class="num">05</span><strong>Workload structure</strong><p>loops, algebra, repetition, memory</p></article>
+              <article class="workflow-card card berry"><span class="num">06</span><strong>Selective acceleration</strong><p>smallest sufficient tool</p></article>
+            </div>
+            <div class="gate">Gate: optimization starts only after validation passes.</div>
+          </section>
+
+          <section>
+            <div class="section-title gold"><b class="dot">2</b><h2>Decisions Before Timing</h2></div>
+            <table class="decision-table card">
+              <thead><tr><th>Question</th><th>Decision before measuring speed</th></tr></thead>
+              <tbody>
+                <tr><td>Scientific target</td><td>estimator, statistic, null, stopping rule</td></tr>
+                <tr><td>Ground truth</td><td>labels, known effect, nominal type-I rate</td></tr>
+                <tr><td>Acceptance</td><td>exact match, tolerance, recovery, calibration</td></tr>
+                <tr><td>Failure meaning</td><td>implementation, method, or systems limit</td></tr>
+                <tr><td>Scale stress</td><td>dimensions that make work expensive</td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section>
+            <div class="section-title green"><b class="dot">3</b><h2>Validation Gates Passed</h2></div>
+            <article class="validation-gate card">
+              <h3>All speed claims below passed these checks.</h3>
+              <div class="gate-list">
+                <div class="gate-row"><b>✓</b><span><strong>k-means:</strong> max relative inertia difference 3.1e-14 &lt; tolerance 1e-8.</span></div>
+                <div class="gate-row"><b>✓</b><span><strong>permutation:</strong> same test statistic, same p-value definition, same resampling stream; max |p diff| = 0.0.</span></div>
+                <div class="gate-row"><b>✓</b><span><strong>statistic difference:</strong> max |stat diff| = 9.4e-16 across the recorded validation grid.</span></div>
+                <div class="gate-row"><b>✓</b><span><strong>null calibration:</strong> estimated type-I error 0.051 near nominal alpha 0.05.</span></div>
+              </div>
+            </article>
+          </section>
+
+          <section>
+            <div class="section-title purple"><b class="dot">AI</b><h2>AI Scales the Workflow; the Statistician Owns the Claim</h2></div>
+            <div class="ai-grid">
+              <article class="ai-card card teal">
+                <div>
+                  <strong>What AI can automate</strong>
+                  <ul>
+                    <li>implementation variants</li>
+                    <li>scenario-grid runners</li>
+                    <li>metadata capture</li>
+                    <li>plot regeneration</li>
+                    <li>result manifests</li>
+                  </ul>
+                </div>
+                <img class="duty-art" src="assets/ai_duty_thumb.png" alt="Automation layer illustration" />
+                <p class="role-caption">AI assistant automating experiment tasks</p>
+              </article>
+              <article class="ai-card card green">
+                <div>
+                  <strong>What the statistician decides</strong>
+                  <ul>
+                    <li>statistical target</li>
+                    <li>data-generating assumptions</li>
+                    <li>validation criteria</li>
+                    <li>interpretation of difficult cases</li>
+                    <li>scientific claims</li>
+                  </ul>
+                </div>
+                <img class="duty-art" src="assets/human_duty_thumb.png" alt="Statistician judgment illustration" />
+                <p class="role-caption">Statistician making scientific decisions</p>
+              </article>
+            </div>
+          </section>
+        </div>
+
+        <div class="col">
+          <section>
+            <div class="section-title teal"><b class="dot">4</b><h2>Two Workloads, Two Bottleneck Patterns</h2></div>
+            <div class="workload-grid">
+              <article class="workload blue">
+                <h3>k-means = iterative fitting</h3>
+                <div class="figure card">
+                  <img src="figures/kmeans_illustration.png" alt="k-means iterative fitting illustration" />
+                  <div class="chips"><span class="chip">distance loops</span><span class="chip">temporaries</span><span class="chip">compiled kernels</span></div>
+                </div>
+              </article>
+              <article class="workload green">
+                <h3>permutation = resampling inference</h3>
+                <div class="figure card">
+                  <img src="figures/permutation_task_schematic.png" alt="permutation-test workflow schematic" />
+                  <div class="chips"><span class="chip">shared arrays</span><span class="chip">batching</span><span class="chip">W @ X</span></div>
+                </div>
+              </article>
+            </div>
+            <div class="contract" style="font-size: 1cqb;"><strong>Validation contract:</strong> k-means keeps the same data, initialization, and stopping rule; permutation keeps the same resampling stream and p-value definition.</div>
+          </section>
+
+          <article class="takeaway-strip card">
+            <strong>Validate the analysis before optimizing the implementation.</strong>
+            <span>Speed only counts after agreement with the reference passes the validation criteria.</span>
+          </article>
+
+          <section>
+            <div class="section-title berry"><b class="dot">5</b><h2>After Validation, Performance Depends on Workload Structure</h2></div>
+            <div class="evidence-grid">
+              <article class="plot-card card">
+                <h3>K-means: workload structure determines the implementation</h3>
+                <ul class="shape-notes">
+                  <li>loop-dominated computations: Numba, NumPy, and A100 are similar</li>
+                  <li>dense distance computations: NumPy / BLAS is best</li>
+                  <li>large regular batches: JAX / A100 is best</li>
+                </ul>
+                <img src="figures/kmeans_evidence_rows_cropped.png" alt="Server k-means evidence showing implementation choice depends on workload structure" />
+              </article>
+              <article class="plot-card card">
+                <h3>Permutation: A100 is useful only after batching and streaming</h3>
+                <ul class="shape-notes">
+                  <li>A100 becomes advantageous after batching and streamed reduction</li>
+                  <li>largest validated speedup in this grid: 8.54×</li>
+                  <li>out-of-memory configurations are reported explicitly</li>
+                </ul>
+                <img src="figures/gpu_permutation_decision_map.png" alt="GPU permutation decision map" />
+              </article>
+            </div>
+          </section>
+        </div>
+
+        <div class="col">
+          <section>
+            <div class="section-title berry"><b class="dot">6</b><h2>Bottleneck Signal → Smallest Move</h2></div>
+            <article class="diagnostic-guide card">
+              <h3>Reusable diagnostic guide</h3>
+              <div class="diagnostic-row"><strong>validation fails</strong><span>revisit the statistical definition or implementation</span></div>
+              <div class="diagnostic-row"><strong>loop-dominated Python code</strong><span>Numba</span></div>
+              <div class="diagnostic-row"><strong>dense array algebra</strong><span>NumPy / BLAS</span></div>
+              <div class="diagnostic-row"><strong>repeated independent work</strong><span>threads / workers</span></div>
+              <div class="diagnostic-row"><strong>large regular batches</strong><span>JAX / A100</span></div>
+              <div class="diagnostic-row"><strong>memory-limited workload</strong><span>streaming / reduction</span></div>
+            </article>
+          </section>
+
+          <section>
+            <div class="section-title berry"><b class="dot">7</b><h2>Tool Choices in This Talk</h2></div>
+            <p class="lead">Examples, not a ranking.</p>
+            <div class="tool-grid">
+              <article class="tool card green">
+                <strong>Numba</strong>
+                <b>loop-dominated CPU code</b>
+                <em>k-means assignment/update</em>
+              </article>
+              <article class="tool card blue">
+                <strong>NumPy / BLAS</strong>
+                <b>dense distance algebra</b>
+                <em>distance identity and W @ X on CPU</em>
+              </article>
+              <article class="tool card teal">
+                <strong>Threads / workers</strong>
+                <b>repeated work over shared data</b>
+                <em>permutation worker sweep</em>
+              </article>
+              <article class="tool card berry">
+                <strong>JAX / A100</strong>
+                <b>device-resident regular batches</b>
+                <em>streamed W @ X after validation</em>
+              </article>
+            </div>
+          </section>
+
+          <section>
+            <div class="section-title orange"><b class="dot">8</b><h2>Report Every Speed Claim</h2></div>
+            <article class="report-card card">
+              <div class="checks">
+                <div><b>✓</b><span>validation target and acceptance criteria</span></div>
+                <div><b>✓</b><span>compute tier: local validation, server CPU, or A100</span></div>
+                <div><b>✓</b><span>cold/warm timing and compilation treatment</span></div>
+                <div><b>✓</b><span>transfer, allocation, and collection treatment</span></div>
+                <div><b>✓</b><span>unavailable or out-of-memory configurations reported explicitly</span></div>
+                <div><b>✓</b><span>smallest tool that preserves the statistical result</span></div>
+              </div>
+              <div class="gate">Timing semantics: compilation excluded; data transfer included; kernel-only timings not reported.</div>
+            </article>
+          </section>
+
+        </div>
+      </section>
+
+      <footer class="footer">
+        <!-- <span>Breaking the Speed Limit · PyCon US 2026 · Department of Biostatistics, City University of Hong Kong</span> -->
+        <code style="text-align: right; font-size: 1.2cqb; margin-right: -2cqb;">github.com/LucaJiang/FastStatisticalModels4Python</code>
+      </footer>
+    </div>
+  </main>
+</body>
+</html>
