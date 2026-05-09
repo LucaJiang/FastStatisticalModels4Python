@@ -862,8 +862,8 @@
       <section class="columns">
         <div class="col">
           <section>
-            <div class="section-title blue"><b class="dot">1</b><h2>Simulation Defines "Correct"</h2></div>
-            <p class="lead">Real data rarely provides ground truth. Simulation creates a controlled setting to test power, calibration, and agreement.</p>
+            <div class="section-title blue"><b class="dot">1</b><h2>Simulation Makes Correctness Testable</h2></div>
+            <p class="lead">Real data often lacks known ground truth for method behavior. Simulation creates a controlled setting to test power, calibration, and agreement.</p>
             <div class="workflow">
               <article class="workflow-card card blue"><span class="num">01</span><strong>Define Target</strong><p>what to estimate, recover, preserve</p></article>
               <article class="workflow-card card teal"><span class="num">02</span><strong>Build Scenarios</strong><p>null, alternative, hard or extremecases</p></article>
@@ -872,7 +872,7 @@
               <article class="workflow-card card gold"><span class="num">05</span><strong>Analyze Workload</strong><p>data flow, loops, algebra, repetition, memory</p></article>
               <article class="workflow-card card berry"><span class="num">06</span><strong>Select Tool</strong><p>suitable for your task</p></article>
             </div>
-            <div class="gate">Rule: Do not optimize until ALL validations pass.</div>
+            <div class="gate">Rule: Speedups are trusted only after validation passes.</div>
           </section>
 
           <section>
@@ -883,7 +883,8 @@
                 <tr><td>Statistical target</td><td>estimator, test statistic, or stopping criterion</td></tr>
                 <tr><td>Simulated truth</td><td>labels, effect size, or nominal alpha</td></tr>
                 <tr><td>Acceptance criteria</td><td>exact match, numerical tolerance, or calibration</td></tr>
-                <tr><td>Failure mode</td><td>code bug, method breakdown, or out-of-memory (OOM)</td></tr>
+                <tr><td>Failure mode</td><td>code bug, method breakdown, or out-of-memory</td></tr>
+                <tr><td>Timing scope</td><td>compile, transfer, allocation</td></tr>
                 <tr><td>Cost drivers</td><td>samples (n), features (p), or repeats (R)</td></tr>
               </tbody>
             </table>
@@ -894,10 +895,10 @@
             <article class="validation-gate card">
               <h3>Speedup results verified using these criteria:</h3>
               <div class="gate-list">
-                <div class="gate-row"><b>✓</b><span><strong>K-means agreement:</strong> max relative inertia difference well below the 1e-8 tolerance.</span></div>
+                <div class="gate-row"><b>✓</b><span><strong>K-means agreement:</strong> max relative inertia difference well below the tolerance.</span></div>
                 <div class="gate-row"><b>✓</b><span><strong>Permutation equivalence:</strong> same test statistic, same p-value definition, same resampling stream; max |p diff| < tolerance.</span></div>
                 <div class="gate-row"><b>✓</b><span><strong>Statistic difference:</strong> max |stat diff| < tolerance across the validation grid.</span></div>
-                <div class="gate-row"><b>✓</b><span><strong>Null calibration:</strong> estimated type-I error aligns with nominal alpha 0.05.</span></div>
+                <div class="gate-row"><b>✓</b><span><strong>Null calibration:</strong> estimated type-I error within MC uncertainty of nominal α = 0.05.</span></div>
               </div>
             </article>
           </section>
@@ -960,7 +961,7 @@
             <div class="contract" style="font-size: 1.2cqb;">
             <strong>Validation criteria:</strong> 
             <b>K-means</b> Match cluster assignments by fixing seeds and convergence thresholds.
-            <b>Permutation</b> Guarantee null distribution consistency via deterministic resampling seeds.
+            <b>Permutation</b> Same W, same statistic, same p-value formula.
           </div>
           </section>
 
@@ -979,16 +980,16 @@
                   <li>• <b>Dense algebra:</b> NumPy dominates via optimized BLAS kernels.</li>
                   <li>• <b>Massive data batches:</b> JAX/GPU wins on SIMT throughput.</li>
                 </ul>
-                <img src="figures/kmeans_evidence_rows_cropped.png" alt="Server k-means evidence showing implementation choice depends on workload structure" style="margin-top: -2.2cqb;" />
+                <img src="figures/kmeans_evidence_rows_cropped.png" alt="Server k-means evidence showing implementation choice depends on workload structure" style="margin-top: -0.2cqb;" />
               </article>
               <article class="plot-card card">
                 <h3>Permutation: GPU Scaling via Vectorized Batching</h3>
-                <ul style="font-size: 1cqb; list-style-type: none; padding-left: 0; margin-bottom: -1cqb;">
+                <ul style="font-size: 1cqb; list-style-type: none; padding-left: 0; margin-bottom: -1cqb;  margin-bottom: -1cqb;">
                   <li><strong>Infrastructure Requirement:</strong> High-concurrency batching and fused reductions</li>
-                  <li><strong>Validated Speedup:</strong> Peaks at 8.54× vs. optimized multi-core CPU</li>
+                  <li><strong>Observed Speedup:</strong> up to 8.54× for n=5k, p=500k, R=5k, using a matched CPU matrix baseline vs. A100 streamed end-to-end path.</li>
                   <li><strong>Operational Boundaries:</strong> Explicit OOM profiling for high-dimensional tensors</li>
                 </ul>
-                <img src="figures/gpu_permutation_decision_map.png" alt="GPU permutation decision map" style="margin-top: -0.1cqb;"/>
+                <img src="figures/gpu_permutation_decision_map.png" alt="GPU permutation decision map" style="margin-top: 0.8cqb; margin-bottom: -0.4cqb;"/>
               </article>
             </div>
           </section>
