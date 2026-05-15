@@ -1470,24 +1470,16 @@ On the left, you can see the good news first. When we move from one worker to a 
 
 But the right panel tells the second half of the story. Each jump gives us a smaller marginal gain. The first jump is
 very valuable; later jumps are much less valuable. And for the permutation workload, adding more workers at the high end can even make things worse.
-
 So the lesson is not simply “add more workers.”
-
-At high worker counts, the bottleneck starts to move. We are no longer only measuring computation. We are also measuring process overhead, memory traffic, CPU scheduling, and the fact that this was a shared server environment.
-
-That is why the memory note matters. In this run, the 128-worker permutation case used about 58 GiB of peak RSS. That
-does not mean 128 workers are always bad. It means high parallelism has to be interpreted with the actual resource
-constraints.
-
-So the practical rule is: use parallelism to capture the early speedup, then watch the marginal gain. When the curve
+The practical rule is: use parallelism to capture the early speedup, then watch the marginal gain. When the curve
 flattens, more workers are no longer free.
   </aside>
 </section>
 
 <section class="deck-slide python314-nogil-main">
   <div class="kicker">EXECUTION MODEL</div>
-  <h2>Free-threaded CPython changes this workload’s tradeoff.</h2>
-  <p class="subtitle" style="font-size:20px; margin-top:8px; max-width:1120px;">Threads become viable when the workload is designed for shared-memory parallelism.</p>
+  <h2>No-GIL changes the process-vs-thread tradeoff.</h2>
+  <p class="subtitle" style="font-size:20px; margin-top:8px; max-width:1120px;">CPU-bound Python permutation/resampling work over shared in-memory data.</p>
   <div style="display:grid; grid-template-columns:minmax(0, 0.64fr) minmax(330px, 0.36fr); gap:18px; margin-top:14px; align-items:stretch;">
     <div class="figure-box" style="height:394px; padding:6px;">
       <img src="assets/python314-nogil/thread_scaling_runtime_hero.png" alt="Runtime scaling for standard GIL threads and free-threaded threads across ThreadPoolExecutor workers" />
@@ -1513,17 +1505,24 @@ flattens, more workers are no longer free.
       </div>
     </div>
   </div>
-  <p style="margin-top:10px; color:var(--ink); font-size:17px; line-height:1.16; font-weight:850;">Official term: free-threaded CPython build, available since Python 3.13; supported but optional, not default.</p>
-  <p style="margin-top:6px; color:var(--muted); font-size:15px; line-height:1.16;">It can run Python threads on CPU cores in parallel; C extensions may re-enable the GIL, and single-thread overhead exists.</p>
+  <!-- <p style="margin-top:10px; color:var(--ink); font-size:17px; line-height:1.16; font-weight:850;">Official term: free-threaded CPython build, available since Python 3.13; supported but optional, not default.</p> -->
+  <p style="margin-top:6px; color:var(--muted); font-size:15px; line-height:1.16;">The claim is not that Python is automatically faster; it is that free-threaded CPython makes threads a plausible shared-data parallel strategy for this workload shape.</p>
   <aside class="notes">
-This slide is about why Python’s execution model matters.
-With the standard GIL build, the gray line is almost flat. We add ThreadPoolExecutor workers, but from 1 to 16 workers
-we only get about 1× speedup. For this workload, standard threads do not unlock meaningful CPU parallelism.
-With the free-threaded build, the blue line changes the story. The same shared-memory thread design now scales to about 4.8× from 1 to 16 workers.
-But this is not automatic speed for every Python program. It works here because the workload is designed for
-shared-memory parallelism: the large arrays can be shared by threads instead of copied into separate processes.
-That is why the payoff is not just runtime. Compared with the process-based path, this thread-based path is about 2.4× faster and uses 32% less peak RSS.
-So the takeaway is: free-threaded CPython changes the tradeoff. Threads become a real option when the workload shape is right, memory sharing matters, and the validation checks still pass.
+Before choosing Numba, NumPy, or JAX, we can also choose how the work is executed: processes, threads, or accelerator kernels.
+The workload here is permutation-style resampling: many mostly independent Python tasks running over data that we would like to keep shared in memory.
+With the standard GIL build, adding ThreadPoolExecutor workers does not give meaningful CPU parallelism. From 1 to 16
+workers, the runtime is essentially flat, no improvement.
+With the free-threaded CPython build, the same thread-based design scales to about 4.77× from 1 to 16 workers. That is
+the important evidence: the difference is not Python version, it is whether Python threads can execute this
+CPU-bound work in parallel.
+This does not mean every Python program gets faster. It works here because the workload has the right shape: mostly
+independent CPU-bound Python work, shared read-heavy data, and limited cross-thread coordination.
+That is why the payoff is not only runtime. In the pool comparison, the ThreadPool path is about 2.43× faster than the
+ProcessPool path and uses about 32% less peak RSS, because it can keep the large in-memory data inside one process
+instead of paying process, serialization, IPC, and memory overhead.
+So the takeaway is: free-threaded CPython changes the process-versus-thread tradeoff for this workload shape. Threads
+become a real option when memory sharing matters, the work is independent enough, and the statistical validation still
+passes.
   </aside>
 </section>
 
