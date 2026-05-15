@@ -654,9 +654,9 @@
       <div class="metric"><strong>Python orchestrates execution.</strong><span>Match tools to bottlenecks.</span></div>
     </div>
   </div>
-  <aside class="notes">Welcome everyone. I am Wenxin, And this is my colleague Jian. We are PhD students at City University of Hong Kong. Our research focuses on developing statistical methods and software for large-scale genetic data analysis. Today, we are discussing how to safely push the speed limits of statistical Python.
+  <aside class="notes">Welcome everyone. I am Wenxin, And this is my colleague Jian. We are PhD students at City University of Hong Kong. Our research focuses on developing statistical methods and software for large-scale genetic data analysis. But, fortunately, we are not here to talk about genetics or mathematics. Today, we are discussing how to safely push the speed limits of statistical models in Python.
 
-In fields like genetics, speed is absolutely critical. The human genome has millions of variants. When we test their relationships to a disease, we routinely execute billions of calculations. Without optimization, a single experiment can take months. If we can speed up the code by 10x, we can get results in days instead of months. That’s a game changer for scientific discovery.
+In fields like genetics, speed is absolutely critical. The human genome has millions of variants. When we test their relationships to a disease, we execute billions of calculations. Without optimization, a single experiment can take months. If we can speed up the code by 10x, we can get results in several days.
 
 So, we must write fast code. But there is a strict rule: we cannot sacrifice statistical validity. If an optimized engine slightly changes the math, we are simply producing the wrong scientific conclusion faster.
 
@@ -735,8 +735,8 @@ Today, we will explore how to prevent that.</aside>
     <div style="position:absolute; left:65.2%; top:248px; color:var(--muted); font-size:42px; font-weight:950;">→</div>
   </div>
   <aside class="notes">
-Because real-world data does not have ground truth, we cannot simply run our code on it and check if the results are correct. Instead, we use simulation to create synthetic datasets where we know the underlying parameters and relationships. By designing simulation scenarios that include edge cases and null cases, we can ensure that our implementation behaves correctly across a range of inputs. This allows us to test whether our code is producing the correct results compared to the known truth and to our baseline implementation. 
-This process of validating before timing ensures that we are optimizing code that is already correct, rather than optimizing code that may have hidden bugs. Also, by using simulation, we can identify the bottleneck shapes in our code, which informs us on how to apply the appropriate optimization techniques.
+Because real-world data does not have ground truth, if we simply run our code on it and we cannot check if the results are correct. Instead, we use simulation to create synthetic datasets where we know the underlying parameters and relationships. By designing simulation scenarios, we can ensure that our implementation behaves correctly across a range of inputs. This allows us to test whether our accelerated code is producing the correct results compared to the known truth and to our baseline implementation. 
+This process of validating before timing ensures that we are optimizing code that is already correct, rather than optimizing code that may have bugs. Also, by using simulation, we can identify the bottleneck shapes in our code, which informs us on how to apply the appropriate optimization techniques.
 </aside>
 </section>
 
@@ -754,7 +754,7 @@ This process of validating before timing ensures that we are optimizing code tha
   </div>
   <aside class="notes">
     I believe most of you are more familiar with software testing. In software engineering, we write various of tests to ensure that our code behaves as expected. This is exactly what we do with simulation in statistics. For example, a unit test in software engineering checks if a specific function produces the expected output for a given input. In statistics, despite the randomness, we can set a fixed random seed and check if our implementation produces the same results as our reference implementation.
-    We also have property tests, which check if certain properties hold under specific conditions. In statistics, this could be checking if our method is invariant under null conditions or if it is well-calibrated. Stress tests in software engineering check how the system behaves under extreme conditions, which is analogous to testing our statistical methods with outliers or in high-dimensional settings. Load tests check how the system performs under heavy load, which corresponds to scaling up the number of samples or features in our data. Finally, regression tests ensure that new changes do not break existing functionality, which is similar to ensuring that our optimized code still passes all the acceptance criteria we established with our reference implementation.
+    We also have property tests, which check if certain properties hold under specific conditions. In statistics, this could be checking if our method is invariant under null conditions or if it is well-calibrated. Stress tests in software engineering check how the system behaves under extreme conditions, which is analogous to testing our statistical methods with outliers or in high-dimensional settings. Load tests check how the system performs under heavy load, which corresponds to scaling up the sample sizes in our data. Finally, regression tests ensure that new changes do not break existing functionality, which is similar to ensuring that our optimized code still passes all the acceptance criteria we established with our reference implementation.
 </aside>
 </section>
 
@@ -778,7 +778,7 @@ This process of validating before timing ensures that we are optimizing code tha
   <aside class="notes">
     Python helps us a lot in this process. It allows us to write readable code that closely follows our mathematical formulas. It also has a rich ecosystem of libraries and tools that we can use to optimize specific bottlenecks without having to rewrite our entire codebase.
     Typically, we start with a NumPy implementation as our reference. We then run our validation checks to ensure that this implementation is correct. We profile the code to identify the hotspots, which are the parts of the code that take the most time. These hotspots often have specific computational shapes, such as numerical loops, dense linear algebra operations, or repeated work on shared arrays.
-    Once we have identified the hotspots in our code, we can choose the appropriate optimization tool. For example, if we have numerical loops with no temporaries, we might use Numba to compile those loops for better performance. If we have repeated work on shared arrays, we might use threads or workers to parallelize that work. If we have batched array operations that can benefit from GPU acceleration, we might use JAX or a similar library to run those operations on a GPU.
+    Once we have identified the hotspots in our code, we can choose the appropriate optimization tool. For example, numpy with BLAS, numba, jax, or multi-threading.
     We will demonstrate this using two workloads: K-means clustering and permutation testing.
   </aside>
 </section>
@@ -809,7 +809,7 @@ This process of validating before timing ensures that we are optimizing code tha
     </div>
   </div>
   <aside class="notes">
-    Why we use these two examples? We chose K-means clustering and permutation testing because they represent two common types of workloads in statistical computing, each with different bottleneck shapes. K-means involves iterative fitting, where we have a loop that assigns points to clusters and updates the centroids repeatedly until convergence. This creates a sequential state dependence, which can be a bottleneck if not optimized properly. On the other hand, permutation testing involves resampling inference, where we shuffle data and compute statistics repeatedly. This process is often independent and can be high-dimensional, which presents a different set of challenges for optimization. By working through these two examples, we can demonstrate how to identify the specific bottlenecks in each case and apply the appropriate optimization techniques while ensuring that we preserve the statistical validity of our results.
+    Why we use these two examples? We chose K-means clustering and permutation testing because they represent two common types of workloads in statistical computing, each with different bottleneck shapes. K-means involves iterative fitting, where we have a loop that assigns points to clusters and updates the centroids repeatedly until convergence. This creates a sequential state dependence. On the other hand, permutation testing involves resampling inference, where we shuffle data and compute statistics repeatedly. This process is often independent and can be high-dimensional, which presents a different set of challenges for optimization.
   </aside>
 </section>
 
@@ -877,8 +877,11 @@ This process of validating before timing ensures that we are optimizing code tha
       <p class="tool-note" style="margin-top:9px; font-size:13px; line-height:1.14;">Labels are just context.</p>
     </div>
   </div>
-  <aside class="notes">K-means involves several steps: 
-    First, we initialize the centroids, which can be done in various ways, but for this example, we will use a fixed initialization to ensure that our results are reproducible. Then we perform one run of Lloyd's algorithm, which consists of two main steps: the assignment step, where we assign each data point to the nearest centroid, and the update step, where we recompute the centroids as the mean of the assigned points. We repeat these steps until convergence, which typically happens when the assignments no longer change. The key point here is that each update depends on the previous state of the centroids and assignments, creating a sequential dependency that can be a bottleneck in terms of performance.
+  <aside class="notes">
+    We use the famous iris dataset to demonstrate the k-means algorithm. Each point in the scatter plot represents a flower, where x and y are two measurements of the flower. We want to cluster these points into 3 groups, which ideally correspond to the three species of iris in the dataset. The purpose of K-means is to minimize the objective function value, also known as inertia in K-means, which related to the sum of distances from each point to its assigned centroid.
+    K-means involves several steps: 
+    First, we initialize the centroids, which can be done in various ways, but for this example, we will use a fixed initialization to ensure that our results are reproducible. Then we perform one run of algorithm, which consists of two main steps: the assignment step, where we assign each data point to the nearest centroid, and the update step, where we recompute the centroids as the mean of the assigned points. We can see the color of points change as they get reassigned to different clusters, and the centroids move as they get updated.
+    We repeat these steps until convergence, which typically happens when the assignments no longer change. The key point here is that each update depends on the previous state of the centroids and assignments, creating a sequential dependency that can be a bottleneck in terms of performance.
     </aside>
 </section>
 
@@ -945,8 +948,8 @@ This process of validating before timing ensures that we are optimizing code tha
 
   <div class="bottom-takeaway">Pressure: N × K × d per iteration.</div>
   <aside class="notes">
-    K-means is a useful test case for our framework because it exposes broad iterative pressures that are common in many statistical algorithms. The assignment-update shape of K-means creates a bottleneck due to the repeated distance calculations, which have a computational complexity of N × K × d, where N is the number of samples, K is the number of clusters, and d is the number of dimensions.
-    We can validate our implementation by ensuring that we are using the same data, the same initialization, the same stopping criteria, and the same objective function. We can also test our implementation under harder scenarios, such as when there is overlap between clusters, when there is imbalance in cluster sizes, when there are outliers in the data, or when we are working in high-dimensional spaces. By identifying the bottleneck shapes in our code, such as loops, algebraic operations, or array manipulations, we can apply the appropriate optimization techniques. The iterative nature of K-means means that these pressures are repeated across iterations, making it a good example to demonstrate our framework for validating and optimizing statistical code.
+    K-means is a useful test case for our framework because it exposes broad iterative pressures that are common in many statistical algorithms. The assignment-update shape of K-means creates a bottleneck due to the repeated distance calculations, which have a computational complexity of N × K × d, where N is the number of samples, K is the number of clusters, and d is the data dimensions.
+    We can validate our implementation by ensuring that we are using the same data, the same initialization, the same stopping criteria, and the same objective function. We can also test our implementation under harder scenarios, such as when there is overlap between clusters, when there is imbalance in cluster sizes, when there are outliers, or when we are working in high-dimensional spaces. By identifying the bottleneck shapes in our code, such as loops, algebraic operations, or array manipulations, we can apply the appropriate optimization techniques. The iterative nature of K-means means that these pressures are repeated across iterations, making it a good example to demonstrate our framework for validating and optimizing statistical code.
   </aside>
 </section>
 
@@ -977,10 +980,8 @@ This process of validating before timing ensures that we are optimizing code tha
 
   <div class="bottom-takeaway" style="font-size:21px; padding:12px 16px;">Scenario difficulty summary.</div>
   <aside class="notes">Before optimizing, we must ask: did K-means really recover the true clusters? Therefore, we need to validate the method first.
-  In our simulations, we use the Adjusted Rand Index (ARI) as a recovery score, where 1 indicates perfect recovery and 0 indicates a random baseline. We test our implementation under various scenario stressors, such as separation between clusters, dimensionality of the data, presence of outliers, and imbalance in cluster sizes. The key point is that we should not accelerate our code until we are satisfied with its performance. In the process of algorithm development, we usually detect what we called "failure modes" where the method does not perform well. In this plot, we find that the method performs poorly under certain scenarios.
-  Although we can optimize our algorithm's performance with statistics, to simplify this presentation, we just skip the optimization steps.
-
-  Once we have a validated implementation that performs well across different scenarios, we can then proceed to optimize it for speed.
+  In our simulations, we use the Adjusted Rand Index (ARI) as a recovery score, where 1 indicates perfect recovery and 0 indicates a random baseline. We test our implementation under various scenario stressors, such as separation between clusters which related to the overlap of clusters, dimensionality of the data, presence of outliers, and imbalance in cluster sizes. The key point is that we should not accelerate our code until we are satisfied with its performance. In the process of algorithm development, we usually detect what we called "failure modes" where the method does not perform well. In this plot, we find that the method performs poorly under certain scenarios.
+  Although we can optimize our algorithm's performance with statistics, to simplify this presentation, we just skip that steps and assume its ready for optimization. We will directly move on to the validation checks that we use to ensure that our optimized code produces the same results as our reference implementation.
   </aside>
 </section>
 
@@ -1013,7 +1014,8 @@ This process of validating before timing ensures that we are optimizing code tha
       <p class="caption" style="margin-top:28px;">Skip memory-risk rows explicitly.</p>
     </div>
   </div>
-  <aside class="notes">As previously mentioned, we use same data, same initialization, same stopping criteria, and same objective function to validate our implementation. We already have a reference implementation in NumPy that serves as our executable oracle. When we implement our optimized versions using Numba, JAX, or other tools, we need to ensure that they preserve the results of the reference numpy implementation. To compare the results, we look at both the inertia (the objective function value) and the labels (the cluster assignments). We set a tolerance level for the difference in inertia, which is 1e-8 (1 times 10 to the minus 8). In our tests, we observed a maximum difference of 3.1e-14 (3.1 times 10 to the minus 14), which is well below our tolerance threshold. Additionally, we check that the label agreement, measured by the Adjusted Rand Index (ARI), is equal to 1.0, indicating perfect agreement with the reference implementation. By passing these checks, we can be confident that our optimized implementations are correct and can proceed to optimize for speed.
+  <aside class="notes">As previously mentioned, we use same data, same initialization, same stopping criteria, and same objective function to validate our implementation. We already have a reference implementation in NumPy that serves as our executable oracle. When we implement our optimized versions using Numba, JAX, or other tools, we need to ensure that they preserve the results of the reference numpy implementation. To compare the results, we look at both the objective function value and the predicted labels.
+  We set a tolerance level for the difference in objective function, which is 1e-8 (1 times 10 to the minus 8). In our tests, we observed a maximum difference of 3.1e-14 (3.1 times 10 to the minus 14), which is well below our tolerance threshold. Additionally, we check that the label agreement, measured by ARI, is equal to 1.0, indicating perfect agreement between our accelerated implementation and the reference implementation. By passing these checks, we can be confident that our optimized implementations are correct.
   </aside>
 </section>
 
@@ -1079,7 +1081,8 @@ def assign(X, C):
 
   <div class="bottom-takeaway">Match expression to bottleneck shape.</div>
   <aside class="notes">
-    We can compute the assignment step of K-means in three different ways, all of which are mathematically equivalent but have different computational shapes. The first implementation uses NumPy to express the distance calculations as dense matrix algebra, which can be efficiently executed using BLAS libraries. The second implementation uses Numba to write explicit loops that compute the distances and find the nearest centroid for each data point, which can be parallelized across CPU cores. The third implementation uses JAX to write a similar expression to the NumPy version, but it is compiled to run on a GPU for potentially faster execution. Each of these implementations has its own advantages and trade-offs depending on the specific bottleneck shape of the problem we are trying to solve.</aside>
+Here are the details of the three implementations for the assignment step of K-means. The first implementation uses NumPy to express the distance calculations as dense matrix algebra. We compute the squared distances using the formula that involves the sum of squares of the data points and centroids, and then we use matrix multiplication to compute the cross term. This approach can be efficiently executed using BLAS libraries, which are optimized for performance on CPUs. The second implementation uses Numba to write loops that compute the distances and find the nearest centroid for each data point. This approach allows us to parallelize the computation across CPU cores, which can be beneficial for smaller datasets or when the distance calculations are not easily expressed as matrix operations. The third implementation uses JAX to write a similar expression to the NumPy version, but it is compiled to run on a GPU for potentially faster execution. JAX allows us to write code that looks like NumPy, but it can be executed on different hardware backends, including GPUs and TPUs. Each of these implementations has its own advantages and trade-offs depending on the specific bottleneck shape.
+</aside>
 </section>
 
 <section class="deck-slide">
@@ -1126,10 +1129,10 @@ def assign(X, C):
   <div class="bottom-takeaway">Shape determines the tool.</div>
   <aside class="notes">So, which engine is the best choice? It depends on your bottleneck's shape.
   In the first row, K and d are small. The work is scalar-loop heavy: many simple point-to-centroid comparisons. Here Numba is a natural fit because we can keep the algorithm close to explicit loops, remove Python interpreter overhead, and avoid building a large dense distance matrix.
-  In the second row, the shape changes. With larger dimension and more clusters, the distance computation becomes dense algebra. We can rewrite the squared distance as norms plus X @ C.T. The user-facing code is NumPy, but the heavy matrix multiply is handled by optimized linear algebra underneath. That is why NumPy can beat the explicit-loop implementation here.
-  In the third row, the work is large, regular, and batched enough for the accelerator path. JAX on GPU can help, but only because there is enough device-friendly work to amortize transfer, batching, and pipeline overhead. It is not a free GPU win.
+  In the second row, the shape changes. With larger dimension and more clusters, the distance computation becomes dense algebra. The BLAS libraries that back NumPy are highly optimized for this kind of work. That is why NumPy can beat numba here.
+  In the third row, the work is large, regular, and batched enough for the accelerator path. JAX on GPU can help, but only because there is enough device-friendly work to transfer data, batching, and pipeline overhead. It is not a free GPU win.
   So the conclusion is not “Numba is best,” “NumPy is best,” or “GPU is best.”
-  The conclusion is: validate the result first, identify the bottleneck shape, then choose the smallest tool that fits that shape.
+  The conclusion is: validate the result first, identify the bottleneck shape, then choose the suitable tool that fits that shape.
 </aside>
 </section>
 
@@ -1154,7 +1157,7 @@ def assign(X, C):
     <div class="bar"></div>
     <p class="subtitle">Expensive with many features.</p>
   </div>
-  <aside class="notes">Then, come the permutation tests.</aside>
+  <aside class="notes">Then, comes the permutation test.</aside>
 </section>
 
 <section class="deck-slide">
@@ -1180,11 +1183,12 @@ def assign(X, C):
       <p class="takeaway">Independent repeats create work.</p>
     </div>
   </div>
-  <aside class="notes">In permutation tests, we repeatedly shuffle the labels of our data and compute the group differences to build a null distribution. This process involves three main steps. First, we shuffle the labels while keeping the data matrix X unchanged. Second, we compute the group differences for each feature, which gives us a statistic for every feature. Third, we repeat this process many times to build the null distribution or to count exceedances in an optimized path. The repeats are independent, but they are not free in terms of computational cost. With R permutations and p features, the amount of work scales as R times p, which can become a performance problem when there are many features or many permutations. The W @ X notation on the figure represents the later implementation view, where we can batch the permutation contrast rows. However, the underlying statistical question remains the same regardless of the implementation.
+  <aside class="notes">In permutation tests, we repeatedly shuffle the labels of our data and compute the group differences to build a null distribution. This process involves three main steps. Here's our data. Each row is a sample, and each column is a feature. We have two groups A and B, and we want to test if there are significant differences between these groups for each feature.
+  First, we shuffle the labels while keeping the data matrix X unchanged. Second, we compute the group differences for each feature, which gives us a statistic for every feature. Third, we repeat this process many times to build the null distribution. The repeats are independent, but they are not free in terms of computational cost. With R permutations and p features, the amount of work scales as R times p, which can become a performance problem when there are many features or many permutations. The W @ X notation on the figure represents the later implementation view, where we can batch the permutation using matrix operations. But, the underlying statistical question remains the same.
   </aside>
 </section>
 
-<section class="deck-slide">
+<!-- <section class="deck-slide">
   <div class="kicker">Scale driver</div>
   <h2>Why it gets expensive.</h2>
   <p class="subtitle">Work scales as R × p.</p>
@@ -1232,9 +1236,9 @@ def assign(X, C):
     </div>
   </div>
   <aside class="notes">
-    The computational cost of permutation tests arises from the need to compute statistics for each of the R shuffled label vectors across all p features. The input data matrix X has n samples and p features, and we generate R shuffled versions of the labels. For each shuffled label vector, we compute a statistic (such as a group difference) for each feature, resulting in an R by p matrix of statistics. Alternatively, if we are counting exceedances for an optimized path, we still have to perform R times p comparisons. This means that the workload scales linearly with both the number of permutations R and the number of features p, leading to a potentially massive computational burden when either of these parameters is large.
+    The computational cost of permutation tests arises from the need to compute statistics for each of the R shuffled label vectors across all p features. The input data matrix X has n samples and p features, and we generate R shuffled versions of the labels. For each shuffled label vector, we compute a statistic (such as a group difference) for each feature, resulting in an R by p matrix of statistics. This means that the workload scales linearly with both the number of permutations R and the number of features p, leading to a potentially massive computational burden when either of these parameters is large.
   </aside>
-</section>
+</section> -->
 
 <section class="deck-slide">
   <div class="kicker">Code shape</div>
@@ -1262,7 +1266,7 @@ def assign(X, C):
   </div>
   <div class="callout" style="margin-top:18px;"><p>Stream avoids R × p matrix.</p></div>
   <aside class="notes">
-    The reference loop implementation of the permutation test iterates over each of the R permutations, computes the group difference statistic for each feature, and stores it in an R by p matrix. This approach is straightforward but can be inefficient due to the large size of the resulting matrix. In contrast, the optimized path rewrites the computation to avoid explicitly forming the R by p matrix. Instead, it processes batches of permutations using a contrast matrix W_batch that encodes the shuffled labels. By multiplying W_batch with the data matrix X, we can compute the statistics for a batch of permutations at once, and then update our counts of exceedances without needing to store all intermediate statistics. This streaming approach allows us to handle larger workloads more efficiently while still producing the same mathematical results.
+    The reference loop implementation of the permutation test iterates over each of the R permutations, computes the group difference statistic for each feature, and stores it in an R by p matrix. This approach is straightforward but can be inefficient due to the large size of the resulting matrix. In contrast, the optimized path rewrites the computation to avoid explicitly forming the R by p matrix. Instead, it processes batches of permutations using a contrast matrix W_batch that encodes the shuffled labels. By multiplying W_batch with the data matrix X, we can compute the statistics for a batch of permutations at once. This streaming approach allows us to handle larger workloads more efficiently while still producing the same mathematical results.
   </aside>
 </section>
 
@@ -1337,7 +1341,7 @@ def assign(X, C):
 
   <div class="bottom-takeaway">Same result. Faster code.</div>
   <aside class="notes">
-    Before we can trust the optimized path, we need to verify that it produces the same results as the reference loop implementation. We run both implementations on the same inputs, which means using the same data matrix X and the same stream of shuffled labels. The reference implementation computes the statistics one by one in a loop, while the optimized path computes them in batches using matrix operations. We compare the outputs of both implementations across a validation grid of 18 workloads and 5 random seeds. The acceptance criteria are strict: the maximum absolute difference in p-values must be exactly 0.0, and the maximum absolute difference in statistics must be on the order of roundoff error (9.4e-16). If these criteria are met, we can confidently accept the optimized path as producing equivalent results to the reference implementation. This validation step is crucial before we proceed to timing and performance comparisons, as it ensures that any speedup we achieve does not come at the cost of correctness.
+    Before we can trust the optimized path, we need to verify that it produces the same results as the reference loop implementation. We run both implementations on the same inputs, which means using the same data matrix X and the same stream of shuffled labels. The reference implementation computes the statistics one by one in a loop, while the optimized path computes them in batches using matrix operations. We compare the outputs of both implementations across a several validation grid and random seeds. The acceptance criteria including the maximum absolute difference in p-values and statistics which are all below our tolerance threshold.
   </aside>
 </section>
 
@@ -1377,7 +1381,7 @@ def assign(X, C):
   </div>
   <div class="bottom-takeaway">Equivalence: code. Calibration: inference.</div>
   <aside class="notes">
-    The second correctness gate is a null calibration check, which assesses whether the permutation test maintains the expected Type-I error rate under the null hypothesis. We want to ensure that when there is no true effect, our test does not produce too many false positives. In this case, we estimate the Type-I error rate and find it to be approximately 0.051, which is close to the nominal alpha level of 0.05. This indicates that our test is well-calibrated and does not have an inflated false positive rate. This calibration check is important before we proceed with scaling and performance optimizations, as it confirms that our test behaves correctly in terms of inference, not just code equivalence. The calibration dashboard includes a ruler that shows the observed Type-I error rate in relation to a band representing the expected variation due to binomial sampling at the feature level. The fact that our observed rate falls within this band gives us confidence that our test is properly calibrated and that we can trust the results it produces when we apply it to real data.
+    We also check the calibration of our permutation test under the null hypothesis. Here we generate data where there is no true effect (the null condition) and run our permutation test to see how often it produces false positives. The Type-I error rate is the proportion of times we incorrectly reject the null hypothesis when it is actually true. We want this rate to be close to our nominal alpha level of 0.05. In our calibration check, we estimate the Type-I error rate and find it to be approximately 0.051 which we consider to be well-calibrated. 
   </aside>
 </section>
 
@@ -1422,8 +1426,8 @@ def assign(X, C):
   <p class="subtitle">Requires massive R × p.</p>
   <div class="decision-kpi-strip">
     <div class="decision-kpi"><strong>Scope</strong><span>Speedup: CPU vs. GPU e2e.</span></div>
-    <div class="decision-kpi"><strong>On this A100 pipeline.</strong><span>p=10k. R=5k. batch=8192.</span></div>
-    <div class="decision-kpi"><strong>Explicit OOM cells.</strong><span>Unavailable. Not CPU wins.</span></div>
+    <!-- <div class="decision-kpi"><strong>On this A100 pipeline.</strong><span>p=10k. R=5k. batch=8192.</span></div> -->
+    <div class="decision-kpi"><strong>Explicit OOM cells.</strong><span>Unavailable for GPUs.</span></div>
   </div>
   <div class="decision-map-figure">
     <img src="../experiments/results/presentation_figures/gpu_decision_map_slide.png" alt="GPU permutation decision map by p features and R permutations" />
@@ -1431,7 +1435,8 @@ def assign(X, C):
   <div class="bottom-takeaway">Validation and batching unlock GPUs.</div>
   <p class="caption" style="margin-top:8px; font-size:16px; line-height:1.16;">Transfer included; compile excluded. Not a leaderboard.</p>
   <aside class="notes">
-    To determine when GPUs can provide a speedup for our permutation test, we create a decision map that compares the end-to-end runtime of CPU and GPU implementations across different values of p (number of features) and R (number of permutations). The scope of this analysis is focused on a specific pipeline running on an A100 GPU, with parameters set to p=10k features, R=5k permutations, and a batch size of 8192. We also look for explicit out-of-memory (OOM) errors in the CPU implementation, which would indicate scenarios where the GPU has an advantage due to its larger memory capacity. However, in this case, we do not have any OOM cells, which means that the CPU implementation is still viable across our parameter space. The resulting decision map helps us understand under what conditions the GPU provides a significant speedup compared to the CPU, and it highlights the importance of validation and batching in unlocking the performance benefits of GPUs for this workload.
+    To determine when GPUs can provide a speedup for our permutation test, we create a map that compares the end-to-end runtime of CPU and GPU implementations in a Linux server across different values of p (number of features) and R (number of permutations). Here, we find that GPUs can offer significant speedups when the workload is sufficiently large, for example, R=5k and p=500k, GPU can have a 8.5x speedup.
+    However, we also note that when the workload is large enough to cause out-of-memory (OOM) errors on the GPU, the CPU of our server still works, which can be considered a win for the CPU in those cases. The decision map helps us understand the conditions under which GPUs can be beneficial and when we might need to rely on CPU resources instead.
   </aside>
 </section>
 
@@ -1460,7 +1465,22 @@ def assign(X, C):
   <div class="bottom-takeaway">Capture early speedup.</div>
   <p class="caption" style="margin-top:8px; font-size:16px; line-height:1.16;">Execution model matters next.</p>
   <aside class="notes">
-    Parallelism can provide significant speedups for our permutation test, especially in the early stages of scaling. As we add more workers, we see a noticeable drop in total runtime. However, as we continue to increase the number of workers, the returns begin to flatten, and the marginal gains from adding additional parallelism diminish. This is likely due to overhead from managing parallel processes and contention for shared resources. Additionally, it's important to consider memory usage when adding parallel workers, as each worker consumes additional memory. If we exceed the available memory, we may encounter out-of-memory errors or significant slowdowns due to swapping. Therefore, while parallelism can be beneficial, it's crucial to capture the early speedup and be mindful of the trade-offs as we scale up.
+Parallelism helps — but only up to a point.
+On the left, you can see the good news first. When we move from one worker to a few workers, total runtime drops a lot. That is the speedup we want to capture.
+
+But the right panel tells the second half of the story. Each jump gives us a smaller marginal gain. The first jump is
+very valuable; later jumps are much less valuable. And for the permutation workload, adding more workers at the high end can even make things worse.
+
+So the lesson is not simply “add more workers.”
+
+At high worker counts, the bottleneck starts to move. We are no longer only measuring computation. We are also measuring process overhead, memory traffic, CPU scheduling, and the fact that this was a shared server environment.
+
+That is why the memory note matters. In this run, the 128-worker permutation case used about 58 GiB of peak RSS. That
+does not mean 128 workers are always bad. It means high parallelism has to be interpreted with the actual resource
+constraints.
+
+So the practical rule is: use parallelism to capture the early speedup, then watch the marginal gain. When the curve
+flattens, more workers are no longer free.
   </aside>
 </section>
 
@@ -1496,7 +1516,14 @@ def assign(X, C):
   <p style="margin-top:10px; color:var(--ink); font-size:17px; line-height:1.16; font-weight:850;">Official term: free-threaded CPython build, available since Python 3.13; supported but optional, not default.</p>
   <p style="margin-top:6px; color:var(--muted); font-size:15px; line-height:1.16;">It can run Python threads on CPU cores in parallel; C extensions may re-enable the GIL, and single-thread overhead exists.</p>
   <aside class="notes">
-    The execution model of Python can have a significant impact on the performance of our permutation test, especially when it comes to parallelism. In standard CPython builds, the Global Interpreter Lock (GIL) prevents multiple threads from executing Python bytecode in parallel, which means that using threads for parallelism does not provide a significant speedup. In our experiments, we see that with standard GIL builds, the speedup from 1 to 16 workers is only about 1.02×, which is essentially flat. However, with the introduction of free-threaded CPython builds in Python 3.14t, we can now run Python threads on CPU cores in parallel without being limited by the GIL. In this case, we observe a much more substantial speedup of about 4.77× when going from 1 to 16 workers. This demonstrates that the execution model can unlock significant performance improvements for workloads that are designed for shared-memory parallelism. Additionally, we see that using threads instead of processes can also reduce peak memory usage by about 32%, which is another important consideration when optimizing for performance.
+This slide is about why Python’s execution model matters.
+With the standard GIL build, the gray line is almost flat. We add ThreadPoolExecutor workers, but from 1 to 16 workers
+we only get about 1× speedup. For this workload, standard threads do not unlock meaningful CPU parallelism.
+With the free-threaded build, the blue line changes the story. The same shared-memory thread design now scales to about 4.8× from 1 to 16 workers.
+But this is not automatic speed for every Python program. It works here because the workload is designed for
+shared-memory parallelism: the large arrays can be shared by threads instead of copied into separate processes.
+That is why the payoff is not just runtime. Compared with the process-based path, this thread-based path is about 2.4× faster and uses 32% less peak RSS.
+So the takeaway is: free-threaded CPython changes the tradeoff. Threads become a real option when the workload shape is right, memory sharing matters, and the validation checks still pass.
   </aside>
 </section>
 
@@ -1590,25 +1617,15 @@ def assign(X, C):
   </div>
   <div class="bottom-takeaway decision-guide-takeaway">Validate first. Move bottlenecks.</div>
   <aside class="notes">
-This brings us to the final decision guide. The workflow is systematic: simulate, validate, identify the bottleneck, and
-then choose the smallest tool that preserves the checked result.
+This brings us to the final decision guide. The workflow is systematic: simulate, validate, identify the bottleneck, and then choose the suitable tool that preserves the checked result.
 
 On a personal note, I think choosing a computational engine is a lot like choosing transportation. I traveled here to
-Long Beach from Hong Kong. For that distance, I took an airplane; nobody expected me to swim across the Pacific. Then,
-from LAX to Long Beach, I took the Metro. Interestingly, my AI routing app confidently recommended a two-and-a-half-hour
-bus ride instead. That was a useful reminder: automation can suggest a route, but we still have to understand the
-constraints. And finally, from my hotel to this venue, I walked. For that short local trip, walking had almost zero
-overhead. Calling a car would not have made it better.
+LA from Hong Kong. For that distance, I took an airplane; nobody expected me to swim across the Pacific. Then,
+from LA to Long Beach, I took the Metro. Interestingly, my AI routing app confidently recommended a two-and-a-half-hour bus ride instead. That was a useful reminder: automation can suggest a route, but we still have to understand the constraints. And finally, from my hotel to this venue, I walked about 5 min. For that short local trip, walking had almost zero overhead. Calling a car would not have made it better.
 
-Computational bottlenecks work the same way. You do not choose the vehicle first; you look at the shape of the trip. If
-the bottleneck is a tight local numerical loop—many small point-to-centroid comparisons—Numba is the right vehicle. It
-keeps the algorithm explicit but removes Python loop overhead. If the bottleneck becomes dense matrix algebra, NumPy is
-the express train, utilizing optimized linear algebra underneath. If the bottleneck is repeated CPU work over shared
-arrays, then threads or Python 3.14 can help. And if the workload is massive, regular, and batched enough to amortize
-transfer overhead, that is when JAX on an A100 becomes the long-haul flight.
+Computational bottlenecks work the same way. You do not choose the vehicle first; you look at the shape of the trip. If the bottleneck is a tight local numerical loop—many small point-to-centroid comparisons—Numba is the right vehicle. It keeps the algorithm explicit but removes Python loop overhead. If the bottleneck becomes dense matrix algebra, NumPy is the express train, utilizing optimized linear algebra underneath. If the bottleneck is repeated CPU work over shared arrays, then threads or Python 3.14 can help. And if the workload is massive, regular, and batched enough to amortize transfer overhead, that is when JAX on an A100 becomes the long-haul flight.
 
-So the rule is not: always use Numba, always use NumPy, or always use a GPU. The rule is: validate first, understand the
-shape of the journey, then move the bottleneck with the smallest tool that fits.
+So the rule is not: always use Numba, always use NumPy, or always use a GPU. The rule is: validate first, understand the shape of the journey, then move the bottleneck with the suitable tool that fits.
   </aside>
 </section>
 
@@ -1647,7 +1664,8 @@ shape of the journey, then move the bottleneck with the smallest tool that fits.
     <p>AI automates. Humans claim.</p>
   </div>
   <aside class="notes">
-    I believe everyone here have tried AI coding tools. They are impressive at rapidly generating code variants, running scenarios, capturing metadata, regenerating plots, and creating result manifests. These tools can significantly scale the mechanical labor involved in optimizing code. However, AI does not have the capacity for scientific judgment. It cannot define the statistical target of our analysis, make assumptions about the data, set validation criteria, interpret hard cases, or make scientific claims based on the results. As researchers and practitioners, we need to take ownership of these scientific decisions and claims. AI can be a powerful assistant in automating tasks, but it is ultimately up to us to ensure that our work is scientifically valid and that we are making accurate claims based on our findings.
+    I believe everyone here have tried AI coding tools. They are impressively good at automating many of the mechanical tasks involved in coding and experimentation. Prevously, there's a page for the effort for translating the original NumPy loop into a Numba version or jax version. With AI coding tools, such translation can be done without much manual effort. Even if you want to rewrite every code in Rust, AI can help you with that too.
+    However, as researchers, we need to take ownership of these scientific decisions and claims. AI can be a powerful assistant in automating tasks, but it is ultimately up to us to ensure that our work is scientifically valid and that we are making accurate claims based on our findings.
     </aside>
 </section>
 
