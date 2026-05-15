@@ -2,14 +2,12 @@
 *.csv
 *.json
 scripts/
+slides/review/pages/
 
 # Local reference notes; do not publish a root docs folder to GitHub.
 docs/
-slides/review/
 
 # Poster drafts and generated poster assets are local for now.
-poster_icons_pack/
-poster_icons_pack_with_readme.zip
 experiments/results/presentation_figures/poster_*
 
 # Curated benchmark artifacts that are intentionally small enough for GitHub.
