@@ -170,17 +170,11 @@ Use if someone wants statistical validation beyond null calibration.
 
 This is a local simulated power curve, not a speed result. Weak effects have low power; stronger simulated effects reach high power in this local curve.
 
-## Slide 34 - Backup: why batch_R=8192?
+## Slide 34 - Backup: what batch_R tuning showed
 
 Use this if someone asks why the A100 decision map used batch_R=8192.
 
-This is a tuning detail for Q&A, not part of the main statistical narrative.
-
-The committed sweep shows 8192 as the best measured batch_R for the decision-map setting; phrase it as a measured tuning choice, not a new statistical method.
-
-The right cards explain that batching changes scheduling, not the statistic or p-value definition.
-
-Full end-to-end timing remains the decision criterion: compile excluded, transfer included, kernel-only excluded.
+This backup slide is about the trend, not a proof of optimality. batch_R is the number of permutation rows processed in one A100 batch. In this committed sweep, small batches were slower because the streamed path paid more scheduling and loop overhead. Increasing batch_R reduced that overhead, but the gains flattened after roughly 512-1024 and the curve is not perfectly monotone. 8192 was the fastest accepted value in the measured 128-8192 grid, so it was used as the chosen setting for the later A100 decision map. Larger batch_R values were not part of this committed sweep; they could be faster, slower, or fail because of memory or autotuning. batch_R changes scheduling, not the permutation statistic or p-value definition. Full end-to-end timing remains the criterion: compile excluded, transfer included, kernel-only excluded.
 
 ## Slide 35 - A100 stage accounting
 

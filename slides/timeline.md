@@ -65,8 +65,8 @@ Purpose: leave the audience with a simulation-result-driven tool-selection rule 
 
 ## Backup
 
-Slide 30: Backup: why batch_R=8192?
-Use if someone asks why the A100 decision map used the committed batch size; scope it as an A100 pipeline tuning detail, not a new statistical method.
+Slide 30: Backup: what batch_R tuning showed
+Use if someone asks about batch_R. Explain the trend: small batches were inefficient, larger batches amortized overhead, returns flattened, and 8192 was the fastest accepted value in the measured 128-8192 grid--not a global optimum.
 Slide 31: Backup: A100 full-stage decomposition
 Use if someone asks where full A100 scenario time goes; scope it as two committed representative rows, not a full shape grid.
 Slide 32: Evidence map: each environment answers a different question

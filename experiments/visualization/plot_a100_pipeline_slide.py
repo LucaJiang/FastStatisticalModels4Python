@@ -138,8 +138,8 @@ def plot_batch_tuning(df: pd.DataFrame, out_dir: Path, best_safe_batch_r: int | 
     x = df["batch_R"].to_numpy(dtype=float)
     ax_time.plot(x, df["a100_end_to_end_time_s"], marker="o", linewidth=3.2, markersize=8, color=BERRY)
     ax_time.set_xscale("log", base=2)
-    ax_time.set_ylabel("A100 full e2e seconds")
-    ax_time.set_title("Measured batch_R slice: n=5k, p=50k, R=10k", weight="bold", loc="left")
+    ax_time.set_ylabel("A100 full end-to-end time (s)")
+    ax_time.set_title("A100 batch_R sweep: n=5k, p=50k, R=10k", weight="bold", loc="left")
 
     speedup = pd.to_numeric(df["speedup_cpu_over_a100"], errors="coerce")
     if speedup.notna().any():
@@ -159,7 +159,7 @@ def plot_batch_tuning(df: pd.DataFrame, out_dir: Path, best_safe_batch_r: int | 
         ax_time.text(
             target_x,
             ax_time.get_ylim()[1],
-            f" best committed safe {compact_count(target_x)}",
+            f" chosen measured setting: {int(target_x)}",
             ha="left",
             va="top",
             fontsize=13,
