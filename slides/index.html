@@ -1276,36 +1276,34 @@ And every row assumes the validation already passed. Speed is the last step.</as
 
 <section class="deck-slide">
   <div class="kicker">AI coding tools</div>
-  <h2>AI wrote most of the variants. We decided what counts as correct.</h2>
+  <h2>AI speeds up writing fast code. It doesn't skip the validation.</h2>
   <div class="ai-split">
     <div class="ai-col">
-      <h3 class="accent-blue">Delegated to a coding agent</h3>
+      <h3 class="accent-blue">What AI made faster</h3>
       <ul class="plain-list">
-        <li>Translating the NumPy reference to Numba and JAX.</li>
-        <li>Resumable scenario runners and parameter grids.</li>
-        <li>Recording environment and metadata for every row.</li>
-        <li>Regenerating every figure from the CSVs.</li>
+        <li>Translating the NumPy reference into Numba and JAX: a first draft in minutes, not a day.</li>
+        <li>Trying more variants than we would have written by hand.</li>
+        <li>Experiment runners, metadata logging, and figure regeneration.</li>
       </ul>
     </div>
     <div class="ai-col human">
-      <h3 class="accent-green">Checked by us</h3>
+      <h3 class="accent-green">What stayed the same</h3>
       <ul class="plain-list">
-        <li>The statistic, the tolerances, and the null simulation.</li>
-        <li><strong>Kernel-only GPU timings looked faster.</strong> We excluded them: they skip data transfer.</li>
-        <li><strong>Stage timings didn't add up to the total.</strong> We added an explicit "other overhead" bar instead of hiding the gap.</li>
-        <li>Every claim on these slides, against the raw CSVs.</li>
+        <li>AI output is one more candidate. It passes the <strong>same</strong> checks as hand-written code.</li>
+        <li><strong>Equivalence</strong> against the slow reference, same seeds, tolerance fixed in advance.</li>
+        <li><strong>Calibration</strong> under the null.</li>
+        <li>Only then, <strong>end-to-end timing</strong>. Kernel-only GPU numbers looked faster, so we excluded them.</li>
       </ul>
     </div>
   </div>
-  <aside class="notes">We used AI coding agents heavily in this project. Translating a NumPy reference into Numba or JAX used to take a day; an agent does a first draft in minutes. It also built the experiment runners, logged metadata, and regenerated the plots.
+  <div class="callout"><p>Generating code got cheap. Trusting it still costs a reference and a test.</p></div>
+  <aside class="notes">We used AI coding agents a lot in this project, and they really did speed us up. Translating a NumPy reference into Numba or JAX used to take us a day; an agent gives a working first draft in minutes. That means we tried more variants than we ever would have written by hand. It also built the experiment runners and regenerated the plots.
 
-What it didn't do is decide what counts as correct. Two examples from this project.
+But notice that nothing in our rule changed. To us, AI-written code is just one more candidate implementation. It goes through exactly the same steps as code we write ourselves: match the slow reference on the same seeds, within a tolerance we fixed before looking; check calibration under the null; and only then measure end-to-end time.
 
-GPU kernel-only timings looked much faster than end-to-end timings. They're real numbers, but they skip copying data to the GPU, so they answer a different question. We excluded them from every speedup claim.
+One small example. The agent's GPU timings for the kernel alone looked much better than our end-to-end numbers. They were real numbers, but they skip copying data to the GPU, so they answer a different question. We left them out.
 
-And when we broke GPU time into stages, the stages didn't add up to the total. Rather than quietly rescaling, we added an explicit "other overhead" bar.
-
-So the agent made it cheap to try many variants. The validation rules from the start of this talk are what made it safe to use them.</aside>
+So AI makes writing fast code cheaper. It doesn't make trusting that code any cheaper. That still takes a reference and a test, which is the whole point of this talk.</aside>
 </section>
 
 <section class="deck-slide">

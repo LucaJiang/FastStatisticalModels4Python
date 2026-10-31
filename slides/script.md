@@ -234,17 +234,15 @@ And every row assumes the validation already passed. Speed is the last step.
 
 ---
 
-## Slide 21 - AI wrote most of the variants. We decided what counts as correct. (21:45)
+## Slide 21 - AI speeds up writing fast code. It doesn't skip the validation. (21:45)
 
-We used AI coding agents heavily in this project. Translating a NumPy reference into Numba or JAX used to take a day; an agent does a first draft in minutes. It also built the experiment runners, logged metadata, and regenerated the plots.
+We used AI coding agents a lot in this project, and they really did speed us up. Translating a NumPy reference into Numba or JAX used to take us a day; an agent gives a working first draft in minutes. That means we tried more variants than we ever would have written by hand. It also built the experiment runners and regenerated the plots.
 
-What it didn't do is decide what counts as correct. Two examples from this project.
+But notice that nothing in our rule changed. To us, AI-written code is just one more candidate implementation. It goes through exactly the same steps as code we write ourselves: match the slow reference on the same seeds, within a tolerance we fixed before looking; check calibration under the null; and only then measure end-to-end time.
 
-GPU kernel-only timings looked much faster than end-to-end timings. They're real numbers, but they skip copying data to the GPU, so they answer a different question. We excluded them from every speedup claim.
+One small example. The agent's GPU timings for the kernel alone looked much better than our end-to-end numbers. They were real numbers, but they skip copying data to the GPU, so they answer a different question. We left them out.
 
-And when we broke GPU time into stages, the stages didn't add up to the total. Rather than quietly rescaling, we added an explicit "other overhead" bar.
-
-So the agent made it cheap to try many variants. The validation rules from the start of this talk are what made it safe to use them.
+So AI makes writing fast code cheaper. It doesn't make trusting that code any cheaper. That still takes a reference and a test, which is the whole point of this talk.
 
 ---
 
