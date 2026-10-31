@@ -133,29 +133,6 @@ def plot_decision_map_slide(summary_csv: Path, presentation_dir: Path) -> None:
                 linespacing=1.05,
             )
 
-    first_win = (P_FEATURES.index(10_000), R_PERMUTATIONS.index(5_000))
-    ax.add_patch(
-        Rectangle(
-            (first_win[0] - 0.5, first_win[1] - 0.5),
-            1,
-            1,
-            fill=False,
-            edgecolor="#1A365D",
-            linewidth=5.5,
-        )
-    )
-    ax.text(
-        first_win[0] - 0.40,
-        first_win[1] + 0.39,
-        "first win",
-        ha="left",
-        va="center",
-        fontsize=13,
-        fontweight="900",
-        color="#1A365D",
-        bbox={"boxstyle": "round,pad=0.12,rounding_size=0.08", "facecolor": "#FFFFFF", "edgecolor": "#1A365D"},
-    )
-
     max_win = (P_FEATURES.index(500_000), R_PERMUTATIONS.index(5_000))
     ax.add_patch(
         Rectangle(

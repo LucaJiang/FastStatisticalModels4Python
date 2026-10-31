@@ -107,14 +107,14 @@ def plot_cpu_parallelism_slide(out_dir: Path, presentation_dir: Path) -> None:
     ax_time.set_ylabel("runtime (s, log)")
     ax_time.legend(loc="upper right", frameon=True, facecolor="#FFFFFF", edgecolor=LINE, framealpha=0.96)
     ax_time.text(
-        0.04,
-        0.08,
+        0.06,
+        0.47,
         f"128 permutation workers\nused ~{p_mem_128:.0f} GiB peak RSS",
         transform=ax_time.transAxes,
         color=ORANGE,
         fontsize=12.0,
         fontweight=900,
-        va="bottom",
+        va="center",
         ha="left",
         bbox={"boxstyle": "round,pad=0.35", "facecolor": "#FFF4EC", "edgecolor": ORANGE, "linewidth": 1.0},
     )

@@ -1,6 +1,6 @@
 # Fast Statistical Models for Python
 
-This repository contains the PyCon US 2026 deck and reproducibility artifacts for **Breaking the Speed Limit: Python 3.14, Numba, and JAX in Statistical Computing**.
+This repository contains the PyCon HK 2026 deck (first given at PyCon US 2026) and reproducibility artifacts for **Breaking the Speed Limit: Python 3.14, Numba, and JAX in Statistical Computing**.
 
 ## Public pages
 
@@ -34,7 +34,7 @@ Open the local pages:
 - Poster: <http://localhost:8000/poster/>
 - Slides print/PDF mode: <http://localhost:8000/slides/index.html?print-pdf>
 
-The canonical deck is [`slides/index.html`](slides/index.html). Current structure is 36 slides total: 29 main-path slides and 7 backup slides. Slides 9 and 17 are video method-transition slides.
+The canonical deck is [`slides/index.html`](slides/index.html). Current structure is 30 slides total: 23 main-path slides and 7 hidden backup slides.
 
 ## Results layout
 
