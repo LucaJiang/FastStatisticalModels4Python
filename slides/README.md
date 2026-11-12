@@ -7,7 +7,7 @@
 - [`timeline.md`](timeline.md) is the canonical 30-minute talk timeline.
 - [`script.md`](script.md) is the verbatim script. It and `speaker_notes.md` are generated from the `<aside class="notes">` blocks in `index.html`.
 
-Current structure (PyCon HK 2026): 30 slides total, 23 on the main path and 7 hidden backup slides. Slides 7 and 13 are animation slides.
+Current structure (PyCon HK 2026): 31 slides total, 24 on the main path and 7 hidden backup slides. Slides 8 and 14 are animation slides.
 
 ## View locally
 
@@ -30,7 +30,7 @@ Print/PDF mode:
 http://localhost:8000/slides/index.html?print-pdf
 ```
 
-PDF export shows the 23 main-path slides; backup slides are hidden with `data-visibility="hidden"`. Video slides use MP4/WebM in browser mode and poster PNG fallbacks in print/PDF mode.
+PDF export shows the 24 main-path slides; backup slides are hidden with `data-visibility="hidden"`. Video slides use MP4/WebM in browser mode and poster PNG fallbacks in print/PDF mode.
 
 ## Current figure sources
 
@@ -58,7 +58,7 @@ Regenerate server CPU and k-means/A100 presentation figures:
 python -m experiments.visualization.plot_server_talk_evidence
 ```
 
-This also creates the representative k-means shape comparison. Slide 11 shows the same numbers as inline bars.
+This also creates the representative k-means shape comparison. Slide 12 shows the same numbers as inline bars.
 
 Regenerate the current A100 permutation break-even figures from existing break-even CSVs when those CSVs are present on the experiment server:
 

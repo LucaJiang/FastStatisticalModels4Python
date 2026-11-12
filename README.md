@@ -36,7 +36,7 @@ Open the local pages:
 - Poster: <http://localhost:8000/poster/>
 - Slides print/PDF mode: <http://localhost:8000/slides/index.html?print-pdf>
 
-The canonical deck is [`slides/index.html`](slides/index.html). Current structure is 30 slides total: 23 main-path slides and 7 hidden backup slides.
+The canonical deck is [`slides/index.html`](slides/index.html). Current structure is 31 slides total: 24 main-path slides and 7 hidden backup slides.
 
 ## Results layout
 

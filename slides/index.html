@@ -676,6 +676,17 @@
     .reveal .code-card .slide-code { margin-top: 18px; font-size: 18.5px; line-height: 1.6; padding: 20px 22px; }
     .reveal .code-card .code-note { color: var(--muted); margin-top: 18px; }
     .reveal code { background: rgba(31, 122, 140, 0.10); color: #10505d; border: 1px solid rgba(31, 122, 140, 0.18); border-radius: 6px; padding: 1px 7px; }
+
+    .about-prusie { display: grid; grid-template-columns: minmax(0, 0.36fr) minmax(0, 0.64fr); gap: 22px; margin-top: 24px; padding: 24px 26px; background: #fffdf8; border: 1px solid var(--line); border-top: 8px solid var(--teal); border-radius: 16px; box-shadow: var(--shadow); align-items: center; }
+    .reveal .about-name { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 40px; font-weight: 900; color: var(--teal); line-height: 1; }
+    .reveal .about-tag { margin-top: 12px; font-size: 19px; line-height: 1.32; color: var(--ink); }
+    .reveal .about-links { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 8px; font-size: 16px; }
+    .about-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .about-metric { background: #fff7e9; border: 1px solid var(--line); border-radius: 12px; padding: 16px 16px 14px; }
+    .about-metric strong { display: block; font-size: 42px; line-height: 1; font-weight: 950; color: var(--teal); }
+    .about-metric.same strong { color: var(--green); }
+    .about-metric span { display: block; color: var(--muted); font-size: 15px; line-height: 1.25; margin-top: 6px; }
+    .about-metric .about-what { color: var(--ink); font-weight: 800; font-size: 16px; margin-top: 10px; }
     .notes { display: none; }
 
     @media print {
@@ -755,11 +766,50 @@
       <div class="metric"><strong>8.5×</strong><span>A100 over server CPU, only at large R × p</span></div>
     </div>
   </div>
-  <aside class="notes">Hi everyone. I'm Wenxin, and this is my colleague Jian. We're PhD students in biostatistics at City University of Hong Kong, so we're local.
+  <aside class="notes">Hi everyone. I'm Wenxin, and this talk is joint work with my colleague Jian Yin.
 
-We work on statistical methods for large genetic datasets. Today is not about genetics. It's about a problem every scientific Python user hits: our code is too slow, and when we make it faster, how do we know it still gives the same answer?
+It's about a problem every scientific Python user hits: our code is too slow, and when we make it faster, how do we know it still gives the same answer?
 
 On the right are three numbers from this talk. A matrix rewrite that changes the p-values by exactly zero. Free-threaded Python 3.14 scaling threads by almost 5x. And a GPU that is 8.5 times faster, but only for the biggest problems. By the end you'll know where each number comes from and when it applies to you.</aside>
+</section>
+
+<section class="deck-slide">
+  <div class="kicker">About me</div>
+  <h2>Wenxin Jiang</h2>
+  <p class="subtitle">PhD student in Biostatistics, City University of Hong Kong.<br>Statistical genetics and genomics.</p>
+  <div class="about-prusie">
+    <div class="about-desc">
+      <p class="about-name">prusie</p>
+      <p class="about-tag">SuSiE fine-mapping for Python, with a Rust core. A reimplementation of the R package susieR.</p>
+      <p class="about-links"><code>pip install prusie</code> <code>github.com/LucaJiang/prusie</code></p>
+    </div>
+    <div class="about-metrics">
+      <div class="about-metric">
+        <strong>49.2×</strong>
+        <span class="about-what">200 FinnGen GWAS loci</span>
+        <span>1.91 h → 2.67 min</span>
+      </div>
+      <div class="about-metric">
+        <strong>26.6×</strong>
+        <span class="about-what">14,157 GTEx eGenes</span>
+        <span>21.3 h → 48.0 min</span>
+      </div>
+      <div class="about-metric same">
+        <strong>Same</strong>
+        <span class="about-what">credible sets as susieR</span>
+        <span>in every one of 14,357 regions</span>
+      </div>
+    </div>
+  </div>
+  <p class="caption">Single-threaded prusie vs. susieR, excluding data loading and I/O. Median peak memory is about 5× lower.</p>
+  <div class="callout"><p>Same rule as this talk: match the R reference first, then make it fast.</p></div>
+  <aside class="notes">A quick word about me. I'm a PhD student in biostatistics at City University of Hong Kong, so I'm local. I work on statistical genetics and genomics, where the data are big: hundreds of thousands of genetic variants, tens of thousands of genes.
+
+I recently finished prusie, a Python package with a Rust core that reimplements SuSiE fine-mapping from the R package susieR. On 200 GWAS loci from FinnGen, the R package takes almost two hours; prusie takes under three minutes, 49 times faster. On 14,157 genes from GTEx, it goes from 21 hours to 48 minutes. It also uses about a fifth of the memory.
+
+The line I care most about is the third one: the credible sets, which are the actual scientific output, are identical to susieR in every region.
+
+That is what this talk is about: making statistical code fast while proving it still gives the same answer. prusie is on PyPI if you want to try it. Today I'll use two simpler examples, k-means and permutation tests, so we can walk through every step.</aside>
 </section>
 
 <section class="deck-slide">
