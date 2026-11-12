@@ -631,7 +631,7 @@
     .reveal .plain-list li { font-size: 22px; line-height: 1.32; margin-top: 12px; }
     .reveal .impl-code { font-size: 14px; line-height: 1.4; min-height: 230px; }
     .reveal .impl-card .caption, .reveal .impl-note { font-size: 17px; }
-    .reveal .slide-code { font-size: 22px; }
+    .reveal .slide-code { font-size: 21px; }
     .reveal .calibration-band-label { left: 0; right: 0; top: 2px; white-space: nowrap; }
     .reveal .shape-row { grid-template-columns: 250px 1fr 290px; padding: 18px 22px; }
     .reveal .shape-bar span, .reveal .shape-bar strong { font-size: 17px; }
@@ -640,6 +640,42 @@
     .reveal .pipeline-6 .pipeline-step strong { font-size: 24px; }
     .reveal .pipeline-6 .pipeline-step span { font-size: 19px; }
     .reveal .hook-layout .code-box { min-height: 470px; }
+
+    /* Code theme: dark slate well on warm paper, tokens tied to the deck accents. */
+    :root {
+      --code-bg: #1f2935;
+      --code-edge: #2e3b4a;
+      --code-fg: #e4eaf0;
+      --code-kw: #ff8fb1;
+      --code-fn: #8ccbff;
+      --code-dec: #f3c56b;
+      --code-num: #f9a46f;
+      --code-cm: #8796a6;
+      --code-op: #6fe0cf;
+    }
+    .reveal .impl-code, .reveal .slide-code {
+      background: var(--code-bg);
+      color: var(--code-fg);
+      border: 1px solid var(--code-edge);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 6px 16px rgba(21, 32, 43, 0.10);
+      font-family: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Consolas, "DejaVu Sans Mono", monospace;
+      font-variant-ligatures: none;
+      tab-size: 4;
+    }
+    .reveal pre .kw { color: var(--code-kw); font-weight: 700; }
+    .reveal pre .fn { color: var(--code-fn); }
+    .reveal pre .dec { color: var(--code-dec); }
+    .reveal pre .num { color: var(--code-num); }
+    .reveal pre .cm { color: var(--code-cm); font-style: italic; }
+    .reveal pre .op { color: var(--code-op); font-weight: 800; }
+    .reveal .impl-card:nth-child(1) .impl-code { border-top: 3px solid var(--blue); }
+    .reveal .impl-card:nth-child(2) .impl-code { border-top: 3px solid var(--green); }
+    .reveal .impl-card:nth-child(3) .impl-code { border-top: 3px solid var(--berry); }
+    .reveal .code-card { padding: 26px 28px; display: flex; flex-direction: column; justify-content: center; }
+    .reveal .code-card h3 { color: var(--ink); }
+    .reveal .code-card .slide-code { margin-top: 18px; font-size: 18.5px; line-height: 1.6; padding: 20px 22px; }
+    .reveal .code-card .code-note { color: var(--muted); margin-top: 18px; }
+    .reveal code { background: rgba(31, 122, 140, 0.10); color: #10505d; border: 1px solid rgba(31, 122, 140, 0.18); border-radius: 6px; padding: 1px 7px; }
     .notes { display: none; }
 
     @media print {
@@ -730,13 +766,13 @@ On the right are three numbers from this talk. A matrix rewrite that changes the
   <div class="kicker">The problem</div>
   <h2>A readable permutation test is too slow at genomics scale</h2>
   <div class="hook-layout">
-    <div class="code-box">
+    <div class="panel code-card">
       <h3>The reference: easy to read, easy to trust</h3>
-      <pre><span class="kw">for</span> r <span class="kw">in</span> range(R):
-    labels_r = rng.permutation(labels)
-    null[r] = group_difference(X, labels_r)
+      <pre class="slide-code"><span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(R):
+    labels_r = rng.<span class="fn">permutation</span>(labels)
+    null[r] = <span class="fn">group_difference</span>(X, labels_r)
 
-p_values = (abs(null) &gt;= abs(t_obs)).mean(axis=0)</pre>
+p_values = (<span class="fn">abs</span>(null) &gt;= <span class="fn">abs</span>(t_obs)).<span class="fn">mean</span>(axis=<span class="num">0</span>)</pre>
       <p class="code-note">X is n samples × p features. Every one of R shuffles touches all of X.</p>
     </div>
     <div class="hook-facts">
@@ -928,22 +964,22 @@ One practical detail: for very large problems the naive reference would run out 
     <div class="panel impl-card" style="border-top:8px solid var(--blue);">
       <h3>NumPy</h3>
       <p class="caption">Turn distances into a matrix multiply.</p>
-      <pre class="impl-code">x2 = (X**2).sum(1)[:, None]
-c2 = (C**2).sum(1)[None, :]
-d2 = x2 + c2 - 2 * (X @ C.T)
-labels = d2.argmin(axis=1)</pre>
+      <pre class="impl-code">x2 = (X**<span class="num">2</span>).<span class="fn">sum</span>(<span class="num">1</span>)[:, <span class="num">None</span>]
+c2 = (C**<span class="num">2</span>).<span class="fn">sum</span>(<span class="num">1</span>)[<span class="num">None</span>, :]
+d2 = x2 + c2 - <span class="num">2</span> * (X <span class="op">@</span> C.T)
+labels = d2.<span class="fn">argmin</span>(axis=<span class="num">1</span>)</pre>
       <p class="impl-note"><strong>Wins when</strong> d and K are large enough for BLAS to shine.</p>
     </div>
     <div class="panel impl-card" style="border-top:8px solid var(--green);">
       <h3>Numba</h3>
       <p class="caption">Keep the loops, compile them.</p>
-      <pre class="impl-code">@njit(parallel=True)
-def assign(X, C, labels):
-    for i in prange(len(X)):
+      <pre class="impl-code"><span class="dec">@njit</span>(parallel=<span class="num">True</span>)
+<span class="kw">def</span> <span class="fn">assign</span>(X, C, labels):
+    <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">prange</span>(<span class="fn">len</span>(X)):
         best = np.inf
-        for k in range(len(C)):
-            d = sqdist(X[i], C[k])
-            if d &lt; best:
+        <span class="kw">for</span> k <span class="kw">in</span> <span class="fn">range</span>(<span class="fn">len</span>(C)):
+            d = <span class="fn">sqdist</span>(X[i], C[k])
+            <span class="kw">if</span> d &lt; best:
                 best = d
                 labels[i] = k</pre>
       <p class="impl-note"><strong>Wins when</strong> the work is many small loops; no N × K temporary.</p>
@@ -951,12 +987,12 @@ def assign(X, C, labels):
     <div class="panel impl-card" style="border-top:8px solid var(--berry);">
       <h3>JAX</h3>
       <p class="caption">Same algebra, compiled for a GPU.</p>
-      <pre class="impl-code">@jax.jit
-def assign(X, C):
-    x2 = (X**2).sum(1)[:, None]
-    c2 = (C**2).sum(1)[None, :]
-    d2 = x2 + c2 - 2 * (X @ C.T)
-    return d2.argmin(axis=1)</pre>
+      <pre class="impl-code"><span class="dec">@jax.jit</span>
+<span class="kw">def</span> <span class="fn">assign</span>(X, C):
+    x2 = (X**<span class="num">2</span>).<span class="fn">sum</span>(<span class="num">1</span>)[:, <span class="num">None</span>]
+    c2 = (C**<span class="num">2</span>).<span class="fn">sum</span>(<span class="num">1</span>)[<span class="num">None</span>, :]
+    d2 = x2 + c2 - <span class="num">2</span> * (X <span class="op">@</span> C.T)
+    <span class="kw">return</span> d2.<span class="fn">argmin</span>(axis=<span class="num">1</span>)</pre>
       <p class="impl-note"><strong>Wins when</strong> there is enough regular work to pay for transfer.</p>
     </div>
   </div>
@@ -1065,15 +1101,15 @@ The shuffles are independent, which is good for parallelism. But each one touche
   <div style="display:grid; grid-template-columns:minmax(0, 1fr) minmax(0, 1fr); gap:24px; margin-top:24px;">
     <div class="panel" style="padding:22px 24px;">
       <h3 style="color:var(--ink);">Reference: one shuffle at a time</h3>
-      <pre class="slide-code"><span class="kw">for</span> r <span class="kw">in</span> range(R):
-    null[r] = group_diff(X, perms[r])</pre>
+      <pre class="slide-code"><span class="kw">for</span> r <span class="kw">in</span> <span class="fn">range</span>(R):
+    null[r] = <span class="fn">group_diff</span>(X, perms[r])</pre>
       <p class="caption">Stores an R × p null matrix.</p>
     </div>
     <div class="panel" style="padding:22px 24px;">
       <h3 style="color:var(--ink);">Optimized: a batch of shuffles at once</h3>
-      <pre class="slide-code"><span class="kw">for</span> W <span class="kw">in</span> contrast_batches(perms):
-    T = W @ X          <span class="cm"># batch × p</span>
-    counts += abs(T) &gt;= abs(t_obs)</pre>
+      <pre class="slide-code"><span class="kw">for</span> W <span class="kw">in</span> <span class="fn">contrast_batches</span>(perms):
+    T = W <span class="op">@</span> X          <span class="cm"># batch × p</span>
+    counts += <span class="fn">abs</span>(T) &gt;= <span class="fn">abs</span>(t_obs)</pre>
       <p class="caption">Keeps only p running counts.</p>
     </div>
   </div>
