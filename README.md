@@ -2,6 +2,8 @@
 
 This repository contains the PyCon HK 2026 deck (first given at PyCon US 2026) and reproducibility artifacts for **Breaking the Speed Limit: Python 3.14, Numba, and JAX in Statistical Computing**.
 
+The original PyCon US 2026 slides and poster are kept on the [`pyconus`](https://github.com/LucaJiang/FastStatisticalModels4Python/tree/pyconus) branch.
+
 ## Public pages
 
 The GitHub Pages version is the easiest way to view the talk materials:
