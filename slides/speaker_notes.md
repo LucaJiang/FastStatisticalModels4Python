@@ -10,8 +10,6 @@ Hi everyone. I'm Wenxin, and this talk is joint work with my colleague Jian Yin.
 
 It's about a problem every scientific Python user hits: our code is too slow, and when we make it faster, how do we know it still gives the same answer?
 
-On the right are three numbers from this talk. A matrix rewrite that changes the p-values by exactly zero. Free-threaded Python 3.14 scaling threads by almost 5x. And a GPU that is 8.5 times faster, but only for the biggest problems. By the end you'll know where each number comes from and when it applies to you.
-
 ## Slide 2 - Wenxin Jiang (0:45)
 
 A quick word about me. I'm a PhD student in biostatistics at City University of Hong Kong, so I'm local. I work on statistical genetics and genomics, where the data are big: hundreds of thousands of genetic variants, tens of thousands of genes.
@@ -208,15 +206,17 @@ I think of it like travel. You don't fly across Victoria Harbour, and you don't 
 
 And every row assumes the validation already passed. Speed is the last step.
 
-## Slide 22 - AI speeds up writing fast code. It doesn't skip the validation. (22:30)
+## Slide 22 - AI helps write the code. Validation decides what we keep. (22:30)
 
-We used AI coding agents a lot in this project, and they really did speed us up. Translating a NumPy reference into Numba or JAX used to take us a day; an agent gives a working first draft in minutes. That means we tried more variants than we ever would have written by hand. It also built the experiment runners and regenerated the plots.
+We used AI coding agents to draft Numba and JAX implementations from the NumPy reference, explore alternative implementations and tuning parameters, and automate experiment runs, result logging, and plots.
 
-But notice that nothing in our rule changed. To us, AI-written code is just one more candidate implementation. It goes through exactly the same steps as code we write ourselves: match the slow reference on the same seeds, within a tolerance we fixed before looking; check calibration under the null; and only then measure end-to-end time.
+But generating a candidate isn't the same as validating it. Every implementation, whether AI-generated or hand-written, has to meet the same standards.
 
-One small example. The agent's GPU timings for the kernel alone looked much better than our end-to-end numbers. They were real numbers, but they skip copying data to the GPU, so they answer a different question. We left them out.
+First, correctness: compare with the reference using the same inputs and random seeds, with tolerances fixed in advance. Then, statistical validity: check that the optimization preserves the intended statistical properties, not just the output of one example.
 
-So AI makes writing fast code cheaper. It doesn't make trusting that code any cheaper. That still takes a reference and a test, which is the whole point of this talk.
+For performance, profile runtime and memory usage at each step to see where the costs actually are. Then compare end-to-end performance, so a faster kernel doesn't hide extra work elsewhere.
+
+AI helps us explore more possibilities. Validation determines which ones we can trust. Code is cheap. Trust requires validation.
 
 ## Slide 23 - Make the statistic testable. Then make the bottleneck fast. (23:45)
 

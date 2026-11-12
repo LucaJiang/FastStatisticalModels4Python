@@ -618,8 +618,11 @@
     .guide-card p { font-size: 17px; line-height: 1.28; }
     .guide-ev { margin-top: auto !important; padding-top: 14px; color: var(--muted); font-size: 15px !important; border-top: 1px solid var(--line); }
     .ai-split { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; margin-top: 28px; }
-    .ai-col { background: #fffdf8; border: 1px solid var(--line); border-top: 8px solid var(--blue); border-radius: 16px; box-shadow: var(--shadow); padding: 24px 26px; min-height: 420px; }
+    .ai-col { background: #fffdf8; border: 1px solid var(--line); border-top: 8px solid var(--blue); border-radius: 16px; box-shadow: var(--shadow); padding: 24px 26px; min-height: 380px; }
     .ai-col.human { border-top-color: var(--green); }
+    .reveal .ai-takeaway { border-left-color: var(--green); background: #f0f8ef; }
+    .reveal .ai-takeaway p { color: var(--ink); font-size: 26px; }
+    .reveal .ai-takeaway strong { color: var(--green); font-weight: 900; }
     .close-points { display: grid; gap: 12px; margin-top: 4px; }
     .close-points p { font-size: 24px; color: var(--muted); }
     .close-points strong { color: var(--ink); }
@@ -629,6 +632,20 @@
     .reveal .note-card span.nogil-num { display: block; margin: 4px 0 6px; font-size: 40px; line-height: 1.0; font-weight: 950; }
     .reveal .note-card span.nogil-num.small-num { font-size: 26px; line-height: 1.1; }
     .reveal .plain-list li { font-size: 22px; line-height: 1.32; margin-top: 12px; }
+    .kmeans-validation .validation-layout { display: grid; grid-template-columns: minmax(0, 0.6fr) minmax(0, 0.4fr); gap: 28px; margin-top: 26px; align-items: stretch; }
+    .kmeans-validation .validation-contract { padding: 26px 30px; min-height: 470px; background: #f2f7fc; border-top: 6px solid var(--blue); }
+    .reveal .kmeans-validation .validation-contract h3 { color: var(--blue); margin-bottom: 14px; }
+    .kmeans-validation .validation-contract strong, .kmeans-validation .validation-contract li::marker { color: var(--blue); }
+    .kmeans-validation .validation-contract .validation-skip { padding: 8px 12px; border-left: 4px solid var(--gold); border-radius: 0 8px 8px 0; background: #fff3db; }
+    .kmeans-validation .validation-contract .validation-skip strong, .kmeans-validation .validation-contract .validation-skip::marker { color: #92600d; }
+    .kmeans-validation .validation-results { display: grid; grid-template-rows: 1fr 1fr; gap: 16px; }
+    .kmeans-validation .validation-metric { padding: 22px 26px; display: flex; flex-direction: column; justify-content: center; }
+    .kmeans-validation .validation-precision { background: #eef8fa; border-top: 6px solid var(--teal); }
+    .kmeans-validation .validation-pass { background: #f0f8ef; border-top: 6px solid var(--green); }
+    .reveal .kmeans-validation .validation-precision .stat-label, .reveal .kmeans-validation .validation-precision .stat-big { color: var(--teal); }
+    .reveal .kmeans-validation .validation-pass .stat-label, .reveal .kmeans-validation .validation-pass .stat-big { color: var(--green); }
+    .reveal .kmeans-validation .validation-metric .caption { color: var(--muted); }
+    .reveal .kmeans-validation .validation-metric .validation-skip-count { color: #92600d; font-weight: 850; }
     .reveal .impl-code { font-size: 14px; line-height: 1.4; min-height: 230px; }
     .reveal .impl-card .caption, .reveal .impl-note { font-size: 17px; }
     .reveal .slide-code { font-size: 21px; }
@@ -684,6 +701,7 @@
     .about-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
     .about-metric { background: #fff7e9; border: 1px solid var(--line); border-radius: 12px; padding: 16px 16px 14px; }
     .about-metric strong { display: block; font-size: 42px; line-height: 1; font-weight: 950; color: var(--teal); }
+    .about-metric .about-time { font-size: 34px; line-height: 1.15; }
     .about-metric.same strong { color: var(--green); }
     .about-metric span { display: block; color: var(--muted); font-size: 15px; line-height: 1.25; margin-top: 6px; }
     .about-metric .about-what { color: var(--ink); font-weight: 800; font-size: 16px; margin-top: 10px; }
@@ -760,17 +778,10 @@
       <p class="subtitle">Python 3.14, Numba, and JAX for statistical computing, without changing the answer.</p>
       <p class="small" style="margin-top:20px;">Wenxin Jiang, Jian Yin | Biostatistics, CityU HK</p>
     </div>
-    <div class="hero-card">
-      <div class="metric"><strong>0.0</strong><span>max p-value difference after a matrix rewrite</span></div>
-      <div class="metric"><strong>4.77×</strong><span>thread scaling on free-threaded CPython 3.14t</span></div>
-      <div class="metric"><strong>8.5×</strong><span>A100 over server CPU, only at large R × p</span></div>
-    </div>
   </div>
   <aside class="notes">Hi everyone. I'm Wenxin, and this talk is joint work with my colleague Jian Yin.
 
-It's about a problem every scientific Python user hits: our code is too slow, and when we make it faster, how do we know it still gives the same answer?
-
-On the right are three numbers from this talk. A matrix rewrite that changes the p-values by exactly zero. Free-threaded Python 3.14 scaling threads by almost 5x. And a GPU that is 8.5 times faster, but only for the biggest problems. By the end you'll know where each number comes from and when it applies to you.</aside>
+It's about a problem every scientific Python user hits: our code is too slow, and when we make it faster, how do we know it still gives the same answer?</aside>
 </section>
 
 <section class="deck-slide">
@@ -785,14 +796,14 @@ On the right are three numbers from this talk. A matrix rewrite that changes the
     </div>
     <div class="about-metrics">
       <div class="about-metric">
-        <strong>49.2×</strong>
+        <strong class="about-time">1.91 h<br>→ 2.67 min</strong>
         <span class="about-what">200 FinnGen GWAS loci</span>
-        <span>1.91 h → 2.67 min</span>
+        <span>49.2×</span>
       </div>
       <div class="about-metric">
-        <strong>26.6×</strong>
+        <strong class="about-time">21.3 h<br>→ 48.0 min</strong>
         <span class="about-what">14,157 GTEx eGenes</span>
-        <span>21.3 h → 48.0 min</span>
+        <span>26.6×</span>
       </div>
       <div class="about-metric same">
         <strong>Same</strong>
@@ -974,28 +985,31 @@ Clean, high-dimensional data: near-perfect, 0.9 to 1.0. But look at the two righ
 That is a property of k-means, not of our code. No amount of Numba or GPU fixes it. If this were our real data, we'd fix the method before optimizing anything. For this talk we accept these limits and move on to checking the code.</aside>
 </section>
 
-<section class="deck-slide">
+<section class="deck-slide kmeans-validation">
   <div class="kicker">Check the code</div>
   <h2>Every optimized k-means matches the NumPy reference</h2>
-  <div style="display:grid; grid-template-columns:minmax(0, 0.6fr) minmax(0, 0.4fr); gap:28px; margin-top:26px; align-items:stretch;">
-    <div class="panel" style="padding:26px 30px; min-height:470px;">
-      <h3 style="color:var(--ink); margin-bottom:14px;">The comparison contract</h3>
+  <div class="validation-layout">
+    <div class="panel validation-contract">
+      <h3>The comparison contract</h3>
       <ul class="plain-list">
         <li><strong>Same inputs:</strong> identical data, initial centres, and stopping rule.</li>
         <li><strong>Reference:</strong> a readable NumPy implementation.</li>
         <li><strong>Candidates:</strong> NumPy matrix form, Numba, and JAX.</li>
         <li><strong>Compare:</strong> final inertia (the objective) and the cluster labels.</li>
-        <li><strong>Skip, don't crash:</strong> rows whose reference would exhaust memory are recorded as skipped.</li>
+        <li class="validation-skip"><strong>Skip, don't crash:</strong> rows whose reference would exhaust memory are recorded as skipped.</li>
       </ul>
     </div>
-    <div class="panel" style="padding:28px 26px; display:flex; flex-direction:column; justify-content:center;">
-      <p class="stat-label">Largest inertia difference</p>
-      <p class="stat-big accent-blue">3.1e-14</p>
-      <p class="caption">Tolerance was 1e-8. Labels agree exactly (ARI vs reference = 1.0).</p>
-      <div style="height:1px; background:var(--line); margin:24px 0;"></div>
-      <p class="stat-label">Validated rows</p>
-      <p class="stat-big accent-green" style="font-size:44px;">3,840</p>
-      <p class="caption">All passing rows of the MacBook grid; 480 memory-risk rows skipped.</p>
+    <div class="validation-results">
+      <div class="panel validation-metric validation-precision">
+        <p class="stat-label">Largest inertia difference</p>
+        <p class="stat-big">3.1e-14</p>
+        <p class="caption">Tolerance was 1e-8. Labels agree exactly (ARI vs reference = 1.0).</p>
+      </div>
+      <div class="panel validation-metric validation-pass">
+        <p class="stat-label">Validated rows</p>
+        <p class="stat-big">3,840</p>
+        <p class="caption">All passing rows of the MacBook grid; <span class="validation-skip-count">480 memory-risk rows skipped.</span></p>
+      </div>
     </div>
   </div>
   <aside class="notes">Now the code check. Every optimized version runs on the same data, starts from the same centres, and uses the same stopping rule as the reference.
@@ -1362,34 +1376,35 @@ And every row assumes the validation already passed. Speed is the last step.</as
 
 <section class="deck-slide">
   <div class="kicker">AI coding tools</div>
-  <h2>AI speeds up writing fast code. It doesn't skip the validation.</h2>
+  <h2>AI helps write the code. Validation decides what we keep.</h2>
   <div class="ai-split">
     <div class="ai-col">
-      <h3 class="accent-blue">What AI made faster</h3>
+      <h3 class="accent-blue">Where AI helped</h3>
       <ul class="plain-list">
-        <li>Translating the NumPy reference into Numba and JAX: a first draft in minutes, not a day.</li>
-        <li>Trying more variants than we would have written by hand.</li>
-        <li>Experiment runners, metadata logging, and figure regeneration.</li>
+        <li>Draft Numba and JAX implementations from the NumPy reference.</li>
+        <li>Explore alternative implementations and tuning parameters.</li>
+        <li>Automate experiment runs, result logging, and plots.</li>
       </ul>
     </div>
     <div class="ai-col human">
-      <h3 class="accent-green">What stayed the same</h3>
+      <h3 class="accent-green">How we evaluated each version</h3>
       <ul class="plain-list">
-        <li>AI output is one more candidate. It passes the <strong>same</strong> checks as hand-written code.</li>
-        <li><strong>Equivalence</strong> against the slow reference, same seeds, tolerance fixed in advance.</li>
-        <li><strong>Calibration</strong> under the null.</li>
-        <li>Only then, <strong>end-to-end timing</strong>. Kernel-only GPU numbers looked faster, so we excluded them.</li>
+        <li><strong>Correctness:</strong> compare with the reference using the same inputs and random seeds.</li>
+        <li><strong>Statistical validity:</strong> verify that the optimized code preserves the intended statistical properties.</li>
+        <li><strong>Performance:</strong> profile runtime and memory usage at each step, then compare end-to-end performance.</li>
       </ul>
     </div>
   </div>
-  <div class="callout"><p>Generating code got cheap. Trusting it still costs a reference and a test.</p></div>
-  <aside class="notes">We used AI coding agents a lot in this project, and they really did speed us up. Translating a NumPy reference into Numba or JAX used to take us a day; an agent gives a working first draft in minutes. That means we tried more variants than we ever would have written by hand. It also built the experiment runners and regenerated the plots.
+  <div class="callout ai-takeaway"><p>Code is cheap. <strong>Trust requires validation.</strong></p></div>
+  <aside class="notes">We used AI coding agents to draft Numba and JAX implementations from the NumPy reference, explore alternative implementations and tuning parameters, and automate experiment runs, result logging, and plots.
 
-But notice that nothing in our rule changed. To us, AI-written code is just one more candidate implementation. It goes through exactly the same steps as code we write ourselves: match the slow reference on the same seeds, within a tolerance we fixed before looking; check calibration under the null; and only then measure end-to-end time.
+But generating a candidate isn't the same as validating it. Every implementation, whether AI-generated or hand-written, has to meet the same standards.
 
-One small example. The agent's GPU timings for the kernel alone looked much better than our end-to-end numbers. They were real numbers, but they skip copying data to the GPU, so they answer a different question. We left them out.
+First, correctness: compare with the reference using the same inputs and random seeds, with tolerances fixed in advance. Then, statistical validity: check that the optimization preserves the intended statistical properties, not just the output of one example.
 
-So AI makes writing fast code cheaper. It doesn't make trusting that code any cheaper. That still takes a reference and a test, which is the whole point of this talk.</aside>
+For performance, profile runtime and memory usage at each step to see where the costs actually are. Then compare end-to-end performance, so a faster kernel doesn't hide extra work elsewhere.
+
+AI helps us explore more possibilities. Validation determines which ones we can trust. Code is cheap. Trust requires validation.</aside>
 </section>
 
 <section class="deck-slide">
