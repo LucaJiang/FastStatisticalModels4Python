@@ -599,6 +599,42 @@
     .close-points p { font-size: 24px; color: var(--muted); }
     .close-points strong { color: var(--ink); }
 
+    .reveal .slides section.closing-slide { background: #fbfcfe; }
+    .closing-layout { display: grid; grid-template-columns: minmax(0, 1fr) 284px; gap: 42px; height: 100%; }
+    .closing-main { display: flex; flex-direction: column; min-width: 0; }
+    .closing-heading .kicker { font-size: 20px; letter-spacing: 0; margin-bottom: 28px; }
+    .closing-heading h1 { font-size: 94px; line-height: 1; letter-spacing: 0; max-width: none; }
+    .closing-heading .bar { width: 178px; height: 9px; margin: 26px 0 0; }
+    .poster-invite { display: grid; grid-template-columns: 142px minmax(0, 1fr); align-items: center; height: 326px; margin-top: auto; padding: 30px 28px; background: #e7f1fb; border: 1px solid #d6e7f7; border-radius: 16px; }
+    .poster-icon { display: grid; place-items: center; height: 100%; margin-right: 28px; border-right: 2px solid #bbd7f2; }
+    .poster-easel { position: relative; width: 100px; height: 178px; }
+    .poster-board { position: absolute; top: 15px; left: 10px; width: 80px; height: 108px; overflow: hidden; border: 4px solid var(--navy); border-radius: 6px; background: #fff; }
+    .poster-board::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 13px; background: var(--blue); }
+    .poster-chart { position: absolute; left: 14px; bottom: 15px; display: flex; align-items: flex-end; gap: 8px; height: 47px; }
+    .poster-chart i { display: block; width: 12px; background: var(--blue); }
+    .poster-chart i:nth-child(1) { height: 20px; }
+    .poster-chart i:nth-child(2) { height: 34px; }
+    .poster-chart i:nth-child(3) { height: 47px; }
+    .poster-stand { position: absolute; top: 123px; left: 48px; width: 4px; height: 43px; background: var(--navy); }
+    .poster-leg { position: absolute; top: 158px; width: 4px; height: 46px; background: var(--navy); transform-origin: top center; }
+    .poster-leg.left { left: 49px; transform: rotate(55deg); }
+    .poster-leg.right { left: 49px; transform: rotate(-55deg); }
+    .poster-overline { font-size: 29px; line-height: 1.1; font-weight: 850; }
+    .poster-call { margin-top: 18px; color: var(--blue); font-size: 42px; line-height: 1.12; font-weight: 900; white-space: nowrap; }
+    .poster-room { display: flex; align-items: center; gap: 11px; margin-top: 25px; font-size: 30px; line-height: 1.12; font-weight: 850; white-space: nowrap; }
+    .poster-room-text { border-bottom: 3px solid currentColor; }
+    .venue-pin { position: relative; flex: 0 0 23px; width: 23px; height: 23px; border: 3px solid var(--ink); border-radius: 50%; }
+    .venue-pin::after { content: ""; position: absolute; top: 6px; left: 6px; width: 5px; height: 5px; border-radius: 50%; background: var(--ink); }
+    .poster-time { margin: 14px 0 0 34px; color: var(--muted); font-size: 20px; line-height: 1.2; white-space: nowrap; }
+    .closing-resources { display: flex; flex-direction: column; align-items: center; min-width: 0; padding-top: 24px; text-align: center; }
+    .closing-qr-frame { display: grid; place-items: center; width: 280px; height: 280px; padding: 16px; border: 1px solid #d9e2e9; border-radius: 12px; background: #fff; box-shadow: 0 5px 14px rgba(21, 32, 43, 0.06); }
+    .closing-qr-frame img { display: block; width: 100%; height: 100%; object-fit: contain; }
+    .closing-qr-caption { margin-top: 20px; font-size: 23px; line-height: 1.15; font-weight: 850; white-space: nowrap; }
+    .closing-resource-rule { width: 100%; height: 1px; margin: 24px 0 22px; border: 0; background: #d9e2e9; }
+    .closing-resource-label { color: var(--blue); font-size: 18px; line-height: 1.2; font-weight: 850; }
+    .closing-link { display: block; margin-top: 24px; color: var(--ink); font-size: 16.5px; line-height: 1.2; text-decoration: underline; text-underline-offset: 4px; }
+    .closing-link span { display: block; }
+
     .reveal p.stat-big { font-size: 60px; line-height: 1.0; font-weight: 950; margin-top: 10px; }
     .reveal p.pass-badge { font-size: 60px; line-height: 0.95; color: var(--green); font-weight: 950; }
     .reveal .note-card span.nogil-num { display: block; margin: 4px 0 6px; font-size: 40px; line-height: 1.0; font-weight: 950; }
@@ -1402,20 +1438,38 @@ Then measure where the time goes and pick the smallest tool that fixes it. Somet
 Make the statistic testable. Then make the bottleneck fast.</aside>
 </section>
 
-<section class="deck-slide">
-  <div style="display:grid; grid-template-columns:minmax(0, 0.68fr) minmax(260px, 0.32fr); gap:42px; align-items:center; height:100%;">
-    <div class="section-title" style="height:auto;">
-      <div class="kicker">Thank you</div>
-      <h1>Questions?</h1>
-      <div class="bar"></div>
-      <p class="subtitle" style="margin-top:18px;">Slides, code, raw CSVs, and figure scripts:</p>
-      <p class="small" style="margin-top:14px;"><code>github.com/LucaJiang/FastStatisticalModels4Python</code></p>
+<section class="deck-slide closing-slide">
+  <div class="closing-layout">
+    <div class="closing-main">
+      <div class="closing-heading">
+        <div class="kicker">Thank you!</div>
+        <h1>Questions?</h1>
+        <div class="bar"></div>
+      </div>
+      <div class="poster-invite">
+        <div class="poster-icon" aria-hidden="true">
+          <div class="poster-easel">
+            <div class="poster-board"><span class="poster-chart"><i></i><i></i><i></i></span></div>
+            <span class="poster-stand"></span><span class="poster-leg left"></span><span class="poster-leg right"></span>
+          </div>
+        </div>
+        <div class="poster-copy">
+          <div class="poster-overline">More questions?</div>
+          <div class="poster-call">Find me at my poster!</div>
+          <div class="poster-room"><span class="venue-pin" aria-hidden="true"></span><span class="poster-room-text">Room LW661 &middot; 6/F</span></div>
+          <div class="poster-time">Poster session &middot; 15:30&ndash;16:10 (HKT)</div>
+        </div>
+      </div>
     </div>
-    <div style="justify-self:center; text-align:center;">
-      <img src="../poster/assets/github_qr.png" alt="QR code for the project repository" style="display:block; width:244px; height:244px; object-fit:contain; background:#fff; border:1px solid var(--line); border-radius:14px; padding:12px; box-shadow:var(--shadow);" />
+    <div class="closing-resources">
+      <div class="closing-qr-frame"><img src="../poster/assets/github_qr.png" alt="QR code linking to the slides, code, and data on GitHub" /></div>
+      <div class="closing-qr-caption">Scan for slides &amp; code</div>
+      <hr class="closing-resource-rule" />
+      <div class="closing-resource-label">SLIDES &middot; CODE &middot; DATA</div>
+      <a class="closing-link" href="https://github.com/LucaJiang/FastStatisticalModels4Python"><span>github.com/LucaJiang/</span><span>FastStatisticalModels4Python</span></a>
     </div>
   </div>
-  <aside class="notes">Thank you. Everything is on GitHub: the slides, the code, the raw CSVs, and the scripts that generate every figure. The QR code goes to the repository. Happy to take questions.</aside>
+  <aside class="notes">Thank you. If you have more questions after the talk, find me at my poster in room LW661 on the sixth floor during the 15:30 to 16:10 HKT poster session. Scan the QR code for the slides, code, data, and figure scripts. Happy to take questions.</aside>
 </section>
 
 <section class="deck-slide local-gate-slide" data-visibility="hidden">

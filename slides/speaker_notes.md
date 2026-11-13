@@ -232,7 +232,7 @@ Make the statistic testable. Then make the bottleneck fast.
 
 ## Slide 24 - Questions? (24:30)
 
-Thank you. Everything is on GitHub: the slides, the code, the raw CSVs, and the scripts that generate every figure. The QR code goes to the repository. Happy to take questions.
+Thank you. If you have more questions after the talk, find me at my poster in room LW661 on the sixth floor during the 15:30 to 16:10 HKT poster session. Scan the QR code for the slides, code, data, and figure scripts. Happy to take questions.
 
 ## Backup 1 - On a laptop, runtime grows with both R and p
 
