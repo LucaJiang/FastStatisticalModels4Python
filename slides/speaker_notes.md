@@ -2,7 +2,7 @@
 
 Generated from the `<aside class="notes">` blocks in `index.html`. Edit the deck, then regenerate this file.
 
-Target: 30-minute slot. Notes run about 25 minutes at a relaxed pace, leaving about 5 minutes for questions. 24 main slides, 7 backup slides.
+Target: 30-minute slot. Notes run about 25 minutes at a relaxed pace, leaving about 5 minutes of buffer for transitions and timing variance. 24 main slides, 7 backup slides.
 
 ## Slide 1 - Breaking the Speed Limit (0:00)
 
@@ -230,9 +230,9 @@ Then measure where the time goes and pick the smallest tool that fixes it. Somet
 
 Make the statistic testable. Then make the bottleneck fast.
 
-## Slide 24 - Questions? (24:30)
+## Slide 24 - Thank you! (24:30)
 
-Thank you. If you have more questions after the talk, find me at my poster in room LW661 on the sixth floor during the 15:30 to 16:10 HKT poster session. Scan the QR code for the slides, code, data, and figure scripts. Happy to take questions.
+Thank you. Please find me at my poster in room LW661 on the sixth floor during the 15:30 to 16:10 HKT poster session. We can continue the conversation there. Scan the QR code for the slides, code, data, and figure scripts.
 
 ## Backup 1 - On a laptop, runtime grows with both R and p
 
