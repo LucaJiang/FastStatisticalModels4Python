@@ -1,5 +1,7 @@
 # HTML slides (Reveal.js, 16:9)
 
+View the published slides: https://lucajiang.github.io/FastStatisticalModels4Python/slides/
+
 ## Canonical files
 
 - [`index.html`](index.html) is the canonical Reveal.js deck.

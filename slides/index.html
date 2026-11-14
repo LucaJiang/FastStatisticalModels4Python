@@ -1066,7 +1066,7 @@ labels = d2.<span class="fn">argmin</span>(axis=<span class="num">1</span>)</pre
     </div>
   </div>
   <p class="caption" style="margin-top:12px;">Warm median runtime, validated rows only. CPU: Linux server. GPU: NVIDIA A100, transfer included, compile excluded.</p>
-  <aside class="notes">So, which one is the fastest? Let's look at three different problem sizes on our server. First, a small problem. All three versions finish in less than half a second. The differences are very small, so there's usually no need to spend time optimizing further. Second, a larger problem: one million data points, 256 dimensions, and 50 clusters. Here, NumPy with BLAS is the fastest, finishing in 32 seconds. Numba takes about twice as long. And even the GPU is slower than NumPy in this case. Finally, a very large problem with five million data points. Now the GPU has enough work to make good use of the A100. It runs 2.8 times faster than the best CPU version. So there is no single best tool. Performance depends on the size and shape of your data. We need to measure it to find the best choice. And if you're wondering where Numba wins, it can perform very well on loop-heavy problems, even on a laptop. I have an example in the backup slides.</aside>
+  <aside class="notes">So, which one is the fastest? Let's look at three different problem sizes on our server. First, a small problem. All three versions finish in less than half a second. The differences are very small, so there's usually no need to spend time optimizing further. Second, a larger problem: one million data points, 256 dimensions, and 50 clusters. Here, NumPy with BLAS is the fastest, finishing in 32 seconds. Numba takes about twice as long. And even the GPU is slower than NumPy in this case. Finally, a very large problem with five million data points. Now the GPU has enough work to make good use of the A100. It runs 2.8 times faster than the best CPU version. So there is no single best tool. Performance depends on the size and shape of your data. We need to measure it to find the best choice. And if you're wondering where Numba wins, it can perform very well on loop-heavy problems, even on a laptop.</aside>
 </section>
 
 <section class="deck-slide">
@@ -1126,7 +1126,7 @@ labels = d2.<span class="fn">argmin</span>(axis=<span class="num">1</span>)</pre
   <div class="panel" style="padding:20px 24px; margin-top:20px;">
     <p style="font-size:22px; line-height:1.4;">A difference in group means is a weighted sum: weight <strong>+1/n<sub>A</sub></strong> for group A, <strong>−1/n<sub>B</sub></strong> for group B. Stack one weight row per shuffle into <code>W</code> (batch × n). Then <code>W @ X</code> gives every statistic for the batch, and BLAS or a GPU does the work.</p>
   </div>
-  <aside class="notes">Here is the key optimization. The difference between two group means can be written as a weighted sum. Each sample in group A gets a weight of one over n A, and each sample in group B gets minus one over n B. So each shuffle gives us a different weight vector. We can combine many weight vectors into a matrix W. Then, W times X calculates the test statistics for the whole batch using just one matrix multiplication. This is exactly what BLAS and GPUs are good at. The second optimization is memory usage. The reference stores the results of all R permutations for all p features. When we have half a million features, this can use a lot of memory. Instead, we process the permutations in batches and keep a running count for each feature. We only need to count how many shuffled results are at least as extreme as the observed result. The statistical test stays the same, but the computation is very different. So we need to check that the optimized results still match the reference.</aside>
+  <aside class="notes">Here is the key optimization. The difference between two group means can be written as a weighted sum. Skipping the math, W times X calculates the test statistics for the whole batch using just one matrix multiplication. This is exactly what BLAS and GPUs are good at. The second optimization is memory usage. The reference stores the results of all R permutations for all p features. When we have half a million features, this can use a lot of memory. Instead, we process the permutations in batches and keep a running count for each feature. We only need to count how many shuffled results are at least as extreme as the observed result. The statistical test stays the same, but the computation is very different. So we need to check that the optimized results still match the reference.</aside>
 </section>
 
 <section class="deck-slide">
@@ -1153,7 +1153,7 @@ labels = d2.<span class="fn">argmin</span>(axis=<span class="num">1</span>)</pre
       <p class="caption" style="margin-top:18px;">Statistics differ only by floating-point rounding. Because counts are compared to the same threshold, p-values match exactly.</p>
     </div>
   </div>
-  <aside class="notes">First, let's check whether the optimized version produces the same results. Both versions use the same data and the same sequence of shuffles. This allows us to compare their results directly. We tested 18 different problem sizes and shapes, each with 5 random seeds. In total, 450 comparisons passed, with no failures. We also skipped 45 cases because the reference would need too much memory. The p-values matched exactly, with a maximum difference of zero. The test statistics had a maximum difference of only 10 to the minus 16, due to floating-point rounding. Our tolerance was 10 to the minus 6, so the difference is ten orders of magnitude smaller. This shows that the optimized version matches the reference in our tests. But we still need to check whether the statistical test itself works correctly. That's our next step.</aside>
+  <aside class="notes">Well, let's check it. Both versions use the same data and the same sequence of shuffles. This allows us to compare their results directly. We tested 18 different problem sizes and shapes, each with 5 random seeds. In total, 450 comparisons passed. The p-values matched exactly, with a maximum difference of zero. The test statistics had a maximum difference of only 10 to the minus 16, due to floating-point rounding. Our tolerance was 10 to the minus 6, so the difference is ten orders of magnitude smaller. This shows that the optimized version matches the reference in our tests. But we still need to check whether the statistical test itself works correctly. That's our next step.</aside>
 </section>
 
 <section class="deck-slide">
@@ -1187,7 +1187,7 @@ labels = d2.<span class="fn">argmin</span>(axis=<span class="num">1</span>)</pre
       </div>
     </div>
   </div>
-  <aside class="notes">Now the second check: is the statistical test itself correct? We already showed that the fast version matches the reference. But we also need to check whether the test gives reliable results. We simulate data where there is no real difference between the two groups. With a significance level of 0.05, a well-calibrated test should reject the null hypothesis about 5 percent of the time. In our simulations, the rejection rate was 5.1 percent, very close to the expected 5 percent. The difference is within the range we'd expect from random variation. So we have two checks: the optimized code matches the reference, and the statistical test gives the expected false-positive rate under the null. Now we can move on to performance.</aside>
+  <aside class="notes">Now the second check about the statistical test itself. We simulate data where there is no real difference between the two groups. With a significance level of 0.05, a well-calibrated test should reject the null hypothesis about 5 percent of the time. In our simulations, the rejection rate was 5.1 percent, very close to the expected 5 percent. The difference is within the range we'd expect from random variation. So we have two checks: the optimized code matches the reference, and the statistical test gives the expected false-positive rate under the null. Now we can move on to performance.</aside>
 </section>
 
 <section class="deck-slide decision-map-slide">
@@ -1227,7 +1227,7 @@ labels = d2.<span class="fn">argmin</span>(axis=<span class="num">1</span>)</pre
       </div>
       <div class="note-card" style="border-left-color:var(--blue);">
         <strong>Free-threaded 3.14t</strong>
-        <span class="nogil-num" style="color:var(--blue);">4.77×</span>
+        <span class="nogil-num" style="color:var(--blue);">4.8×</span>
         <span>Same code, same threads. 0.57 s → 0.12 s.</span>
       </div>
       <div class="note-card" style="border-left-color:var(--gold);">
@@ -1238,7 +1238,7 @@ labels = d2.<span class="fn">argmin</span>(axis=<span class="num">1</span>)</pre
     </div>
   </div>
   <p class="caption" style="margin-top:10px;">Pure-Python, CPU-bound resampling over shared in-memory data. Your speedup depends on how much of your work runs as Python bytecode.</p>
-  <aside class="notes">Now let's look at Python 3.14. Here's a CPU-bound resampling task written in plain Python. On standard Python, 16 threads are no faster than one because of the GIL. But with the same code on free-threaded Python 3.14t, we get a 4.77 times speedup. Compared with a process pool on standard Python, it's 2.4 times faster and uses about one-third less memory, because threads can share data. This mainly helps CPU-bound Python code. NumPy and BLAS often release the GIL already, so the benefit may be smaller. And of course, we also validated the results on 3.14t.</aside>
+  <aside class="notes">Now let's look at Python 3.14. Here's a CPU-bound resampling task written in plain Python. On standard Python, 16 threads are no faster than one because of the GIL. But with the same code on free-threaded Python 3.14t, we get a 4.8 times speedup. Compared with a process pool on standard Python, it's 2.4 times faster and uses about one-third less memory, because threads can share data. This mainly helps CPU-bound Python code. NumPy and BLAS often release the GIL already, so the benefit may be smaller. And of course, we also validated the results on 3.14t.</aside>
 </section>
 
 <section class="deck-slide">
@@ -1271,7 +1271,7 @@ labels = d2.<span class="fn">argmin</span>(axis=<span class="num">1</span>)</pre
     </div>
   </div>
   <div class="callout"><p>Every row assumes the equivalence and calibration checks already passed.</p></div>
-  <aside class="notes">Here's a simple guide to choosing the right tool. For numerical loops, try Numba. For matrix operations, use NumPy and BLAS. For independent tasks that share data, consider free-threaded Python. For large, parallel workloads, JAX on GPU may be the best choice. Think of it like travel. You wouldn't fly across Victoria Harbour or walk to Tokyo. You choose the right tool for the trip. And remember, all these choices come after validation.</aside>
+  <aside class="notes">Here's a simple guide to choosing the right tool. For numerical loops, try Numba. For matrix operations, use NumPy and BLAS. For independent tasks that share data, consider free-threaded Python. For large, parallel workloads, JAX on GPU may be the best choice. Think of it like travel. You wouldn't swim to Taiwan. You choose the right tool for the trip. And remember, all these choices come after validation.</aside>
 </section>
 
 <section class="deck-slide">
@@ -1296,7 +1296,7 @@ labels = d2.<span class="fn">argmin</span>(axis=<span class="num">1</span>)</pre
     </div>
   </div>
   <div class="callout ai-takeaway"><p>Code is cheap. <strong>Trust requires validation.</strong></p></div>
-  <aside class="notes">We also used AI coding agents to develop Numba and JAX implementations, explore different optimizations, and automate benchmarks. AI helps us generate more ideas, but we still need to validate every implementation. We check numerical results against the reference, test statistical properties, and measure runtime and memory usage. We also measure end-to-end performance, because a faster function doesn't always mean a faster program. So AI helps us explore, and validation tells us what to keep.</aside>
+  <aside class="notes">We also used AI coding agents to develop Numba and JAX implementations, explore different optimizations, and automate benchmarks. AI helps us write code, but we still need to validate every implementation. We check numerical results against the reference, test statistical properties, and measure runtime and memory usage. We also measure end-to-end performance, because a faster function doesn't always mean a faster program. AI can write code quickly, but it may be wrong. Validation tells us whether to believe it.</aside>
 </section>
 
 <section class="deck-slide">
@@ -1305,7 +1305,7 @@ labels = d2.<span class="fn">argmin</span>(axis=<span class="num">1</span>)</pre
     <h1>Make the statistic testable.<br />Then make the bottleneck fast.</h1>
     <div class="bar"></div>
     <div class="close-points">
-      <p><strong>Simulate</strong> to get an answer key, and keep a slow reference.</p>
+      <p><strong>Simulate</strong> to get the ground truth, and keep a simple reference.</p>
       <p><strong>Check</strong> equivalence and calibration before you time anything.</p>
       <p><strong>Measure</strong> the bottleneck, then pick the smallest tool that fixes it.</p>
     </div>

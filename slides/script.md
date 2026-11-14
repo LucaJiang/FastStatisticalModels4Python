@@ -174,7 +174,7 @@ Now the GPU has enough work to make good use of the A100. It runs 2.8 times fast
 
 So there is no single best tool. Performance depends on the size and shape of your data. We need to measure it to find the best choice.
 
-And if you're wondering where Numba wins, it can perform very well on loop-heavy problems, even on a laptop. I have an example in the backup slides.
+And if you're wondering where Numba wins, it can perform very well on loop-heavy problems, even on a laptop.
 
 ---
 
@@ -210,11 +210,7 @@ Here is the key optimization.
 
 The difference between two group means can be written as a weighted sum.
 
-Each sample in group A gets a weight of one over n A, and each sample in group B gets minus one over n B.
-
-So each shuffle gives us a different weight vector.
-
-We can combine many weight vectors into a matrix W. Then, W times X calculates the test statistics for the whole batch using just one matrix multiplication.
+Skipping the math, W times X calculates the test statistics for the whole batch using just one matrix multiplication.
 
 This is exactly what BLAS and GPUs are good at.
 
@@ -232,13 +228,13 @@ So we need to check that the optimized results still match the reference.
 
 ## Slide 16 - The matrix rewrite gives exactly the same p-values (15:15)
 
-First, let's check whether the optimized version produces the same results.
+Well, let's check it.
 
 Both versions use the same data and the same sequence of shuffles. This allows us to compare their results directly.
 
 We tested 18 different problem sizes and shapes, each with 5 random seeds.
 
-In total, 450 comparisons passed, with no failures. We also skipped 45 cases because the reference would need too much memory.
+In total, 450 comparisons passed.
 
 The p-values matched exactly, with a maximum difference of zero.
 
@@ -254,9 +250,7 @@ But we still need to check whether the statistical test itself works correctly. 
 
 ## Slide 17 - Under the null, the test rejects 5.1% of the time at α = 0.05 (16:15)
 
-Now the second check: is the statistical test itself correct?
-
-We already showed that the fast version matches the reference. But we also need to check whether the test gives reliable results.
+Now the second check about the statistical test itself.
 
 We simulate data where there is no real difference between the two groups.
 
@@ -322,7 +316,7 @@ Here's a CPU-bound resampling task written in plain Python.
 
 On standard Python, 16 threads are no faster than one because of the GIL.
 
-But with the same code on free-threaded Python 3.14t, we get a 4.77 times speedup.
+But with the same code on free-threaded Python 3.14t, we get a 4.8 times speedup.
 
 Compared with a process pool on standard Python, it's 2.4 times faster and uses about one-third less memory, because threads can share data.
 
@@ -342,7 +336,7 @@ For independent tasks that share data, consider free-threaded Python.
 
 For large, parallel workloads, JAX on GPU may be the best choice.
 
-Think of it like travel. You wouldn't fly across Victoria Harbour or walk to Tokyo. You choose the right tool for the trip.
+Think of it like travel. You wouldn't swim to Taiwan. You choose the right tool for the trip.
 
 And remember, all these choices come after validation.
 
@@ -352,13 +346,13 @@ And remember, all these choices come after validation.
 
 We also used AI coding agents to develop Numba and JAX implementations, explore different optimizations, and automate benchmarks.
 
-AI helps us generate more ideas, but we still need to validate every implementation.
+AI helps us write code, but we still need to validate every implementation.
 
 We check numerical results against the reference, test statistical properties, and measure runtime and memory usage.
 
 We also measure end-to-end performance, because a faster function doesn't always mean a faster program.
 
-So AI helps us explore, and validation tells us what to keep.
+AI can write code quickly, but it may be wrong. Validation tells us whether to believe it.
 
 ---
 
