@@ -8,55 +8,67 @@ Target: 30-minute slot. Notes run about 25 minutes at a relaxed pace, leaving ab
 
 Hi everyone. I'm Wenxin, and this talk is joint work with my colleague Jian Yin.
 
-It's about a problem every scientific Python user hits: our code is too slow, and when we make it faster, how do we know it still gives the same answer?
+It's about a problem every scientific Python user hits: our code is too slow, we want to make it faster. And when we make it faster, how do we know the code is correct?
 
 ## Slide 2 - Wenxin Jiang (0:45)
 
-A quick word about me. I'm a PhD student in biostatistics at City University of Hong Kong, so I'm local. I work on statistical genetics and genomics, where the data are big: hundreds of thousands of genetic variants, tens of thousands of genes.
+A quick word about me. I'm a PhD student in biostatistics at City University of Hong Kong. I work on statistical genetics and genomics, where the data are really big like hundreds of thousands of genetic variants and genes.
 
-I recently finished prusie, a Python package with a Rust core that reimplements SuSiE fine-mapping from the R package susieR. On 200 GWAS loci from FinnGen, the R package takes almost two hours; prusie takes under three minutes, 49 times faster. On 14,157 genes from GTEx, it goes from 21 hours to 48 minutes. It also uses about a fifth of the memory.
+I recently finished prusie, a Python package with a Rust core that reimplements a R package. On 200 GWAS loci, the R package takes almost two hours; prusie takes under three minutes. On 14k genes dataset, it reduce the runtime from 21 hours to 48 minutes. It also reduces peak memory use by about 80%.
 
-The line I care most about is the third one: the credible sets, which are the actual scientific output, are identical to susieR in every region.
+It's faster and uses less memory. Most importantly, although there are small numerical differences from reference, the key statistical features remain the same.
 
-That is what this talk is about: making statistical code fast while proving it still gives the same answer. prusie is on PyPI if you want to try it. Today I'll use two simpler examples, k-means and permutation tests, so we can walk through every step.
+That is what this talk is about: making statistical code fast while proving it still gives the same answer. Today I'll use two simpler examples, k-means and permutation tests, so we can walk through every step.
 
 ## Slide 3 - A readable permutation test is too slow at genomics scale (2:00)
 
-Here's the kind of code we start with. A permutation test: shuffle the group labels, recompute the statistic for every feature, repeat R times, and count how often the shuffled statistic beats the observed one. That count is the p-value.
+Here's the kind of code we start with. A permutation test: we have a group of labels, shuffle the group labels with rng.permutation, compute the statistic we call null, repeat it R times, and count how often the shuffled statistic beats the given one. That count is the p-value.
 
-This code is good. It reads like the textbook definition, so we trust it. The problem is size. In genomics, p is hundreds of thousands of features and R is thousands of shuffles.
+This code is good. It follows the textbook definition, so we trust it. The problem is size. In genomics, p is hundreds of thousands of features and R is thousands of shuffles. Even after we vectorized it with NumPy, one test with half a million features takes about 11 seconds on our server. That sounds fine until you need to run it thousands of times. Also, as the size goes larger, we can find that it can not finish within 45-minute.
 
-Even after we vectorized it with NumPy, one test with half a million features takes about 11 seconds on our server. That sounds fine until you run it thousands of times in a simulation study. And one larger configuration didn't finish within our 45-minute limit at all.
-
-So we have two questions. How do we make this faster? And, as statisticians, the one we care about more: how do we prove the fast version answers the same question?
+So we have two questions. How do we make this faster? And, as statisticians, we care about that: how do we prove the fast version answers the same question?
 
 ## Slide 4 - Validate against a reference before timing anything (3:30)
 
-Our rule is simple: validate first, then time.
+Our rule is simple: validate first, then measure performance.
 
-We define exactly what we're computing. We simulate data where we know the truth. We write a slow reference implementation that looks like the math. Every optimized version must match that reference before we look at its runtime.
+First, we define what we want to compute and how to evaluate the results. We simulate data, so we know the ground truth. Then we write a simple, slow reference implementation that follows the math.
 
-Only then do we measure where the time goes, and pick the smallest tool that fixes that bottleneck. Not the most exciting tool. The smallest one.
+Before testing speed, every optimized version must agree with the reference, within a small numerical tolerance. We also check that the key statistical results stay the same.
 
-The reason is in the orange box. If the fast version quietly changes the statistic, you haven't saved time. You've just produced a wrong scientific conclusion sooner.
+Only after that do we measure where the time goes and choose the right tool to speed up the bottleneck.
 
 ## Slide 5 - Simulation is how statisticians write tests (4:30)
 
-If you write software, you already know this idea under a different name.
+If you write software, you probably know these ideas by different names.
 
-Our outputs are random, so we can't assert one exact value. But we can still test. With a fixed seed, the fast and reference versions must agree: that's a unit test. Under the null hypothesis, a correct test rejects about 5 percent of the time at alpha 0.05: that's a property test. Outliers and imbalanced groups are stress tests. Growing the problem until it breaks is a load test. And every new engine has to pass all of this again: regression testing.
+In statistics, we often work with random data, and optimized code may produce small numerical differences. So we cannot always expect an exact match. But we can still test the code.
 
-So simulation gives statistical code an answer key. That's what makes optimization safe.
+With a fixed seed, we can reproduce the same data. We compare individual functions with a simple reference. That's unit testing.
+
+We generate many datasets and check properties that should always hold. That's property-based testing.
+
+We test unusual cases, like outliers and imbalanced groups. Those are edge-case tests.
+
+We increase the data size to see how the program performs. That's load testing.
+
+We push the program beyond its normal limits. That's stress testing.
+
+And after every code change, we run these tests again. That's regression testing.
+
+So simulation helps us check correctness before we focus on speed.
 
 ## Slide 6 - Two workloads with different bottlenecks (5:30)
 
-We use two workloads because they stress Python in different ways.
+We use two examples because they have different performance bottlenecks.
 
-k-means is iterative. Each step depends on the previous one, so you can't just run iterations in parallel. The cost is distance computations: N points times K centres times d dimensions, every iteration.
+First, k-means. It runs in iterations, and each iteration depends on the previous one. So we cannot run all iterations in parallel. But within each iteration, we can calculate distances in parallel. For N data points, K cluster centers, and d dimensions, the cost is roughly N times K times d per iteration.
 
-A permutation test is the opposite. Every shuffle is independent, so it's embarrassingly parallel. The cost is R shuffles times the full data matrix, and with genomic p that gets very large.
+Second, a permutation test. Each permutation is independent, so we can run many of them in parallel.
 
-Different shapes, so we'll see different tools win.
+We repeat the calculation R times, often across many variables. When R and p are large, the cost can be very high.
+
+These two workloads have different bottlenecks, so different optimization tools may work best.
 
 ## Slide 7 - k-means: an iterative fit (6:15)
 
@@ -64,59 +76,87 @@ Let's start with k-means.
 
 ## Slide 8 - k-means alternates two steps until nothing changes (6:30)
 
-Here's k-means on the iris flower data. Each dot is a flower, plotted by petal length and width. We want three clusters.
+Here's k-means on the Iris dataset. Each dot represents a flower, based on its petal length and width. The dataset has three known species, so we set the number of clusters to three.
 
-We start from fixed centres, so every implementation we compare starts from exactly the same place. Then two steps. Assign: each point goes to the nearest centre, and you can see colours change. Update: each centre moves to the mean of its points.
+We use the same starting centers for every implementation, to make the comparison fair.
 
-We repeat until assignments stop changing.
+Then we repeat two steps.
 
-The assign step is where the time goes: every point against every centre in every dimension. And because each iteration needs the previous centres, we can parallelize inside an iteration but not across iterations.
+First, assign each point to its nearest center. You can see the colors change.
+
+Second, update each center by taking the mean of its assigned points.
+
+We repeat these steps until the assignments stop changing.
+
+Most of the computation happens in the assignment step, because we need to calculate the distance from every point to every center.
+
+And because each iteration depends on the previous one, we can run calculations in parallel within an iteration, but the iterations themselves must run in order.
 
 ## Slide 9 - Before speed: k-means fails on imbalanced clusters at any speed (7:45)
 
-The first check isn't about code at all. Does the method recover the clusters we simulated?
+First, we check the statistical performance. Can k-means recover the clusters we simulated?
 
-We score recovery with the adjusted Rand index: 1 means perfect, 0 means no better than chance. Rows are how well separated the clusters are; columns are different stressors.
+We measure this using the adjusted Rand index, or ARI. A score of 1 means perfect recovery, while 0 means about the same as random guessing.
 
-Clean, high-dimensional data: near-perfect, 0.9 to 1.0. But look at the two right columns. With a 90/10 imbalance in cluster sizes, recovery stays around 0.25 or lower, even when clusters are well separated.
+The rows show different levels of cluster separation, and the columns show different data conditions.
 
-That is a property of k-means, not of our code. No amount of Numba or GPU fixes it. If this were our real data, we'd fix the method before optimizing anything. For this talk we accept these limits and move on to checking the code.
+On clean, high-dimensional data, the results are very good, with ARI between 0.9 and 1.0.
+
+But look at the two columns on the right. When cluster sizes are imbalanced, with a 90-to-10 ratio, ARI drops to around 0.25 or lower, even when the clusters are well separated.
+
+This shows a limitation of k-means itself. Making the code faster with Numba or GPU won't solve this problem.
+
+In real research, we should address this statistical limitation first. For this talk, we'll keep it in mind and move on to checking our implementations.
 
 ## Slide 10 - Every optimized k-means matches the NumPy reference (9:00)
 
-Now the code check. Every optimized version runs on the same data, starts from the same centres, and uses the same stopping rule as the reference.
+Now let's check the code.
 
-We compare two things: the final value of the objective, called inertia, and the cluster labels.
+Every optimized version uses the same data, the same starting centers, and the same stopping rule as the NumPy reference.
 
-The largest inertia difference we saw was 3 times 10 to the minus 14. That's floating-point rounding. Our tolerance was 10 to the minus 8. Labels agreed exactly.
+We compare two things: the final objective value and the cluster labels.
 
-One practical detail: for very large problems the naive reference would run out of memory. We record those rows as skipped instead of letting the run crash. That's 480 skipped rows, and they're labelled as skipped in the results, not hidden.
+We set a numerical tolerance of 10 to the minus 8 before running the tests.
+
+The largest difference in the final objective was only 3 times 10 to the minus 14, much smaller than our tolerance. And the cluster labels also matched.
+
+One practical issue: for very large datasets, the NumPy reference needs too much memory. So we mark those cases as skipped instead of letting the program crash.
+
+In total, 480 rows were skipped. For all the cases we could compare, the results matched.
 
 ## Slide 11 - One assignment step, written three ways (10:00)
 
-Here is the hot step written three ways.
+Here is the same k-means assignment step, implemented in three different ways.
 
-NumPy: we expand the squared distance into x squared plus c squared minus 2 x dot c. The expensive part becomes one matrix multiply, which goes to an optimized BLAS library.
+First, NumPy. We rewrite the squared distance as x squared plus c squared minus two times x dot c. This turns most of the work into matrix multiplication, which uses an optimized BLAS library.
 
-Numba: we keep the explicit loops, which is closest to the textbook, and Numba compiles them to machine code and runs the outer loop in parallel. No big temporary matrix.
+Second, Numba. We keep the simple loops, just like the original algorithm. Numba compiles them into machine code and runs the loop over data points in parallel. This also avoids creating a large distance matrix.
 
-JAX: almost the same code as NumPy, but jit-compiled to run on the GPU.
+Third, JAX. The code looks similar to NumPy, but we use JIT compilation to run it on the GPU.
 
-All three passed the equivalence check on the previous slide. The question now is which one is fastest, and the answer depends on the shape of the data.
+All three implementations matched the reference in our tests.
+
+Now the question is: which one is the fastest?
+
+As we'll see, the answer depends on the size and shape of the data.
 
 ## Slide 12 - The fastest engine changes with the problem shape (11:15)
 
-So which engine wins? Here are three shapes on our server.
+So, which one is the fastest? Let's look at three different problem sizes on our server.
 
-Small problem: everything finishes in under half a second. The differences don't matter. Don't spend a day optimizing this.
+First, a small problem. All three versions finish in less than half a second. The differences are very small, so there's usually no need to spend time optimizing further.
 
-Dense algebra: a million points, 256 dimensions, 50 clusters. Now the distance matrix is a big matrix multiply, and NumPy with BLAS wins at 32 seconds. Numba's explicit loops take twice as long. And notice the GPU doesn't win here either.
+Second, a larger problem: one million data points, 256 dimensions, and 50 clusters.
 
-Very large: five million points. Now there's enough regular work to keep an A100 busy, and it's 2.8 times faster than the best CPU.
+Here, NumPy with BLAS is the fastest, finishing in 32 seconds. Numba takes about twice as long. And even the GPU is slower than NumPy in this case.
 
-So there's no single best tool. The shape of the problem picks the tool, and you only find out by measuring.
+Finally, a very large problem with five million data points.
 
-If someone asks where Numba wins: on loop-shaped problems on a laptop. That's in the backup slides.
+Now the GPU has enough work to make good use of the A100. It runs 2.8 times faster than the best CPU version.
+
+So there is no single best tool. Performance depends on the size and shape of your data. We need to measure it to find the best choice.
+
+And if you're wondering where Numba wins, it can perform very well on loop-heavy problems, even on a laptop. I have an example in the backup slides.
 
 ## Slide 13 - Permutation tests: many independent repeats (12:30)
 
@@ -124,115 +164,181 @@ Now the permutation test, the example we started with.
 
 ## Slide 14 - Shuffle the labels many times to build the null distribution (12:45)
 
-Here's the permutation test in pictures. Each row is a sample, each column a feature, and samples belong to group A or B.
+Here is how the permutation test works.
 
-We compute the observed difference between groups for every feature. Then we shuffle the labels, keeping the data fixed, and recompute every difference. That gives one draw from the null distribution: what differences look like when group membership doesn't matter.
+Each row is a sample, each column is a feature, and each sample belongs to group A or group B.
 
-Repeat R times. The p-value for each feature is the fraction of shuffles that beat the observed value.
+First, we calculate the difference between the two groups for each feature.
 
-The shuffles are independent, which is good for parallelism. But each one touches the whole matrix, so work grows with R times n times p.
+Then we randomly shuffle the group labels, keeping the data unchanged, and calculate the differences again.
+
+We repeat this R times to build a null distribution. This shows what differences we might see if the group labels didn't matter.
+
+For each feature, the p-value tells us how often the shuffled results are at least as extreme as the observed result.
+
+Each shuffle is independent, so we can easily run them in parallel.
+
+But if every shuffle processes the full data matrix, the total work grows with R times n times p.
 
 ## Slide 15 - Each shuffle is a weight vector, so a batch is one matrix multiply (14:00)
 
-This is the key rewrite. A difference in group means is just a weighted sum of the rows: plus one over n A for samples in group A, minus one over n B for group B.
+Here is the key optimization.
 
-So each shuffle is a weight vector. Stack a batch of them into a matrix W, and W times X gives you the statistics for the whole batch in one matrix multiply. That's exactly the operation BLAS and GPUs are built for.
+The difference between two group means can be written as a weighted sum.
 
-The second change is streaming. The reference stores the full R by p null matrix, which for half a million features doesn't fit in memory. The optimized version keeps only a running count per feature: how many shuffles beat the observed value so far.
+Each sample in group A gets a weight of one over n A, and each sample in group B gets minus one over n B.
 
-The math is the same. The shape of the computation is completely different. That's why we have to prove it's still the same test.
+So each shuffle gives us a different weight vector.
+
+We can combine many weight vectors into a matrix W. Then, W times X calculates the test statistics for the whole batch using just one matrix multiplication.
+
+This is exactly what BLAS and GPUs are good at.
+
+The second optimization is memory usage.
+
+The reference stores the results of all R permutations for all p features. When we have half a million features, this can use a lot of memory.
+
+Instead, we process the permutations in batches and keep a running count for each feature. We only need to count how many shuffled results are at least as extreme as the observed result.
+
+The statistical test stays the same, but the computation is very different.
+
+So we need to check that the optimized results still match the reference.
 
 ## Slide 16 - The matrix rewrite gives exactly the same p-values (15:15)
 
-First check: does the rewrite produce the same numbers?
+First, let's check whether the optimized version produces the same results.
 
-Both versions get the same data and, importantly, the same sequence of shuffles. Otherwise we'd be comparing random noise. We ran 18 different problem shapes, each with 5 seeds: 450 comparisons passed, none failed, and 45 were skipped because the reference would have run out of memory.
+Both versions use the same data and the same sequence of shuffles. This allows us to compare their results directly.
 
-The p-values matched exactly: maximum difference zero. The statistics differed by at most 10 to the minus 16, which is rounding in the last bit of a double. We set a tolerance of 10 to the minus 6 before running anything, and we're ten orders of magnitude inside it.
+We tested 18 different problem sizes and shapes, each with 5 random seeds.
 
-So the code is equivalent. But equivalent code can still implement a bad test, which brings us to the second check.
+In total, 450 comparisons passed, with no failures. We also skipped 45 cases because the reference would need too much memory.
+
+The p-values matched exactly, with a maximum difference of zero.
+
+The test statistics had a maximum difference of only 10 to the minus 16, due to floating-point rounding.
+
+Our tolerance was 10 to the minus 6, so the difference is ten orders of magnitude smaller.
+
+This shows that the optimized version matches the reference in our tests.
+
+But we still need to check whether the statistical test itself works correctly. That's our next step.
 
 ## Slide 17 - Under the null, the test rejects 5.1% of the time at α = 0.05 (16:15)
 
-Second check: is it a valid test?
+Now the second check: is the statistical test itself correct?
 
-Equivalence tells us the fast code matches the slow code. It doesn't tell us the slow code was right. So we simulate data where there is no real difference between groups. A correct test at alpha 0.05 should flag about 5 percent of features, purely by chance.
+We already showed that the fast version matches the reference. But we also need to check whether the test gives reliable results.
 
-We observed 0.051. The dashed line is 0.05, the dot is our estimate, and the green band is the range you'd expect for a single feature just from binomial noise.
+We simulate data where there is no real difference between the two groups.
 
-So now we have both: the code is equivalent, and the inference is calibrated. Only now do we look at speed.
+With a significance level of 0.05, a well-calibrated test should reject the null hypothesis about 5 percent of the time.
+
+In our simulations, the rejection rate was 5.1 percent, very close to the expected 5 percent. The difference is within the range we'd expect from random variation.
+
+So we have two checks: the optimized code matches the reference, and the statistical test gives the expected false-positive rate under the null.
+
+Now we can move on to performance.
 
 ## Slide 18 - The A100 pays off once R × p is large: up to 8.5× faster (17:15)
 
-Now speed. This map compares our server CPU against an A100 GPU, running the same validated, streamed permutation test. Columns are the number of features, rows the number of shuffles. Each cell is how many times faster the GPU is, end to end, including copying data to the GPU.
+Now let's look at speed.
 
-Bottom left, the smallest problem: the CPU wins. The GPU is 0.7 times as fast because transfer and launch overhead dominate.
+This heatmap compares our server CPU with an A100 GPU, using the same permutation test.
 
-As p and R grow, the GPU pulls ahead. The best cell, half a million features and 5,000 shuffles, goes from 10.7 seconds to 1.25 seconds: 8.5 times faster.
+The columns show the number of features, and the rows show the number of shuffles.
 
-Top right, grey: the GPU ran out of memory. The CPU still finished. So even the GPU has a shape it doesn't fit.
+Each cell shows how much faster the GPU is compared with the CPU. We measure the total runtime, including data transfer to the GPU.
 
-The lesson: the GPU is worth it only when there's a lot of regular work. And it only helped because we had already rewritten the test as a matrix multiply.
+For the smallest problem, the CPU is faster. The GPU is only 0.7 times as fast, because the overhead is larger than the time saved.
+
+But as the number of features and shuffles increases, the GPU becomes faster.
+
+In the best case, with half a million features and 5,000 shuffles, the runtime drops from 10.7 seconds to 1.25 seconds. That's about 8.5 times faster.
+
+The grey cell in the top right means the GPU ran out of memory, while the CPU could still finish.
+
+So GPUs work best when there is enough parallel work. And our matrix rewrite makes it possible to use the GPU efficiently.
 
 ## Slide 19 - More workers help until about 16, then stop paying (18:45)
 
-What about plain CPU parallelism on the server?
+Now let's look at CPU parallelism on our server.
 
-Going from one to four workers is a big win: 58 percent faster for k-means, 46 percent for the permutation test. After that, each doubling buys less. For the permutation test, going past 16 workers actually made it slower.
+Going from one to four workers makes a big difference. K-means runs 58 percent faster, and the permutation test runs 46 percent faster.
 
-And look at memory. The permutation version uses processes, and each process gets its own copy of the data. At 128 workers that's 58 gigabytes.
+But adding more workers gives smaller improvements. For the permutation test, using more than 16 workers actually makes it slower.
 
-So: take the early speedup, then stop. And that memory cost is exactly what free-threaded Python addresses.
+Now look at memory usage.
+
+Our permutation test uses multiple processes, and in our implementation, each process has its own copy of the data.
+
+With 128 workers, memory usage reaches 58 gigabytes.
+
+So more workers are not always better. We need to balance speed and memory usage.
+
+This is where free-threaded Python becomes interesting. It allows multiple threads to run in parallel while sharing data in the same process.
+
+Let's see how that works.
 
 ## Slide 20 - Free-threaded Python 3.14t lets threads scale: 4.77× on 16 threads (19:45)
 
-This is the Python 3.14 part of the talk.
+Now let's look at Python 3.14.
 
-Here's a CPU-bound resampling workload written in plain Python, run with a ThreadPoolExecutor. On standard CPython 3.14, the grey line: 16 threads are no faster than one. That's the GIL: only one thread executes Python at a time.
+Here's a CPU-bound resampling task written in plain Python.
 
-Same code on the free-threaded build, 3.14t, the blue line: 16 threads are 4.77 times faster. Nothing changed in our code. Only the interpreter.
+On standard Python, 16 threads are no faster than one because of the GIL.
 
-The usual workaround for the GIL is processes. But processes copy the data, which is the 58 gigabytes we saw on the last slide. Compared with a ProcessPool on standard Python, threads on 3.14t were 2.4 times faster and used a third less memory, because all threads share one copy.
+But with the same code on free-threaded Python 3.14t, we get a 4.77 times speedup.
 
-A caveat: this helps code that spends its time in Python bytecode. If your hot loop is already inside NumPy or BLAS, those release the GIL anyway, and you'll see less difference. And as always, we re-ran the validation on 3.14t.
+Compared with a process pool on standard Python, it's 2.4 times faster and uses about one-third less memory, because threads can share data.
+
+This mainly helps CPU-bound Python code. NumPy and BLAS often release the GIL already, so the benefit may be smaller.
+
+And of course, we also validated the results on 3.14t.
 
 ## Slide 21 - Pick the tool from the bottleneck you measured (21:15)
 
-Here's everything in one slide.
+Here's a simple guide to choosing the right tool.
 
-If your profile shows tight numerical loops, try Numba. If the math can be written as matrix products, rewrite it and let NumPy and BLAS do the work. If you have many independent repeats over shared data, threads on free-threaded Python are now a real option. And if you have huge, regular batches, a GPU with JAX can pay off, but only once the work outweighs the cost of moving data.
+For numerical loops, try Numba. For matrix operations, use NumPy and BLAS.
 
-I think of it like travel. You don't fly across Victoria Harbour, and you don't walk to Tokyo. You look at the trip first, then pick the vehicle. Here the trip is your bottleneck, and the only way to know it is to measure.
+For independent tasks that share data, consider free-threaded Python.
 
-And every row assumes the validation already passed. Speed is the last step.
+For large, parallel workloads, JAX on GPU may be the best choice.
+
+Think of it like travel. You wouldn't fly across Victoria Harbour or walk to Tokyo. You choose the right tool for the trip.
+
+And remember, all these choices come after validation.
 
 ## Slide 22 - AI helps write the code. Validation decides what we keep. (22:30)
 
-We used AI coding agents to draft Numba and JAX implementations from the NumPy reference, explore alternative implementations and tuning parameters, and automate experiment runs, result logging, and plots.
+We also used AI coding agents to develop Numba and JAX implementations, explore different optimizations, and automate benchmarks.
 
-But generating a candidate isn't the same as validating it. Every implementation, whether AI-generated or hand-written, has to meet the same standards.
+AI helps us generate more ideas, but we still need to validate every implementation.
 
-First, correctness: compare with the reference using the same inputs and random seeds, with tolerances fixed in advance. Then, statistical validity: check that the optimization preserves the intended statistical properties, not just the output of one example.
+We check numerical results against the reference, test statistical properties, and measure runtime and memory usage.
 
-For performance, profile runtime and memory usage at each step to see where the costs actually are. Then compare end-to-end performance, so a faster kernel doesn't hide extra work elsewhere.
+We also measure end-to-end performance, because a faster function doesn't always mean a faster program.
 
-AI helps us explore more possibilities. Validation determines which ones we can trust. Code is cheap. Trust requires validation.
+So AI helps us explore, and validation tells us what to keep.
 
 ## Slide 23 - Make the statistic testable. Then make the bottleneck fast. (23:45)
 
-To wrap up.
+To wrap up, three main points.
 
-Simulate, so you have an answer key, and keep the slow reference around.
+First, simulate data so we know the ground truth, and keep a simple reference implementation.
 
-Check that the fast version is equivalent and that the test is still calibrated, before you look at a single timing.
+Second, validate both numerical results and statistical properties.
 
-Then measure where the time goes and pick the smallest tool that fixes it. Sometimes that's NumPy, sometimes Numba, sometimes free-threaded Python, and occasionally a GPU.
+Third, measure the bottleneck and choose the right tool.
+
+Our workflow is simple: validate first, measure second, and optimize last.
 
 Make the statistic testable. Then make the bottleneck fast.
 
 ## Slide 24 - Thank you! (24:30)
 
-Thank you. Please find me at my poster in room LW661 on the sixth floor during the 15:30 to 16:10 HKT poster session. We can continue the conversation there. Scan the QR code for the slides, code, data, and figure scripts.
+Thank you. Please find me at my poster in room LW661 on the sixth floor. We can continue the conversation there. You can scan the QR code for the slides, code and other materials.
 
 ## Backup 1 - On a laptop, runtime grows with both R and p
 
